@@ -1,5 +1,7 @@
 # CubeWorld_Clone
 
+![Windows](https://github.com/FrideakisAB/CubeWorld_Clone/workflows/Windows/badge.svg)
+
 Проект по созданию копии **печально** известной игры Cube World.
 
 ## Поддерживаемые платформы
