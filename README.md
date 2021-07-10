@@ -1,6 +1,6 @@
 # CubeWorld_Clone
 
-![Windows](https://github.com/FrideakisAB/CubeWorld_Clone/workflows/Windows/badge.svg)
+[![C/C++ CI](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml)
 
 Проект по созданию копии **печально** известной игры Cube World.
 
