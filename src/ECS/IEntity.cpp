@@ -5,7 +5,7 @@
 #include "ECS/Serialization/ComponentFactory.h"
 
 namespace ECS {
-    IEntity::IEntity() : localActive(true), globalActive(true) {}
+    IEntity::IEntity() : localActive(true), globalActive(true), destroyed(false) {}
 
     json IEntity::SerializeComponents()
     {
@@ -61,6 +61,7 @@ namespace ECS {
 
     void IEntity::onDelete()
     {
+        destroyed = true;
         if (parentId != INVALID_ENTITY_ID)
             ECS_Engine->GetEntityManager()->GetEntity(parentId)->RemoveChild(entityId);
 
@@ -99,7 +100,7 @@ namespace ECS {
 
     void IEntity::AddChild(IEntity *entity)
     {
-        if (entity != nullptr && entity->parentId != entityId && entity->entityId != entityId)
+        if (entity != nullptr && entity->parentId != entityId && entity->entityId != entityId && !entity->destroyed)
         {
             entity->SetParent(INVALID_ENTITY_ID);
 
@@ -107,6 +108,7 @@ namespace ECS {
             entity->parentId = entityId;
             entity->globalActive = IsActive();
             entity->recSetActive();
+            componentManagerInstance->UpdateTreeComponents(entity->entityId);
         }
     }
 
@@ -130,7 +132,23 @@ namespace ECS {
                 entity->parentId = INVALID_ENTITY_ID;
                 entity->globalActive = true;
                 entity->recSetActive();
+                componentManagerInstance->UpdateTreeComponents(entity->entityId);
             }
         }
+    }
+
+    void IEntity::ReserveChildSpace(std::size_t count)
+    {
+        childsId.reserve(childsId.size() + count);
+    }
+
+    IEntity *IEntity::GetParent() const noexcept
+    {
+        return ECS_Engine->GetEntityManager()->GetEntity(parentId);
+    }
+
+    IEntity *IEntity::GetChild(std::size_t i) const
+    {
+        return ECS_Engine->GetEntityManager()->GetEntity(childsId[i]);
     }
 }

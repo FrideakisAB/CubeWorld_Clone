@@ -74,19 +74,19 @@ namespace ECS::util {
     class HandleTable {
         using Handle = handle_type;
         using TableEntry = std::pair<typename Handle::value_type, T *>;
-        std::vector<TableEntry> m_Table;
+        std::vector<TableEntry> table;
 
         void GrowTable()
         {
-            size_t oldSize = this->m_Table.size();
+            size_t oldSize = this->table.size();
 
             assert(oldSize < Handle::MAX_INDICES && "Max table capacity reached!");
 
             size_t newSize = std::min(oldSize + grow, (size_t)Handle::MAX_INDICES);
-            this->m_Table.resize(newSize);
+            this->table.resize(newSize);
 
             for (typename Handle::value_type i = oldSize; i < newSize; ++i)
-                this->m_Table[i] = TableEntry(Handle::MIN_VERSION, nullptr);
+                this->table[i] = TableEntry(Handle::MIN_VERSION, nullptr);
         }
 
     public:
@@ -100,45 +100,44 @@ namespace ECS::util {
         Handle AcquireHandle(T *rawObject)
         {
             typename Handle::value_type i = 0;
-            for (; i < this->m_Table.size(); ++i)
+            for (; i < this->table.size(); ++i)
             {
-                if (this->m_Table[i].second == nullptr)
+                if (this->table[i].second == nullptr)
                 {
-                    this->m_Table[i].second = rawObject;
-                    this->m_Table[i].first = ((this->m_Table[i].first + 1) > Handle::MAX_VERSION) ? Handle::MIN_VERSION : this->m_Table[i].first + 1;
-                    return Handle(i, this->m_Table[i].first);
+                    this->table[i].second = rawObject;
+                    this->table[i].first = ((this->table[i].first + 1) > Handle::MAX_VERSION) ? Handle::MIN_VERSION : this->table[i].first + 1;
+                    return Handle(i, this->table[i].first);
                 }
             }
 
             this->GrowTable();
 
-            this->m_Table[i].first = 1;
-            this->m_Table[i].second = rawObject;
+            this->table[i].first = 1;
+            this->table[i].second = rawObject;
 
-            return Handle(i, this->m_Table[i].first);
+            return Handle(i, this->table[i].first);
         }
 
         void ReleaseHandle(Handle handle)
         {
-            assert((handle.index < this->m_Table.size() && handle.version == this->m_Table[handle.index].first) && "Invalid handle!");
-            this->m_Table[handle.index].second = nullptr;
+            assert((handle.index < this->table.size() && handle.version == this->table[handle.index].first) && "Invalid handle!");
+            this->table[handle.index].second = nullptr;
         }
 
         inline bool IsExpired(Handle handle) const
         {
-            return this->m_Table[handle.index].first != handle.version;
+            return this->table[handle.index].first != handle.version;
         }
 
         inline Handle operator[](typename Handle::value_type index) const
         {
-            assert(index < this->m_Table.size() && "Invalid handle!");
-            return Handle(index, this->m_Table[index].first);
+            assert(index < this->table.size() && "Invalid handle!");
+            return Handle(index, this->table[index].first);
         }
 
         inline T *operator[](Handle handle)
         {
-            assert((handle.index < this->m_Table.size() && handle.version == this->m_Table[handle.index].first) && "Invalid handle!");
-            return (this->m_Table[handle.index].first == handle.version ? this->m_Table[handle.index].second : nullptr);
+            return (handle.index < this->table.size() && this->table[handle.index].first == handle.version ? this->table[handle.index].second : nullptr);
         }
     };
 }

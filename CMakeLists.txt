@@ -41,6 +41,8 @@ endif()
 set(Source
 	src/Log.cpp
 
+	src/Components/Transform.cpp
+
 	src/Utils/json.cpp
 
 	src/ECS/API.cpp

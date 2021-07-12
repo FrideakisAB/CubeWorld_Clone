@@ -19,7 +19,7 @@ namespace ECS::util {
         elapsed = Elapsed::zero();
     }
 
-    void Timer::SetTimeScale(f64 ts) noexcept
+    void Timer::SetTimeScale(f32 ts) noexcept
     {
         timeScale = ts;
     }

@@ -17,7 +17,11 @@ namespace ECS {
         ComponentId hashValue;
         ComponentId componentId;
         EntityId owner;
-        bool enabled;
+        u8 enabled : 1;
+        u8 treeLock : 1;
+        u8 reserve : 6;
+
+        virtual void UpdateTree() {};
 
     public:
         IComponent();

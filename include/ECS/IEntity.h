@@ -16,6 +16,10 @@ namespace ECS {
     class IEntity : public ISerialize {
         friend class EntityManager;
 
+    private:
+        void recSetActive();
+        void onDelete();
+
     protected:
         ComponentManager *componentManagerInstance;
         EntityId entityId;
@@ -23,10 +27,8 @@ namespace ECS {
         std::vector<EntityId> childsId;
         u8 localActive : 1;
         u8 globalActive : 1;
-        u8 reserved : 6;
-
-        void recSetActive();
-        void onDelete();
+        u8 destroyed : 1;
+        u8 reserved : 5;
 
     public:
         IEntity();
@@ -62,13 +64,16 @@ namespace ECS {
 
         [[nodiscard]] inline EntityId GetEntityID() const noexcept { return this->entityId; }
         [[nodiscard]] inline EntityId GetParentID() const noexcept { return this->parentId; }
+        [[nodiscard]] IEntity *GetParent() const noexcept;
         void SetParent(IEntity *entity);
         void SetParent(EntityId entityId);
         [[nodiscard]] inline EntityId GetChildID(std::size_t i) const { return childsId[i]; }
+        [[nodiscard]] IEntity *GetChild(std::size_t i) const;
         [[nodiscard]] inline std::size_t GetChildCount() const noexcept { return childsId.size(); }
         void AddChild(IEntity *entity);
         void AddChild(EntityId entityId);
         void RemoveChild(EntityId entityId);
+        void ReserveChildSpace(std::size_t count);
 
         void SetActive(bool active);
         [[nodiscard]] inline bool IsActive() const noexcept { return this->localActive && this->globalActive; }

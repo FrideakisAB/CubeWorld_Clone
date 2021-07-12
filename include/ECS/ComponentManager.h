@@ -209,9 +209,28 @@ namespace ECS {
             }
         }
 
+        void UpdateTreeComponents(const EntityId entityId)
+        {
+            const size_t NUM_COMPONENTS = this->entityComponentMap[0].size();
+
+            for (ComponentTypeId componentTypeId = 0; componentTypeId < NUM_COMPONENTS; ++componentTypeId)
+            {
+                const ComponentId componentId = this->entityComponentMap[entityId.index][componentTypeId];
+                if (componentId == INVALID_COMPONENT_ID)
+                    continue;
+
+                IComponent *component = this->componentLut[componentId];
+                if (component != nullptr && component->treeLock)
+                    component->UpdateTree();
+            }
+        }
+
         template<class T>
         T *GetComponent(const EntityId entityId)
         {
+            if (entityId == INVALID_ENTITY_ID)
+                return nullptr;
+
             static const ComponentTypeId CTID = T::STATIC_COMPONENT_TYPE_ID;
             const ComponentId componentId = this->entityComponentMap[entityId.index][CTID];
 

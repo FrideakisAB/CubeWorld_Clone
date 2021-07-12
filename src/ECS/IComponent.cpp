@@ -2,7 +2,7 @@
 
 namespace ECS {
     IComponent::IComponent() :
-            owner(INVALID_ENTITY_ID), enabled(true) {}
+            owner(INVALID_ENTITY_ID), enabled(true), treeLock(false) {}
 
     void IComponent::SetActive(bool active)
     {

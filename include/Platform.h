@@ -31,7 +31,7 @@ using u32 = uint32_t;
 #ifdef _64BIT
 using u64 = uint64_t;
 #else
-using u64			= uint32_t;
+using u64 = uint32_t;
 #endif
 
 using f32 = float_t;

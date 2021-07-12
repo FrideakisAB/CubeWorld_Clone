@@ -31,7 +31,7 @@ namespace ECS::util {
             return elapsed.count();
         }
 
-        void SetTimeScale(f64 ts) noexcept;
+        void SetTimeScale(f32 ts) noexcept;
 
         [[nodiscard]] inline f32 GetTimeScale() const noexcept
         {
