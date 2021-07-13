@@ -43,6 +43,11 @@ set(Source
 
 	src/Components/Transform.cpp
 
+	src/Systems/RenderSystem.cpp
+
+	src/Render/Mesh.cpp
+	src/Render/GLUtils.cpp
+
 	src/Utils/json.cpp
 
 	src/ECS/API.cpp
