@@ -1,13 +1,23 @@
 #ifndef RENDERSYSTEM_H
 #define RENDERSYSTEM_H
 
+#include <map>
 #include <vector>
 #include "ECS/ECS.h"
 #include <functional>
+#include "Render/SSBO.h"
+#include "Render/GLUtils.h"
 
 class RenderSystem : public ECS::System<RenderSystem> {
 private:
     std::vector<std::function<void()>> deletedHandles;
+    Utils::DirectionLight directionLight;
+    SSBO<Utils::PointLight> pointLights;
+    u16 pointLightCount = 0;
+    u16 pointLightPos = 0;
+    SSBO<Utils::SpotLight> spotLights;
+    u16 spotLightCount = 0;
+    u16 spotLightPos = 0;
 
 public:
     RenderSystem();

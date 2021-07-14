@@ -42,10 +42,12 @@ set(Source
 	src/Log.cpp
 
 	src/Components/Transform.cpp
+	src/Components/LightSource.cpp
 
 	src/Systems/RenderSystem.cpp
 
 	src/Render/Mesh.cpp
+	src/Render/Render.cpp
 	src/Render/GLUtils.cpp
 
 	src/Utils/json.cpp

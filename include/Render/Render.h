@@ -3,7 +3,6 @@
 
 #include <functional>
 #include "Platform.h"
-#include "Systems/RenderSystem.h"
 
 enum class Primitive {
     Points = 0,
@@ -47,10 +46,7 @@ private:
 
 protected:
     virtual void SubmitData(DrawData &drawData) = 0;
-    static void ReleaseHandle(const std::function<void()> &deleter)
-    {
-        ECS::ECS_Engine->GetSystemManager()->GetSystem<RenderSystem>()->ReleaseHandle(deleter);
-    }
+    static void ReleaseHandle(const std::function<void()> &deleter);
 
 public:
     DrawObject() = default;
