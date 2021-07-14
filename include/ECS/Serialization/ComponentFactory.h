@@ -2,6 +2,7 @@
 #define COMPONENTFACTORY_H
 
 #include "ECS/IEntity.h"
+#include <boost/type_index.hpp>
 #include "ECS/ComponentManager.h"
 
 namespace ECS {
@@ -22,19 +23,19 @@ namespace ECS {
         };
 
         using CmpSetRegistry = std::unordered_map<std::string, IComponentSet *>;
-        CmpSetRegistry m_CmpSetRegistry;
+        CmpSetRegistry cmpSetRegistry;
 
         template<class T>
         inline ComponentSet<T> *GetComponentSet()
         {
-            std::string CSID = typeid(T).name();
+            std::string CSID = boost::typeindex::type_id<T>().pretty_name();
 
-            auto it = this->m_CmpSetRegistry.find(CSID);
+            auto it = this->cmpSetRegistry.find(CSID);
             ComponentSet<T> *ec = nullptr;
 
-            if (it == this->m_CmpSetRegistry.end())
+            if (it == this->cmpSetRegistry.end())
             {
-                logger->Error("Component not regist!");
+                logger->Error("Component not Register!");
             }
             else
                 ec = (ComponentSet<T> *)it->second;
@@ -46,7 +47,7 @@ namespace ECS {
     public:
         ~ComponentFactory()
         {
-            for (auto cr : this->m_CmpSetRegistry)
+            for (auto cr : this->cmpSetRegistry)
             {
                 delete cr.second;
                 cr.second = nullptr;
@@ -54,28 +55,19 @@ namespace ECS {
         }
 
         template<class T>
-        std::string regist()
+        std::string Register()
         {
-            std::string CSID = typeid(T).name();
+            std::string CSID = boost::typeindex::type_id<T>().pretty_name();
 
-            auto it = this->m_CmpSetRegistry.find(CSID);
+            if (this->cmpSetRegistry.find(CSID) == this->cmpSetRegistry.end())
+                this->cmpSetRegistry[CSID] = new ComponentSet<T>();
 
-            if (it == this->m_CmpSetRegistry.end())
-            {
-                auto ec = new ComponentSet<T>();
-                this->m_CmpSetRegistry[CSID] = ec;
-                return CSID;
-            }
-            else
-            {
-                logger->Warning("Component has already register!");
-                return CSID;
-            }
+            return CSID;
         }
 
         IComponent *Add(const std::string &name, IEntity *ent)
         {
-            return this->m_CmpSetRegistry[name]->Add(ent);
+            return this->cmpSetRegistry[name]->Add(ent);
         }
     };
 }

@@ -29,7 +29,7 @@ enum class ValueType {
 };
 
 struct Attrib {
-    unsigned int Count, Size, Offset;
+    u32 Count, Size, Offset;
     ValueType Type;
     bool Normalize;
 };
@@ -57,11 +57,13 @@ public:
         obj.data = {};
     }
 
-    DrawObject &operator=(const DrawObject &obj) { data = {}; }
+    DrawObject &operator=(const DrawObject &obj) { data = {}; return *this; }
     DrawObject &operator=(DrawObject &&obj) noexcept
     {
         data =  obj.data;
         obj.data = {};
+
+        return *this;
     }
 
     void RenderUpdate() { SubmitData(data); }

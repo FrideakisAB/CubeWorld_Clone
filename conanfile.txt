@@ -6,6 +6,7 @@ nlohmann_json/3.9.1
 glm/0.9.9.5@g-truc/stable
 Catch2/2.11.1@catchorg/stable
 stb/20200203
+boost/1.76.0
 
 [generators]
 cmake

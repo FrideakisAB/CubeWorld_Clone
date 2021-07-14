@@ -91,6 +91,7 @@ target_link_libraries(tests
 	OpenGL::GL
 	CONAN_PKG::stb
 	CONAN_PKG::glm
+	CONAN_PKG::boost
 	CONAN_PKG::glew
 	CONAN_PKG::glfw
 	CONAN_PKG::assimp
@@ -108,6 +109,7 @@ if(WIN32)
 		OpenGL::GL
 		CONAN_PKG::stb
 		CONAN_PKG::glm
+		CONAN_PKG::boost
 		CONAN_PKG::glew
 		CONAN_PKG::glfw
 		CONAN_PKG::assimp
