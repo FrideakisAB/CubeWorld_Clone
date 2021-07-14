@@ -56,6 +56,7 @@ public:
         glBindBuffer(buffType, buffId);
         glUnmapBuffer(buffType);
         glBindBuffer(buffType, 0);
+        data = nullptr;
     }
 
     [[nodiscard]] T *GetData() const noexcept { return data; }

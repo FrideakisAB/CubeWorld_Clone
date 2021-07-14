@@ -41,6 +41,8 @@ endif()
 set(Source
 	src/Log.cpp
 
+	src/Components/Camera.cpp
+	src/Components/Material.cpp
 	src/Components/Transform.cpp
 	src/Components/LightSource.cpp
 
