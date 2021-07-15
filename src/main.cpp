@@ -1,3 +1,5 @@
+#include "Log.h"
+#include <exception>
 #include <windows.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -10,6 +12,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWinMode)
 {
+    logger = new Log();
+
     if (!glfwInit())
         return -1;
 
@@ -60,6 +64,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     }
 
     glfwTerminate();
+    delete logger;
 
     return 0;
 }

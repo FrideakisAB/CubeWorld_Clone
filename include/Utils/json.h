@@ -7,6 +7,10 @@
 
 using json = nlohmann::json;
 
+namespace Utils {
+    std::string FileToString(std::ifstream&& file);
+}
+
 namespace json_utils {
     json TryParse(const std::string &str) noexcept;
 }

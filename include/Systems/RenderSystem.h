@@ -13,9 +13,9 @@ private:
     std::vector<std::function<void()>> deletedHandles;
     Utils::DirectionLight directionLight;
     SSBO<Utils::PointLight> pointLights;
+    SSBO<Utils::SpotLight> spotLights;
     u16 pointLightCount = 0;
     u16 pointLightPos = 0;
-    SSBO<Utils::SpotLight> spotLights;
     u16 spotLightCount = 0;
     u16 spotLightPos = 0;
 

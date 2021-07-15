@@ -4,11 +4,12 @@
 #include "ECS/Serialization/ISerialize.h"
 
 class IAsset : public ISerialize {
+    friend class AssetsManager;
+
 private:
-    bool dynamic;
+    bool dynamic = true;
 
 public:
-    explicit IAsset(bool dyn = false) : dynamic(dyn) {}
     virtual ~IAsset() = default;
 
     [[nodiscard]] virtual IAsset* Clone() const { return nullptr; }

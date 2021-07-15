@@ -62,24 +62,24 @@ void RenderSystem::PreUpdate()
     if (pointLightCount >= pointLightSources.size())
     {
         pointLights.UpdateData(pointLightSources.size(), pointLightSources.data());
-        pointLightPos = pointLightSources.size();
+        pointLightPos = static_cast<u16>(pointLightSources.size());
     }
     else
     {
-        pointLightCount = pointLightSources.size();
-        pointLightPos = pointLightSources.size();
+        pointLightCount = static_cast<u16>(pointLightSources.size());
+        pointLightPos = static_cast<u16>(pointLightSources.size());
         pointLights.UploadData(pointLightCount, pointLightSources.data());
     }
 
     if (spotLightCount >= spotLightSources.size())
     {
         spotLights.UpdateData(spotLightSources.size(), spotLightSources.data());
-        spotLightPos = spotLightSources.size();
+        spotLightPos = static_cast<u16>(spotLightSources.size());
     }
     else
     {
-        spotLightCount = spotLightSources.size();
-        spotLightPos = spotLightSources.size();
+        spotLightCount = static_cast<u16>(spotLightSources.size());
+        spotLightPos = static_cast<u16>(spotLightSources.size());
         spotLights.UploadData(spotLightCount, spotLightSources.data());
     }
 }
