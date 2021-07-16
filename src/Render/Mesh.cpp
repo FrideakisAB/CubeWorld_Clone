@@ -1,6 +1,6 @@
 #include "Render/Mesh.h"
 
-#include <map>
+#include <unordered_map>
 #include "Render/GLUtils.h"
 
 const u8 VertexAttribCount = 3;
@@ -153,30 +153,30 @@ float sqr(float x) { return x * x; }
 
 void Mesh::CalculateNormals()
 {
-    std::map<u32, glm::vec3> trNormals;
+    std::unordered_map<u32, glm::vec3> trNormals;
     std::vector<u32> nCount;
     for(u32 i = 0; i < vertCount; ++i)
     {
         nCount.push_back(0);
-        for(u32 j = 0; j < indCount; j+=3)
-            if(indices[j] == i || indices[j+1] == i || indices[j+2] == i)
+        for(u32 j = 0; j < indCount; j += 3)
+            if(indices[j] == i || indices[j + 1] == i || indices[j + 2] == i)
             {
-                if(trNormals.find(j/3) == trNormals.end())
+                if(trNormals.find(j / 3) == trNormals.end())
                 {
                     glm::vec3 norm;
 
-                    glm::vec3 v1 = vertices[indices[j]].Position - vertices[indices[j+1]].Position;
-                    glm::vec3 v2 = vertices[indices[j+1]].Position - vertices[indices[j+2]].Position;
+                    glm::vec3 v1 = vertices[indices[j]].Position - vertices[indices[j + 1]].Position;
+                    glm::vec3 v2 = vertices[indices[j + 1]].Position - vertices[indices[j + 2]].Position;
 
                     float wrki = sqrt(sqr(v1.y*v2.z - v1.z * v2.y) + sqr(v1.z * v2.x - v1.x * v2.z) + sqr(v1.x * v2.y - v1.y * v2.x));
                     norm.x = (v1.y * v2.z - v1.z * v2.y) / wrki;
                     norm.y = (v1.z * v2.x - v1.x * v2.z) / wrki;
                     norm.z = (v1.x * v2.y - v1.y * v2.x) / wrki;
 
-                    trNormals[j/3] = norm;
+                    trNormals[j / 3] = norm;
                 }
 
-                vertices[i].Normal += trNormals[j/3];
+                vertices[i].Normal += trNormals[j / 3];
                 ++nCount[i];
             }
     }
@@ -210,4 +210,57 @@ void Mesh::createMesh()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 
     glBindVertexArray(0);
+}
+
+IAsset *Mesh::Clone() const
+{
+    return new Mesh(std::cref(*this));
+}
+
+json Mesh::SerializeObj()
+{
+    json data;
+
+    data["vertCount"] = vertCount;
+    data["indCount"] = indCount;
+    data["vertices"] = {};
+    data["indices"] = {};
+
+    for(u32 i = 0; i < vertCount; ++i)
+    {
+        data["vertices"].emplace_back(vertices[i].Position.x);
+        data["vertices"].emplace_back(vertices[i].Position.y);
+        data["vertices"].emplace_back(vertices[i].Position.z);
+
+        data["vertices"].emplace_back(vertices[i].Normal.x);
+        data["vertices"].emplace_back(vertices[i].Normal.y);
+        data["vertices"].emplace_back(vertices[i].Normal.z);
+
+        data["vertices"].emplace_back(vertices[i].TexCoords.x);
+        data["vertices"].emplace_back(vertices[i].TexCoords.y);
+    }
+
+    for(u32 i = 0; i < indCount; ++i)
+        data["indices"].emplace_back(indices[i]);
+
+    return data;
+}
+
+void Mesh::UnSerializeObj(const json &j)
+{
+    vertCount = j["vertCount"];
+    indCount = j["indCount"];
+
+    vertices = new Vertex[vertCount];
+    indices = new u32[indCount];
+
+    for(u32 i = 0; i < vertCount; ++i)
+    {
+        vertices[i].Position = glm::vec3(j["vertices"][i*8], j["vertices"][i*8 + 1], j["vertices"][i*8 + 2]);
+        vertices[i].Normal = glm::vec3(j["vertices"][i*8 + 3], j["vertices"][i*8 + 4], j["vertices"][i*8 + 5]);
+        vertices[i].TexCoords = glm::vec2(j["vertices"][i*8 + 6], j["vertices"][i*8 + 7]);
+    }
+
+    for(u32 i = 0; i < indCount; ++i)
+        indices[i] = j["indices"][i];
 }

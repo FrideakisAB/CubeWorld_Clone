@@ -2,12 +2,22 @@
 
 AssetsManager::AssetsManager()
 {
-
+    staticResources = json_utils::TryParse(Utils::FileToString(std::ifstream("data/staticReference.db")));
+    dynamicResources = json_utils::TryParse(Utils::FileToString(std::ifstream("data/dynamicReference.db")));
 }
 
 AssetsManager::~AssetsManager()
 {
-
+    try
+    {
+        std::ofstream dynamicDBfile("data/dynamicReference.db", std::ios::trunc);
+        dynamicDBfile << dynamicResources.dump(4);
+        dynamicDBfile.close();
+    }
+    catch(...)
+    {
+        logger->Error("Dynamic resources not save! Error in AssetsManager");
+    }
 }
 
 AssetsHandle AssetsManager::GetAsset(const std::string &name)

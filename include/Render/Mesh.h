@@ -2,9 +2,11 @@
 #define MESH_H
 
 #include "Utils/glm.h"
+#include "Assets/IAsset.h"
 #include "Render/Render.h"
+#include "boost/type_index.hpp"
 
-class Mesh : public DrawObject {
+class Mesh final : public DrawObject, public IAsset {
 public:
     struct Vertex {
         glm::vec3 Position;
@@ -35,7 +37,7 @@ public:
     Mesh(Vertex *vertices, u32 vertCount, u32 *indices, u32 indCount, DrawType drawType=DrawType::Static);
     Mesh(const Mesh &mesh);
     Mesh(Mesh &&mesh) noexcept;
-    ~Mesh();
+    ~Mesh() final;
 
     Mesh &operator=(const Mesh &mesh);
     Mesh &operator=(Mesh &&mesh) noexcept;
@@ -49,6 +51,16 @@ public:
     void SetIndices(u32 *indices, u32 indCount) noexcept;
 
     void CalculateNormals();
+
+    [[nodiscard]] size_t GetTypeID() const noexcept override
+    {
+        return boost::typeindex::type_id<Mesh>().hash_code();
+    }
+
+    [[nodiscard]] IAsset* Clone() const override;
+
+    [[nodiscard]] json SerializeObj() override;
+    void UnSerializeObj(const json& j) override;
 };
 
 #endif

@@ -44,9 +44,9 @@ set(Source
 	src/Assets/AssetsManager.cpp
 
 	src/Components/Camera.cpp
-	src/Components/Material.cpp
 	src/Components/Transform.cpp
 	src/Components/LightSource.cpp
+	src/Components/MaterialComponent.cpp
 
 	src/Systems/RenderSystem.cpp
 
