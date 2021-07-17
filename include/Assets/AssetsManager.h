@@ -35,7 +35,10 @@ public:
     AssetsHandle AddAsset(const std::string &name, T *asset)
     {
         if (assets.find(name) != assets.end())
+        {
+            asset->name = name;
             return assets[name] = asset;
+        }
 
         return AssetsHandle();
     }

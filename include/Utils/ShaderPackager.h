@@ -1,9 +1,11 @@
 #ifndef SHADERPACKAGER_H
 #define SHADERPACKAGER_H
 
+#include <string>
 #include <variant>
 #include "Platform.h"
 #include "Utils/glm.h"
+#include "Utils/json.h"
 
 namespace Utils {
     enum class ShaderValue : u8 {
@@ -38,6 +40,11 @@ namespace Utils {
     class ShaderPackager {
 
     };
+}
+
+namespace ns {
+    void to_json(json& j, const Utils::ShaderParamValue& paramValue);
+    void from_json(const json& j, Utils::ShaderParamValue& paramValue);
 }
 
 #endif

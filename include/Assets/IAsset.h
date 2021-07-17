@@ -8,6 +8,7 @@ class IAsset : public ISerialize {
 
 private:
     bool dynamic = true;
+    std::string name;
 
 public:
     virtual ~IAsset() = default;
@@ -16,6 +17,7 @@ public:
 
     [[nodiscard]] bool IsDynamic() const noexcept { return dynamic; }
     [[nodiscard]] virtual size_t GetTypeID() const noexcept = 0;
+    [[nodiscard]] const std::string &GetName() const noexcept { return name; }
 };
 
 #endif

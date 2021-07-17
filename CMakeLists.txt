@@ -55,6 +55,7 @@ set(Source
 	src/Render/GLUtils.cpp
 
 	src/Utils/json.cpp
+	src/Utils/ShaderPackager.cpp
 
 	src/ECS/API.cpp
 	src/ECS/Engine.cpp

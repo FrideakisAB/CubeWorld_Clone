@@ -18,11 +18,24 @@ struct Material final : public IAsset {
     {
         return boost::typeindex::type_id<Material>().hash_code();
     }
+
+    [[nodiscard]] IAsset *Clone() const override;
+
+    [[nodiscard]] json SerializeObj() override;
+    void UnSerializeObj(const json& j) override;
 };
 
 class MaterialComponent : public ECS::Component<MaterialComponent> {
+private:
+    AssetsHandle materialHandle;
+    Material *material = nullptr;
+
 public:
-    AssetsHandle Material;
+    void SetMaterial(const AssetsHandle &materialHandle);
+    [[nodiscard]] Material *GetMaterial() const noexcept { return material; }
+    [[nodiscard]] AssetsHandle GetMaterialHandle() const noexcept { return materialHandle; }
+    [[nodiscard]] bool IsValid() const noexcept { return material != nullptr; }
+
     bool Instancing = true;
 };
 

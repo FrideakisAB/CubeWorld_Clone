@@ -31,6 +31,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
         auto *asset = assetsFactory.Create(assetData["nameType"].get<std::string>());
         asset->UnSerializeObj(assetData["data"]);
         asset->dynamic = false;
+        asset->name = name;
 
         assets[name] = AssetsHandle(asset);
 
@@ -42,6 +43,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
 
         auto* asset = assetsFactory.Create(assetData["nameType"].get<std::string>());
         asset->UnSerializeObj(assetData["data"]);
+        asset->name = name;
 
         assets[name] = AssetsHandle(asset);
 
