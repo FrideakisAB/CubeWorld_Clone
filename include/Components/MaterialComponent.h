@@ -36,6 +36,9 @@ public:
     [[nodiscard]] AssetsHandle GetMaterialHandle() const noexcept { return materialHandle; }
     [[nodiscard]] bool IsValid() const noexcept { return material != nullptr; }
 
+    [[nodiscard]] json SerializeObj() override;
+    void UnSerializeObj(const json& j) override;
+
     bool Instancing = true;
 };
 

@@ -73,6 +73,7 @@ Mesh::Mesh(const Mesh &mesh)
 }
 
 Mesh::Mesh(Mesh &&mesh) noexcept
+    : DrawObject(std::move(mesh))
 {
     if(this == &mesh)
         return;

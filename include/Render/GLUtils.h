@@ -1,8 +1,8 @@
 #ifndef GLUTILS_H
 #define GLUTILS_H
 
-#include "Utils/glm.h"
 #include <GL/glew.h>
+#include "Utils/glm.h"
 #include "Render/Render.h"
 
 namespace Utils {
