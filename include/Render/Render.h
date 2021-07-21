@@ -32,7 +32,6 @@ enum class ValueType {
 enum class TexType: u8 {
     Texture1D = 0,
     Texture2D,
-    Texture3D,
     TextureCube
 };
 

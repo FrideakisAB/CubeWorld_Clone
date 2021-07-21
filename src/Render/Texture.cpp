@@ -1,5 +1,7 @@
 #include "Render/Texture.h"
 
+#include "Render/GLUtils.h"
+
 Texture::Texture(const Texture &texture)
     : SamplerObject(texture)
 {
@@ -34,10 +36,14 @@ Texture::Texture(Texture &&texture) noexcept
 
 Texture::~Texture()
 {
-    auto deleter = [=](){
-        //TODO: on graphics api integrate
-    };
-    ReleaseHandle(deleter);
+    if (texture != 0)
+    {
+        auto deleter = [=]() {
+            glDeleteTextures(1, &texture);
+        };
+        
+        ReleaseHandle(deleter);
+    }
 }
 
 void Texture::SetW(u32 whd)
@@ -102,7 +108,75 @@ void Texture::Apply() noexcept
 
 void Texture::SubmitData(SamplerData &samplerData)
 {
+    if (applyRequire)
+    {
+        if (texture != 0)
+            glDeleteTextures(1, &texture);
 
+        glGenTextures(1, &texture);
+
+        switch (tt)
+        {
+        case TexType::Texture1D:
+            glBindTexture(GL_TEXTURE_1D, texture);
+            glTexImage1D(GL_TEXTURE_1D, 0, Utils::GetTextDataTypeGL(type), whd.x, 0, Utils::GetTextDataTypeGL(type), GL_UNSIGNED_BYTE, src[0]);
+
+            glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, Utils::GetWrapTypeGL(wrapS));
+
+            if (filtering != Filtering::None)
+            {
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, Utils::GetFilteringGL(filtering));
+                glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, Utils::GetFilteringGL(filtering));
+            }
+
+            if (mipmaps)
+                glGenerateMipmap(GL_TEXTURE_1D);
+            break;
+
+        case TexType::Texture2D:
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(GL_TEXTURE_2D, 0, Utils::GetTextDataTypeGL(type), whd.x, whd.y, 0, Utils::GetTextDataTypeGL(type), GL_UNSIGNED_BYTE, src[0]);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, Utils::GetWrapTypeGL(wrapS));
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, Utils::GetWrapTypeGL(wrapT));
+
+            if (filtering != Filtering::None)
+            {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, Utils::GetFilteringGL(filtering));
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, Utils::GetFilteringGL(filtering));
+            }
+
+            if (mipmaps)
+                glGenerateMipmap(GL_TEXTURE_2D);
+            break;
+
+        case TexType::TextureCube:
+            glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+            for(GLuint i = 0; i < 6; ++i)
+                glTexImage2D(
+                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, Utils::GetTextDataTypeGL(type), whd.x, whd.y,
+                        0,Utils::GetTextDataTypeGL(type), GL_UNSIGNED_BYTE, src[i]
+                );
+
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, Utils::GetWrapTypeGL(wrapS));
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, Utils::GetWrapTypeGL(wrapT));
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, Utils::GetWrapTypeGL(wrapR));
+
+            if (filtering != Filtering::None)
+            {
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, Utils::GetFilteringGL(filtering));
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, Utils::GetFilteringGL(filtering));
+            }
+
+            if (mipmaps)
+                glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+            break;
+        }
+        samplerData.Handle = glGetTextureHandleARB(texture);
+        glMakeTextureHandleResidentARB(samplerData.Handle);
+        samplerData.TextureDataType = type;
+        samplerData.TextureType = tt;
+    }
 }
 
 IAsset *Texture::Clone() const
