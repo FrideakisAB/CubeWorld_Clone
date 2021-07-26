@@ -2,7 +2,7 @@
 #define ICOMPONENT_H
 
 #include "ECS/IEntity.h"
-#include "ECS/Serialization/ISerialize.h"
+#include "Assets/ISerialize.h"
 
 namespace ECS {
     using ComponentId = ObjectID;

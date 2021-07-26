@@ -3,7 +3,7 @@
 #include "Render/GLUtils.h"
 
 Texture::Texture(const Texture &texture)
-    : SamplerObject(texture)
+    : IAsset(true), SamplerObject(texture)
 {
     whd = texture.whd;
     wrapS = texture.wrapS;
@@ -13,12 +13,10 @@ Texture::Texture(const Texture &texture)
     tt = texture.tt;
     type = texture.type;
     mipmaps = texture.mipmaps;
-
-    //TODO: src copy problem
 }
 
 Texture::Texture(Texture &&texture) noexcept
-    : SamplerObject(std::move(texture))
+    : IAsset(true), SamplerObject(std::move(texture))
 {
     whd = texture.whd;
     wrapS = texture.wrapS;
@@ -41,7 +39,7 @@ Texture::~Texture()
         auto deleter = [=]() {
             glDeleteTextures(1, &texture);
         };
-        
+
         ReleaseHandle(deleter);
     }
 }
@@ -200,8 +198,6 @@ json Texture::SerializeObj()
 
     data["mipmaps"] = mipmaps;
 
-    //TODO: save src, binary resource problem
-
     return data;
 }
 
@@ -219,8 +215,6 @@ void Texture::UnSerializeObj(const json &j)
 
     mipmaps = j["mipmaps"];
 
-    //TODO: load src, binary resource problem
-
     applyRequire = true;
 }
 
@@ -234,8 +228,6 @@ Texture &Texture::operator=(const Texture &texture)
     tt = texture.tt;
     type = texture.type;
     mipmaps = texture.mipmaps;
-
-    //TODO: src copy problem
 
     return *this;
 }
@@ -256,4 +248,14 @@ Texture &Texture::operator=(Texture &&texture) noexcept
         std::swap(src[i], texture.src[i]);
 
     return *this;
+}
+
+void Texture::SerializeBin(std::ofstream &file)
+{
+
+}
+
+void Texture::UnSerializeBin(std::ifstream &file)
+{
+
 }

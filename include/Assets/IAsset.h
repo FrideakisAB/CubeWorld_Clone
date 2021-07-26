@@ -1,14 +1,18 @@
 #ifndef IASSET_H
 #define IASSET_H
 
-#include "ECS/Serialization/ISerialize.h"
+#include "Assets/ISerialize.h"
+#include "Assets/IBinarySerialize.h"
 
-class IAsset : public ISerialize {
+class IAsset : public ISerialize, public IBinarySerialize {
     friend class AssetsManager;
 
 private:
     bool dynamic = true;
     std::string name;
+
+protected:
+    explicit IAsset(bool binaryNeeded=false) : IBinarySerialize(binaryNeeded) {}
 
 public:
     virtual ~IAsset() = default;

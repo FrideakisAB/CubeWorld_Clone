@@ -23,7 +23,7 @@ private:
     bool applyRequire = true;
 
 public:
-    Texture() = default;
+    Texture() : IAsset(true) {}
     Texture(const Texture &texture);
     Texture(Texture &&texture) noexcept;
     ~Texture();
@@ -78,6 +78,9 @@ public:
 
     [[nodiscard]] json SerializeObj() override;
     void UnSerializeObj(const json& j) override;
+
+    void SerializeBin(std::ofstream &file) override;
+    void UnSerializeBin(std::ifstream &file) override;
 };
 
 #endif

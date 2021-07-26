@@ -5,7 +5,7 @@
 #include "ECS/API.h"
 #include "Utils/json.h"
 #include "ECS/util/Handle.h"
-#include "ECS/Serialization/ISerialize.h"
+#include "Assets/ISerialize.h"
 
 namespace ECS {
     using EntityTypeId = TypeID;
