@@ -62,6 +62,7 @@ public:
     void SetTypeData(TexDataType type);
 
     [[nodiscard]] inline TexType GetType() const noexcept { return tt; }
+    void SetType(TexType type);
 
     [[nodiscard]] inline bool GetMipmap() const noexcept { return mipmaps; }
     void SetMipmap(bool mipmaps);

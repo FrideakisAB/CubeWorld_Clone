@@ -36,6 +36,9 @@ Texture::~Texture()
 {
     if (texture != 0)
     {
+        for (auto &i : src)
+            delete[] i;
+
         auto deleter = [=]() {
             glDeleteTextures(1, &texture);
         };
@@ -252,10 +255,126 @@ Texture &Texture::operator=(Texture &&texture) noexcept
 
 void Texture::SerializeBin(std::ofstream &file)
 {
+    if (file.is_open())
+    {
+        file << static_cast<u8>(tt);
 
+        u8 pixelSize;
+        switch(type)
+        {
+        case TexDataType::R: [[fallthrough]];
+        case TexDataType::Depth:
+            pixelSize = 1;
+            break;
+
+        case TexDataType::RG: [[fallthrough]];
+        case TexDataType::R16: [[fallthrough]];
+        case TexDataType::R16F:
+            pixelSize = 2;
+            break;
+
+        case TexDataType::RGB:
+            pixelSize = 3;
+            break;
+
+        case TexDataType::RGBA: [[fallthrough]];
+        case TexDataType::RG16: [[fallthrough]];
+        case TexDataType::RF: [[fallthrough]];
+        case TexDataType::RG16F:
+            pixelSize = 4;
+            break;
+
+        case TexDataType::RGF: [[fallthrough]];
+        case TexDataType::RGBA16F: [[fallthrough]];
+        case TexDataType::RGBA16:
+            pixelSize = 8;
+            break;
+
+        case TexDataType::RGBF:
+            pixelSize = 12;
+            break;
+
+        case TexDataType::RGBAF:
+            pixelSize = 16;
+            break;
+        case TexDataType::RGB16: [[fallthrough]];
+        case TexDataType::RGB16F:
+            pixelSize = 6;
+            break;
+        }
+
+        for (auto &i : src)
+            if(i != nullptr)
+                file.write(reinterpret_cast<char*>(i), whd.x * whd.y * pixelSize);
+    }
 }
 
 void Texture::UnSerializeBin(std::ifstream &file)
 {
+    if (file.is_open())
+    {
+        u8 texType; file >> texType;
+        tt = static_cast<TexType>(texType);
 
+        u8 pixelSize;
+        switch(type)
+        {
+        case TexDataType::R: [[fallthrough]];
+        case TexDataType::Depth:
+            pixelSize = 1;
+            break;
+
+        case TexDataType::RG: [[fallthrough]];
+        case TexDataType::R16: [[fallthrough]];
+        case TexDataType::R16F:
+            pixelSize = 2;
+            break;
+
+        case TexDataType::RGB:
+            pixelSize = 3;
+            break;
+
+        case TexDataType::RGBA: [[fallthrough]];
+        case TexDataType::RG16: [[fallthrough]];
+        case TexDataType::RF: [[fallthrough]];
+        case TexDataType::RG16F:
+            pixelSize = 4;
+            break;
+
+        case TexDataType::RGF: [[fallthrough]];
+        case TexDataType::RGBA16F: [[fallthrough]];
+        case TexDataType::RGBA16:
+            pixelSize = 8;
+            break;
+
+        case TexDataType::RGBF:
+            pixelSize = 12;
+            break;
+
+        case TexDataType::RGBAF:
+            pixelSize = 16;
+            break;
+        case TexDataType::RGB16: [[fallthrough]];
+        case TexDataType::RGB16F:
+            pixelSize = 6;
+            break;
+        }
+
+        if (tt == TexType::TextureCube)
+            for (auto &i : src)
+            {
+                i = new u8[whd.x * whd.y * pixelSize];
+                file.read(reinterpret_cast<char*>(i), whd.x * whd.y * pixelSize);
+            }
+        else
+        {
+            src[0] = new u8[whd.x * whd.y * pixelSize];
+            file.read(reinterpret_cast<char*>(src[0]), whd.x * whd.y * pixelSize);
+        }
+    }
+}
+
+void Texture::SetType(TexType type)
+{
+    tt = type;
 }
