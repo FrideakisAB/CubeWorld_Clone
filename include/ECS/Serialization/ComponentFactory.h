@@ -35,7 +35,7 @@ namespace ECS {
 
             if (it == this->cmpSetRegistry.end())
             {
-                logger->Error("Component not Register!");
+                logger->Error("Component not register!");
             }
             else
                 ec = (ComponentSet<T> *)it->second;

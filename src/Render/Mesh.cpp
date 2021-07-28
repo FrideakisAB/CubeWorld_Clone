@@ -20,29 +20,41 @@ void Mesh::SubmitData(DrawData &drawData)
         if (needCreateVertices)
         {
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, vertCount * sizeof(Vertex), &vertices[0], Utils::GetDrawTypeGL(drawType));
+            glBufferData(GL_ARRAY_BUFFER, vertCount * sizeof(Vertex), &vertices[0], Utils::GetDrawTypeGL(MeshDrawType));
+            needCreateVertices = false;
+            apply = false;
         }
-        else
+        else if (vertices != nullptr && apply)
         {
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             auto *verts = static_cast<Vertex*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
             for (u32 i = 0; i < vertCount; ++i)
                 verts[i] = vertices[i];
             glUnmapBuffer(GL_ARRAY_BUFFER);
+            apply = false;
         }
 
         if (needCreateIndices)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indCount * sizeof(u32), &indices[0], Utils::GetDrawTypeGL(drawType));
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indCount * sizeof(u32), &indices[0], Utils::GetDrawTypeGL(MeshDrawType));
+            needCreateIndices = false;
+            apply = false;
         }
-        else
+        else if (indices != nullptr && apply)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             auto *inds = static_cast<u32*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
             for (u32 i = 0; i < indCount; ++i)
                 inds[i] = indices[i];
             glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+            apply = false;
+        }
+
+        if (isStatic)
+        {
+            delete[] vertices;
+            delete[] indices;
         }
 
         drawData.Count = indCount;
@@ -56,13 +68,32 @@ void Mesh::SubmitData(DrawData &drawData)
     }
 }
 
-Mesh::Mesh(Mesh::Vertex *vertices, u32 vertCount, u32 *indices, u32 indCount, DrawType drawType) :
-    vertices(vertices), vertCount(vertCount), indices(indices), indCount(indCount), drawType(drawType)
-{}
+Mesh::Mesh()
+    : IAsset(true)
+{
+    needCreateVertices = true;
+    needCreateIndices = true;
+    isStatic = false;
+    apply = false;
+}
+
+Mesh::Mesh(Mesh::Vertex *vertices, u32 vertCount, u32 *indices, u32 indCount, DrawType drawType)
+    : IAsset(true), vertices(vertices), vertCount(vertCount), indices(indices), indCount(indCount), MeshDrawType(drawType)
+{
+    needCreateVertices = true;
+    needCreateIndices = true;
+    isStatic = false;
+    apply = false;
+}
 
 Mesh::Mesh(const Mesh &mesh)
- : DrawObject(mesh)
+    : IAsset(true), DrawObject(mesh)
 {
+    needCreateVertices = true;
+    needCreateIndices = true;
+    isStatic = false;
+    apply = false;
+
     vertCount = mesh.vertCount;
     vertices = new Vertex[mesh.vertCount];
     std::copy(mesh.vertices, mesh.vertices + mesh.vertCount, vertices);
@@ -73,7 +104,7 @@ Mesh::Mesh(const Mesh &mesh)
 }
 
 Mesh::Mesh(Mesh &&mesh) noexcept
-    : DrawObject(std::move(mesh))
+    : IAsset(true), DrawObject(std::move(mesh))
 {
     if(this == &mesh)
         return;
@@ -83,6 +114,11 @@ Mesh::Mesh(Mesh &&mesh) noexcept
 
     std::swap(vertCount, mesh.vertCount);
     std::swap(indCount, mesh.indCount);
+
+    needCreateVertices = mesh.needCreateVertices;
+    needCreateIndices = mesh.needCreateIndices;
+    isStatic = mesh.isStatic;
+    apply = mesh.apply;
 }
 
 Mesh::~Mesh()
@@ -198,10 +234,10 @@ void Mesh::createMesh()
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertCount * sizeof(Vertex), &vertices[0], Utils::GetDrawTypeGL(drawType));
+    glBufferData(GL_ARRAY_BUFFER, vertCount * sizeof(Vertex), &vertices[0], Utils::GetDrawTypeGL(MeshDrawType));
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indCount * sizeof(u32), &indices[0], Utils::GetDrawTypeGL(drawType));
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indCount * sizeof(u32), &indices[0], Utils::GetDrawTypeGL(MeshDrawType));
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)nullptr);
@@ -222,27 +258,17 @@ json Mesh::SerializeObj()
 {
     json data;
 
-    data["vertCount"] = vertCount;
-    data["indCount"] = indCount;
-    data["vertices"] = {};
-    data["indices"] = {};
-
-    for(u32 i = 0; i < vertCount; ++i)
+    if (vertices != nullptr && indices != nullptr)
     {
-        data["vertices"].emplace_back(vertices[i].Position.x);
-        data["vertices"].emplace_back(vertices[i].Position.y);
-        data["vertices"].emplace_back(vertices[i].Position.z);
-
-        data["vertices"].emplace_back(vertices[i].Normal.x);
-        data["vertices"].emplace_back(vertices[i].Normal.y);
-        data["vertices"].emplace_back(vertices[i].Normal.z);
-
-        data["vertices"].emplace_back(vertices[i].TexCoords.x);
-        data["vertices"].emplace_back(vertices[i].TexCoords.y);
+        data["vertCount"] = vertCount;
+        data["indCount"] = indCount;
     }
-
-    for(u32 i = 0; i < indCount; ++i)
-        data["indices"].emplace_back(indices[i]);
+    else
+    {
+        data["vertCount"] = 0;
+        data["indCount"] = 0;
+    }
+    data["isStatic"] = (bool)isStatic;
 
     return data;
 }
@@ -251,17 +277,42 @@ void Mesh::UnSerializeObj(const json &j)
 {
     vertCount = j["vertCount"];
     indCount = j["indCount"];
+    isStatic = j["isStatic"].get<bool>();
+}
 
-    vertices = new Vertex[vertCount];
-    indices = new u32[indCount];
-
-    for(u32 i = 0; i < vertCount; ++i)
+void Mesh::SerializeBin(std::ofstream &file)
+{
+    if (vertices != nullptr && indices != nullptr)
     {
-        vertices[i].Position = glm::vec3(j["vertices"][i*8], j["vertices"][i*8 + 1], j["vertices"][i*8 + 2]);
-        vertices[i].Normal = glm::vec3(j["vertices"][i*8 + 3], j["vertices"][i*8 + 4], j["vertices"][i*8 + 5]);
-        vertices[i].TexCoords = glm::vec2(j["vertices"][i*8 + 6], j["vertices"][i*8 + 7]);
+        file.write(reinterpret_cast<char *>(vertices), vertCount * sizeof(Vertex));
+        file.write(reinterpret_cast<char *>(indices), indCount * sizeof(u32));
     }
+}
 
-    for(u32 i = 0; i < indCount; ++i)
-        indices[i] = j["indices"][i];
+void Mesh::UnSerializeBin(std::ifstream &file)
+{
+    if (indCount != 0 && vertCount != 0)
+    {
+        vertices = new Vertex[vertCount];
+        indices = new u32[indCount];
+
+        file.read(reinterpret_cast<char *>(vertices), vertCount * sizeof(Vertex));
+        file.read(reinterpret_cast<char *>(indices), indCount * sizeof(u32));
+    }
+}
+
+void Mesh::Apply() noexcept
+{
+    apply = true;
+}
+
+void Mesh::SetStatic(bool active) noexcept
+{
+    isStatic = active;
+}
+
+void Mesh::Recreate() noexcept
+{
+    needCreateVertices = true;
+    needCreateIndices = true;
 }

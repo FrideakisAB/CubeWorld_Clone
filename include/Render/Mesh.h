@@ -21,19 +21,21 @@ protected:
     void SubmitData(DrawData &drawData) override;
 
 private:
-    DrawType drawType = DrawType::Static;
     Vertex *vertices = nullptr;
     u32 vertCount = 0;
     u32 *indices = nullptr;
     u32 indCount = 0;
     u32 VAO = 0, VBO = 0, EBO = 0;
-    bool needCreateVertices = true;
-    bool needCreateIndices = true;
+    u8 needCreateVertices : 1;
+    u8 needCreateIndices : 1;
+    u8 isStatic : 1;
+    u8 apply : 1;
+    u8 reserved : 4;
 
     void createMesh();
 
 public:
-    Mesh() = default;
+    Mesh();
     Mesh(Vertex *vertices, u32 vertCount, u32 *indices, u32 indCount, DrawType drawType=DrawType::Static);
     Mesh(const Mesh &mesh);
     Mesh(Mesh &&mesh) noexcept;
@@ -50,6 +52,9 @@ public:
     void SetVertices(Vertex *vertices, u32 vertCount) noexcept;
     void SetIndices(u32 *indices, u32 indCount) noexcept;
 
+    [[nodiscard]] bool IsStatic() const noexcept { return isStatic; }
+    void SetStatic(bool active) noexcept;
+
     void CalculateNormals();
 
     [[nodiscard]] size_t GetTypeID() const noexcept override
@@ -59,8 +64,16 @@ public:
 
     [[nodiscard]] IAsset* Clone() const override;
 
+    void Apply() noexcept;
+    void Recreate() noexcept;
+
     [[nodiscard]] json SerializeObj() override;
     void UnSerializeObj(const json& j) override;
+
+    void SerializeBin(std::ofstream &file) override;
+    void UnSerializeBin(std::ifstream &file) override;
+
+    DrawType MeshDrawType = DrawType::Static;
 };
 
 #endif
