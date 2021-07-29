@@ -2,6 +2,7 @@
 
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
+#include "Components/MeshComponent.h"
 
 RenderSystem::RenderSystem()
 {
@@ -22,10 +23,10 @@ void RenderSystem::PreUpdate()
     pointLightSources.reserve(pointLightCount);
     std::vector<Utils::SpotLight> spotLightSources;
     spotLightSources.reserve(spotLightCount);
-    for(auto& lightSource : CM->GetIterator<LightSource>())
+    for (auto& lightSource : CM->GetIterator<LightSource>())
     {
         auto *entity = EM->GetEntity(lightSource.GetOwner());
-        if(entity != nullptr && entity->IsActive() && lightSource.IsActive())
+        if (entity != nullptr && entity->IsActive() && lightSource.IsActive())
         {
             auto *transform = entity->GetComponent<Transform>();
             if (lightSource.GetLightType() == LightType::Point)

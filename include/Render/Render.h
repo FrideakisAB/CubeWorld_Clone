@@ -136,7 +136,7 @@ public:
 };
 
 struct DrawData {
-    Primitive primitive;
+    Primitive Primitive;
     u32 VAO;
     u32 Count;
 };

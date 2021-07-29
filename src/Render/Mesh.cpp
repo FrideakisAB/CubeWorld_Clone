@@ -63,7 +63,7 @@ void Mesh::SubmitData(DrawData &drawData)
     {
         createMesh();
         drawData.VAO = VAO;
-        drawData.primitive = Primitive::Triangles;
+        drawData.Primitive = Primitive::Triangles;
         drawData.Count = indCount;
     }
 }

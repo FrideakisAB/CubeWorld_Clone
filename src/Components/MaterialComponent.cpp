@@ -1,5 +1,7 @@
 #include "Components/MaterialComponent.h"
 
+#include <boost/type_index.hpp>
+
 IAsset *Material::Clone() const
 {
     return new Material(std::cref(*this));
@@ -8,6 +10,8 @@ IAsset *Material::Clone() const
 json Material::SerializeObj()
 {
     json data;
+
+    data["cmpName"] = boost::typeindex::type_id<MaterialComponent>().pretty_name();
 
     data["shader_name"] = Shader;
     data["uniforms_map"] = {};

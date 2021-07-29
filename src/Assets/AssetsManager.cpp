@@ -68,7 +68,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
         return assets[name];
     }
 
-    return AssetsHandle();
+    return {};
 }
 
 bool AssetsManager::SaveAsset(const std::string &name, const fs::path &path)
