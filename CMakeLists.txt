@@ -52,6 +52,7 @@ set(Source
 
 	src/Render/Mesh.cpp
 	src/Render/Render.cpp
+	src/Render/Shader.cpp
 	src/Render/Texture.cpp
 
 	src/Utils/json.cpp

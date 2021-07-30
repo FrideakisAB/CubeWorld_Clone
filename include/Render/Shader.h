@@ -3,47 +3,25 @@
 
 #include "Log.h"
 #include <string>
-#include <sstream>
 #include <glm/glm.hpp>
 #include "Render/GLUtils.h"
+#include "Assets/ISerialize.h"
 #include <glm/gtc/type_ptr.hpp>
 
-class Shader {
+class Shader : public ISerialize {
 private:
     u32 ID;
-    u32 attachments[6]{};
+    u32 attachments[5]{};
+    u32 attachmentCount = 0;
+
+    static void checkCompileErrors(GLuint shader, const std::string& type);
 
 public:
-    Shader()
-    {
-        ID = glCreateProgram();
-        attachments[5] = 0;
-    }
+    Shader();
 
-    void AddShader(GLenum type, const char* source, const std::string& types)
-    {
-        u32 shad = glCreateShader(type);
-        glShaderSource(shad, 1, &source, nullptr);
-        glCompileShader(shad);
-        checkCompileErrors(shad, types);
-        glAttachShader(ID, shad);
-        attachments[attachments[5]] = shad;
-        ++attachments[5];
-    }
-
-    void Build()
-    {
-        glLinkProgram(ID);
-        checkCompileErrors(ID, "Program");
-
-        for (u32 i = 0; i < attachments[5]; ++i)
-            glDeleteShader(attachments[i]);
-    }
-
-    void Use() const
-    {
-        glUseProgram(ID);
-    }
+    void AddShader(GLenum type, const char* source, const std::string& types);
+    void Build();
+    void Use() const;
 
     void SetTexture2D(const std::string &name, uint32_t id, uint32_t num = 0) const
     {
@@ -121,32 +99,8 @@ public:
         checkCompileErrors(ID, "Program");
     }
 
-private:
-    static void checkCompileErrors(GLuint shader, const std::string& type)
-    {
-        GLint success;
-        GLchar infoLog[1024];
-        if(type != "Program")
-        {
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-            if(!success)
-            {
-                glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-                logger->Error(std::string("Shader error: " + type));
-                logger->Error(infoLog);
-            }
-        }
-        else
-        {
-            glGetProgramiv(shader, GL_LINK_STATUS, &success);
-            if(!success)
-            {
-                glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-                logger->Error(std::string("Shader program linking error"));
-                logger->Error(infoLog);
-            }
-        }
-    }
+    json SerializeObj() override;
+    void UnSerializeObj(const json& j) override;
 };
 
 #endif
