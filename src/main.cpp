@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+void error_callback(int error, const char* description);
 void window_focus_callback(GLFWwindow *window, int focused);
 void scroll_callback(GLFWwindow *window, double xOffset, double yOffset);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
@@ -14,8 +15,15 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 {
     logger = new Log();
 
+    glfwSetErrorCallback(error_callback);
+
     if (!glfwInit())
+    {
+        logger->Error("Error, GLFW initialisation failed");
+        delete logger;
+
         return -1;
+    }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
@@ -24,7 +32,13 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     GLFWwindow *glfwWindow = glfwCreateWindow(1280, 720, "Cube World", nullptr, nullptr);
     if (glfwWindow == nullptr)
+    {
+        logger->Error("Error, window creation failed");
+        glfwTerminate();
+        delete logger;
+
         return -2;
+    }
 
     glfwMakeContextCurrent(glfwWindow);
 
@@ -39,16 +53,20 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glfwSwapInterval(0);
 
     glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
+    if (GLenum err = glewInit(); err != GLEW_OK)
     {
+        logger->Error("Error initialize GLEW, may be OpenGL 4.4 not supported. %s", glewGetErrorString(err));
         glfwTerminate();
+        delete logger;
 
         return -3;
     }
 
     if (!GLEW_VERSION_4_4)
     {
+        logger->Error("Error OpenGL 4.4 not supported");
         glfwTerminate();
+        delete logger;
 
         return -4;
     }
@@ -67,6 +85,11 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     delete logger;
 
     return 0;
+}
+
+void error_callback(int error, const char* description)
+{
+    logger->Error("GLFW caused error: %s", description);
 }
 
 void window_focus_callback(GLFWwindow *window, int focused)

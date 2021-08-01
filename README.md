@@ -18,6 +18,7 @@
 * GLM
 * GLEW
 * GLFW
+* boost
 * Catch2
 * assimp
 * stb_image

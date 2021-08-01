@@ -1,6 +1,6 @@
 {
 	"tag": "SHADER",
 	"shaderName": "Test no light",
-	"vertex": "#version 430 core\n\nlayout (location = 0) in vec3 aPos;\nlayout (location = 1) in vec3 aNormal;\nlayout (location = 2) in vec2 aTexCoords;\nuniform mat4 m;\nuniform mat4 vp;\n\nout vec3 FragPos;\nout vec3 Normal;\nout vec2 TexCoords;\n\nvoid main()\n{\nFragPos = vec3(m * vec4(aPos, 1.0));\nNormal = normalize(mat3(transpose(inverse(m))) * aNormal);\nTexCoords = aTexCoords;\n\ngl_Position = vp * vec4(FragPos, 1.0);\n}\n",
-	"fragment": "#version 430 core\n\nin vec3 FragPos;\nin vec3 Normal;\nin vec2 TexCoords;\nout vec4 FragColor;\n\nuniform vec3 main_color = vec3(1.0,1.0,1.0);\n\nvoid main()\n{\nFragColor = vec4(main_color, 1.0);\n}\n"
+	"vertex": "#version 440 core\n\nlayout (location = 0) in vec3 aPos;\nlayout (location = 1) in vec3 aNormal;\nlayout (location = 2) in vec2 aTexCoords;\nuniform mat4 m;\nuniform mat4 vp;\n\nout vec3 FragPos;\nout vec3 Normal;\nout vec2 TexCoords;\n\nvoid main()\n{\nFragPos = vec3(m * vec4(aPos, 1.0));\nNormal = normalize(mat3(transpose(inverse(m))) * aNormal);\nTexCoords = aTexCoords;\n\ngl_Position = vp * vec4(FragPos, 1.0);\n}\n",
+	"fragment": "#version 440 core\n\nin vec3 FragPos;\nin vec3 Normal;\nin vec2 TexCoords;\nout vec4 FragColor;\n\nuniform vec3 main_color = vec3(1.0,1.0,1.0);\n\nvoid main()\n{\nFragColor = vec4(main_color, 1.0);\n}\n"
 }

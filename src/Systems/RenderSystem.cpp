@@ -2,10 +2,12 @@
 
 #include <fstream>
 #include <filesystem>
-namespace fs = std::filesystem;
+#include "Render/Texture.h"
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
+
+namespace fs = std::filesystem;
 
 RenderSystem::RenderSystem()
 {
@@ -99,6 +101,26 @@ void RenderSystem::PreUpdate()
         spotLightPos = static_cast<u16>(spotLightSources.size());
         spotLights.UploadData(spotLightCount, spotLightSources.data());
     }
+
+    for (auto& mesh : CM->GetIterator<MeshComponent>())
+    {
+        auto *entity = EM->GetEntity(mesh.GetOwner());
+        if (entity != nullptr && entity->IsActive() && mesh.IsActive() && mesh.IsValid())
+        {
+            auto *materialComponent = entity->GetComponent<MaterialComponent>();
+            if (materialComponent != nullptr && materialComponent->IsActive())
+            {
+                mesh.GetMesh().RenderUpdate();
+
+                Material *material = materialComponent->GetMaterial();
+
+                if (materialTranslation.find(material) == materialTranslation.end())
+                    importMaterial(material);
+
+                renderObjects[material->Shader][material].push_back(mesh.GetMesh().GetDrawData());
+            }
+        }
+    }
 }
 
 void RenderSystem::Update()
@@ -108,5 +130,22 @@ void RenderSystem::Update()
 
 void RenderSystem::PostUpdate()
 {
+    renderObjects.clear();
+    materialTranslation.clear();
+}
 
+void RenderSystem::importMaterial(Material *material)
+{
+    MaterialSet materialSet{};
+
+    materialSet.Uniforms = material->Uniforms;
+
+    for (const auto &[name, texture] : material->Samplers)
+        if (auto *texPtr = dynamic_cast<Texture *>(texture.get()))
+        {
+            texPtr->RenderUpdate();
+            materialSet.Samplers[name] = texPtr->GetDrawData();
+        }
+
+    materialTranslation[material] = std::move(materialSet);
 }
