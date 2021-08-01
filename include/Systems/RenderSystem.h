@@ -6,10 +6,12 @@
 #include "ECS/ECS.h"
 #include <functional>
 #include "Render/SSBO.h"
+#include "Render/Shader.h"
 #include "Render/GLUtils.h"
 
 class RenderSystem : public ECS::System<RenderSystem> {
 private:
+    std::unordered_map<std::string, Shader> shaders;
     std::vector<std::function<void()>> deletedHandles;
     Utils::DirectionLight directionLight;
     SSBO<Utils::PointLight> pointLights;

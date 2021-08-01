@@ -30,8 +30,8 @@ namespace ECS::util {
             static constexpr size_t NUM_INDEX_BITS{index_bits};
 
             static constexpr value_type MIN_VERSION{0};
-            static constexpr value_type MAX_VERSION{(1U << NUM_VERSION_BITS) - 2U};
-            static constexpr value_type MAX_INDICES{(1U << NUM_INDEX_BITS) - 2U};
+            static constexpr value_type MAX_VERSION{(value_type(1) << NUM_VERSION_BITS) - value_type(2)};
+            static constexpr value_type MAX_INDICES{(value_type(1) << NUM_INDEX_BITS) - value_type(2)};
 
             static constexpr value_type INVALID_HANDLE{std::numeric_limits<value_type>::max()};
 

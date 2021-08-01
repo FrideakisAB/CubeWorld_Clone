@@ -1,12 +1,28 @@
 #include "Systems/RenderSystem.h"
 
+#include <fstream>
+#include <filesystem>
+namespace fs = std::filesystem;
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
 
 RenderSystem::RenderSystem()
 {
+    for (auto &entry : fs::recursive_directory_iterator("data\\shaders"))
+    {
+        std::error_code ec;
+        if (!entry.is_directory(ec) && !ec && entry.path().extension() == ".json")
+        {
+            json j = json_utils::TryParse(Utils::FileToString(std::ifstream(entry.path())));
 
+            if (j["tag"] == "SHADER")
+            {
+                shaders[j["shaderName"]] = Shader();
+                shaders[j["shaderName"]].UnSerializeObj(j);
+            }
+        }
+    }
 }
 
 RenderSystem::~RenderSystem()

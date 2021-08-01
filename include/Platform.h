@@ -43,8 +43,9 @@ using uptr = uintptr_t;
 using ObjectID = size_t;
 using TypeID = size_t;
 
-static const ObjectID INVALID_OBJECT_ID = std::numeric_limits<ObjectID>::max();
-static const TypeID INVALID_TYPE_ID = std::numeric_limits<TypeID>::max();
+#undef max
+static constexpr const ObjectID INVALID_OBJECT_ID = std::numeric_limits<ObjectID>::max();
+static constexpr const TypeID INVALID_TYPE_ID = std::numeric_limits<TypeID>::max();
 
 union TimeStamp {
     f32 asFloat;

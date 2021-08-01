@@ -5,24 +5,38 @@ Shader::Shader()
     ID = glCreateProgram();
 }
 
-void Shader::AddShader(GLenum type, const char* source, const std::string& types)
+Shader::~Shader()
 {
-    u32 shad = glCreateShader(type);
-    glShaderSource(shad, 1, &source, nullptr);
-    glCompileShader(shad);
-    checkCompileErrors(shad, types);
-    glAttachShader(ID, shad);
-    attachments[attachmentCount] = shad;
-    ++attachmentCount;
+    glDeleteProgram(ID);
 }
 
-void Shader::Build()
+bool Shader::AddShader(GLenum type, const char *source, const std::string &types)
+{
+    if (attachmentCount < 5)
+    {
+        u32 shad = glCreateShader(type);
+        glShaderSource(shad, 1, &source, nullptr);
+        glCompileShader(shad);
+        bool isCompile = checkCompileErrors(shad, types);
+        glAttachShader(ID, shad);
+        attachments[attachmentCount] = shad;
+        ++attachmentCount;
+
+        return isCompile;
+    }
+
+    return false;
+}
+
+bool Shader::Build()
 {
     glLinkProgram(ID);
-    checkCompileErrors(ID, "Program");
+    bool result = checkCompileErrors(ID, "Program");
 
     for (u32 i = 0; i < attachmentCount; ++i)
         glDeleteShader(attachments[i]);
+
+    return result;
 }
 
 void Shader::Use() const
@@ -30,7 +44,7 @@ void Shader::Use() const
     glUseProgram(ID);
 }
 
-void Shader::checkCompileErrors(GLuint shader, const std::string& type)
+bool Shader::checkCompileErrors(GLuint shader, const std::string &type)
 {
     GLint success;
     GLchar infoLog[1024];
@@ -42,6 +56,8 @@ void Shader::checkCompileErrors(GLuint shader, const std::string& type)
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
             logger->Error(std::string("Shader error: " + type));
             logger->Error(infoLog);
+
+            return false;
         }
     }
     else
@@ -52,16 +68,30 @@ void Shader::checkCompileErrors(GLuint shader, const std::string& type)
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
             logger->Error(std::string("Shader program linking error"));
             logger->Error(infoLog);
+
+            return false;
         }
     }
+
+    return true;
 }
 
 json Shader::SerializeObj()
 {
-    return ISerialize::SerializeObj();
+    return {};
 }
 
 void Shader::UnSerializeObj(const json &j)
 {
-    ISerialize::UnSerializeObj(j);
+    std::string name = j["shaderName"];
+    AddShader(GL_VERTEX_SHADER, j["vertex"].get<std::string>().c_str(), name + " vertex");
+    AddShader(GL_FRAGMENT_SHADER, j["fragment"].get<std::string>().c_str(), name + " fragment");
+    if (j.contains("geometry"))
+        AddShader(GL_GEOMETRY_SHADER, j["geometry"].get<std::string>().c_str(), name + " geometry");
+    if (j.contains("tessEval"))
+        AddShader(GL_TESS_EVALUATION_SHADER, j["tessEval"].get<std::string>().c_str(), name + " tess eval");
+    if (j.contains("tessControl"))
+        AddShader(GL_TESS_CONTROL_SHADER, j["tessControl"].get<std::string>().c_str(), name + " tess control");
+
+    Build();
 }

@@ -14,13 +14,14 @@ private:
     u32 attachments[5]{};
     u32 attachmentCount = 0;
 
-    static void checkCompileErrors(GLuint shader, const std::string& type);
+    static bool checkCompileErrors(GLuint shader, const std::string &type);
 
 public:
     Shader();
+    ~Shader();
 
-    void AddShader(GLenum type, const char* source, const std::string& types);
-    void Build();
+    bool AddShader(GLenum type, const char *source, const std::string &types);
+    bool Build();
     void Use() const;
 
     void SetTexture2D(const std::string &name, uint32_t id, uint32_t num = 0) const
@@ -54,6 +55,7 @@ public:
     {
         glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
+
     void SetVec2(const std::string &name, float x, float y) const
     {
         glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
@@ -63,6 +65,7 @@ public:
     {
         glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
+
     void SetVec3(const std::string &name, float x, float y, float z) const
     {
         glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
@@ -72,6 +75,7 @@ public:
     {
         glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
+
     void SetVec4(const std::string &name, float x, float y, float z, float w) const
     {
         glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
@@ -92,7 +96,7 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
 
-    void SetTransformFeedbackVaryings(char** names, u32 count, GLenum type=GL_INTERLEAVED_ATTRIBS) const
+    void SetTransformFeedbackVaryings(char **names, u32 count, GLenum type = GL_INTERLEAVED_ATTRIBS) const
     {
         glTransformFeedbackVaryings(ID, count, names, type);
         glLinkProgram(ID);
@@ -100,7 +104,7 @@ public:
     }
 
     json SerializeObj() override;
-    void UnSerializeObj(const json& j) override;
+    void UnSerializeObj(const json &j) override;
 };
 
 #endif
