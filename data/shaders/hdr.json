@@ -1,0 +1,6 @@
+{
+    "fragment": "#version 440 core\n\nin vec2 TextureCoordinates;\n\nuniform sampler2D hdrBuffer;\nuniform float exposure;\n\nout vec4 fragColor;\n\nvoid main()\n{\n    vec3 color = texture(hdrBuffer, TextureCoordinates).rgb;\n    vec3 result = vec3(1.0) - exp(-color * exposure);\n\n    // Expand it\n    const float gamma = 2.2;\n    result = pow(result, vec3(1.0 / gamma));\n    fragColor = vec4(result, 1.0);\n}",
+    "shaderName": "HDR",
+    "tag": "SHADER",
+    "vertex": "#version 440 core\n\nlayout(location = 0) in vec3 position;\nlayout(location = 1) in vec2 textureCoordinates;\n\nout vec2 TextureCoordinates;\n\nvoid main()\n{\n    gl_Position = vec4(position, 1.0);\n    TextureCoordinates = textureCoordinates;\n}"
+}

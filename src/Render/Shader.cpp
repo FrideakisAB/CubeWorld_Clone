@@ -84,14 +84,18 @@ json Shader::SerializeObj()
 void Shader::UnSerializeObj(const json &j)
 {
     std::string name = j["shaderName"];
-    AddShader(GL_VERTEX_SHADER, j["vertex"].get<std::string>().c_str(), name + " vertex");
-    AddShader(GL_FRAGMENT_SHADER, j["fragment"].get<std::string>().c_str(), name + " fragment");
+    if (j.contains("vertex"))
+        AddShader(GL_VERTEX_SHADER, j["vertex"].get<std::string>().c_str(), name + " vertex");
+    if (j.contains("fragment"))
+        AddShader(GL_FRAGMENT_SHADER, j["fragment"].get<std::string>().c_str(), name + " fragment");
     if (j.contains("geometry"))
         AddShader(GL_GEOMETRY_SHADER, j["geometry"].get<std::string>().c_str(), name + " geometry");
     if (j.contains("tessEval"))
         AddShader(GL_TESS_EVALUATION_SHADER, j["tessEval"].get<std::string>().c_str(), name + " tess eval");
     if (j.contains("tessControl"))
         AddShader(GL_TESS_CONTROL_SHADER, j["tessControl"].get<std::string>().c_str(), name + " tess control");
+    if (j.contains("compute"))
+        AddShader(GL_COMPUTE_SHADER, j["compute"].get<std::string>().c_str(), name + " compute");
 
     Build();
 }
