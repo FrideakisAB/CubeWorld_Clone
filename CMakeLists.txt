@@ -43,6 +43,7 @@ endif()
 
 set(Source
 	src/Log.cpp
+	src/Engine.cpp
 
 	src/Assets/AssetsManager.cpp
 

@@ -1,8 +1,10 @@
 #include "Log.h"
+#include "Engine.h"
 #include <exception>
 #include <windows.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include "Systems/RenderSystem.h"
 
 void error_callback(int error, const char* description);
 void window_focus_callback(GLFWwindow *window, int focused);
@@ -71,6 +73,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         return -4;
     }
 
+    GameEngine = new Engine();
+
     while (!glfwWindowShouldClose(glfwWindow))
     {
         glfwPollEvents();
@@ -78,9 +82,17 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
+        GameEngine->GetRenderSystem().PreUpdate();
+        //Render only, remove it
+        GameEngine->Update();
+        GameEngine->GetRenderSystem().Update();
+
         glfwSwapBuffers(glfwWindow);
+
+        GameEngine->GetRenderSystem().PostUpdate();
     }
 
+    delete GameEngine;
     glfwTerminate();
     delete logger;
 

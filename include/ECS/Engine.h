@@ -60,11 +60,11 @@ namespace ECS {
         ECSEngine();
         ~ECSEngine();
 
-        [[nodiscard]] inline EntityManager *GetEntityManager() const { return ECS_EntityManager; }
-        [[nodiscard]] inline ComponentManager *GetComponentManager() const { return ECS_ComponentManager; }
-        [[nodiscard]] inline SystemManager *GetSystemManager() const { return ECS_SystemManager; }
-        [[nodiscard]] inline ComponentFactory *GetComponentFactory() const { return ECS_ComponentFactory; }
-        [[nodiscard]] inline util::Timer *GetTimer() const { return ECS_EngineTime; }
+        [[nodiscard]] inline EntityManager *GetEntityManager() const noexcept { return ECS_EntityManager; }
+        [[nodiscard]] inline ComponentManager *GetComponentManager() const noexcept { return ECS_ComponentManager; }
+        [[nodiscard]] inline SystemManager *GetSystemManager() const noexcept { return ECS_SystemManager; }
+        [[nodiscard]] inline ComponentFactory *GetComponentFactory() const noexcept { return ECS_ComponentFactory; }
+        [[nodiscard]] inline util::Timer *GetTimer() const noexcept { return ECS_EngineTime; }
 
         template<class E, class... ARGS>
         void SendEvent(ARGS&&... eventArgs)

@@ -5,12 +5,12 @@
 namespace Memory {
     MemoryManager *sMemoryManager;
 
-    void InitializeMemory()
+    void InitializeMemoryManager()
     {
         sMemoryManager = new MemoryManager();
     }
 
-    void TerminateMemory()
+    void TerminateMemoryManager()
     {
         sMemoryManager->CheckMemoryLeaks();
         delete sMemoryManager;

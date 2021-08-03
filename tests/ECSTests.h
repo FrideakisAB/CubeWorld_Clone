@@ -7,7 +7,7 @@
 TEST_CASE("Test work Entity subsystem", "[Entity]")
 {
     logger = new Log();
-    Memory::InitializeMemory();
+    Memory::InitializeMemoryManager();
     ECS::Initialize();
 
     struct manyEntity : ECS::Entity<manyEntity> {
@@ -125,6 +125,6 @@ TEST_CASE("Test work Entity subsystem", "[Entity]")
     }
 
     ECS::Terminate();
-    Memory::TerminateMemory();
+    Memory::TerminateMemoryManager();
     delete logger;
 }

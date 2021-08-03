@@ -9,8 +9,8 @@ namespace Memory {
 
     extern MemoryManager *sMemoryManager;
 
-    void InitializeMemory();
-    void TerminateMemory();
+    void InitializeMemoryManager();
+    void TerminateMemoryManager();
 }
 
 namespace Memory {
