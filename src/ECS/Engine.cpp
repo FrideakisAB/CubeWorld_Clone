@@ -13,51 +13,51 @@
 namespace ECS {
     ECSEngine::ECSEngine()
     {
-        ECS_EngineTime = new util::Timer();
-        ECS_EventHandler = new Event::EventHandler();
-        ECS_SystemManager = new SystemManager();
-        ECS_ComponentManager = new ComponentManager();
-        ECS_EntityManager = new EntityManager(this->ECS_ComponentManager);
-        ECS_ComponentFactory = new ComponentFactory();
+        engineTime = new util::Timer();
+        eventHandler = new Event::EventHandler();
+        systemManager = new SystemManager();
+        componentManager = new ComponentManager();
+        entityManager = new EntityManager(this->componentManager);
+        componentFactory = new ComponentFactory();
     }
 
     ECSEngine::~ECSEngine()
     {
-        delete ECS_EntityManager;
-        ECS_EntityManager = nullptr;
+        delete entityManager;
+        entityManager = nullptr;
 
-        delete ECS_EngineTime;
-        ECS_EngineTime = nullptr;
+        delete engineTime;
+        engineTime = nullptr;
 
-        delete ECS_ComponentManager;
-        ECS_ComponentManager = nullptr;
+        delete componentManager;
+        componentManager = nullptr;
 
-        delete ECS_SystemManager;
-        ECS_SystemManager = nullptr;
+        delete systemManager;
+        systemManager = nullptr;
 
-        delete ECS_EventHandler;
-        ECS_EventHandler = nullptr;
+        delete eventHandler;
+        eventHandler = nullptr;
 
-        delete ECS_ComponentFactory;
-        ECS_ComponentFactory = nullptr;
+        delete componentFactory;
+        componentFactory = nullptr;
     }
 
     void ECSEngine::Update()
     {
-        ECS_EntityManager->RemoveDestroyedEntities();
+        entityManager->RemoveDestroyedEntities();
 
-        ECS_EngineTime->Tick();
-        ECS_SystemManager->Update();
-        ECS_EventHandler->DispatchEvents();
+        engineTime->Tick();
+        systemManager->Update();
+        eventHandler->DispatchEvents();
     }
 
     void ECSEngine::RemoveDestroyedEntities()
     {
-        ECS_EntityManager->RemoveDestroyedEntities();
+        entityManager->RemoveDestroyedEntities();
     }
 
     void ECSEngine::UnsubscribeEvent(Event::Internal::IEventDelegate *eventDelegate)
     {
-        ECS_EventHandler->RemoveEventCallback(eventDelegate);
+        eventHandler->RemoveEventCallback(eventDelegate);
     }
 }
