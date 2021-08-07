@@ -143,9 +143,9 @@ struct DrawData {
 using DrawObject = RenderObject<DrawData>;
 
 struct SamplerData {
+    u64 Handle;
     TexType TextureType;
     TexDataType TextureDataType;
-    u64 Handle;
 };
 using SamplerObject = RenderObject<SamplerData>;
 

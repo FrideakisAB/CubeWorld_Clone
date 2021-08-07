@@ -47,34 +47,37 @@ void RenderSystem::PreUpdate()
         if (entity != nullptr && entity->IsActive() && lightSource.IsActive())
         {
             auto *transform = entity->GetComponent<Transform>();
-            if (lightSource.GetLightType() == LightType::Point)
+            if (transform != nullptr && transform->IsActive())
             {
-                Utils::PointLight light;
-                light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
-                auto position = glm::vec3(transform->GetMat()[3]);
-                light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
+                if (lightSource.GetLightType() == LightType::Point)
+                {
+                    Utils::PointLight light;
+                    light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
+                    auto position = glm::vec3(transform->GetMat()[3]);
+                    light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
 
-                pointLightSources.emplace_back(light);
-            }
-            else if (lightSource.GetLightType() == LightType::Spot)
-            {
-                Utils::SpotLight light;
-                light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
-                auto position = glm::vec3(transform->GetMat()[3]);
-                light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
-                glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
-                light.directionAndCutterAngle = glm::vec4(direction, lightSource.GetCutterOff());
+                    pointLightSources.emplace_back(light);
+                }
+                else if (lightSource.GetLightType() == LightType::Spot)
+                {
+                    Utils::SpotLight light;
+                    light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
+                    auto position = glm::vec3(transform->GetMat()[3]);
+                    light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
+                    glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
+                    light.directionAndCutterAngle = glm::vec4(direction, lightSource.GetCutterOff());
 
-                spotLightSources.emplace_back(light);
-            }
-            else
-            {
-                directionLight.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
-                glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
-                directionLight.direction = glm::vec4(direction, 1.0f);
-            }
+                    spotLightSources.emplace_back(light);
+                }
+                else
+                {
+                    directionLight.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
+                    glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
+                    directionLight.direction = glm::vec4(direction, 1.0f);
+                }
 
-            lightSource.ReleaseUpdate();
+                lightSource.ReleaseUpdate();
+            }
         }
     }
 
@@ -108,7 +111,8 @@ void RenderSystem::PreUpdate()
         if (entity != nullptr && entity->IsActive() && mesh.IsActive() && mesh.IsValid())
         {
             auto *materialComponent = entity->GetComponent<MaterialComponent>();
-            if (materialComponent != nullptr && materialComponent->IsActive())
+            auto *transform = entity->GetComponent<Transform>();
+            if (materialComponent != nullptr && materialComponent->IsActive() && transform != nullptr && transform->IsActive())
             {
                 mesh.GetMesh().RenderUpdate();
 
@@ -117,7 +121,8 @@ void RenderSystem::PreUpdate()
                 if (materialTranslation.find(material) == materialTranslation.end())
                     importMaterial(material);
 
-                renderObjects[material->Shader][material].push_back(mesh.GetMesh().GetDrawData());
+                renderTasks.push_back({mesh.GetMesh().GetDrawData(), transform->GetMat()});
+                renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
             }
         }
     }

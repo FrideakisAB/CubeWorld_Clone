@@ -17,12 +17,17 @@ class RenderSystem : public ECS::System<RenderSystem> {
         std::map<std::string, SamplerData> Samplers;
     };
 
-    using RenderTask = DrawData;
-    using MaterialMap = std::map<Material*, std::vector<RenderTask>>;
+    struct RenderTask {
+        DrawData DrawData;
+        glm::mat4 Transform;
+    };
+
+    using MaterialMap = std::map<Material*, std::vector<size_t>>;
 
 private:
     std::unordered_map<Material*, MaterialSet> materialTranslation;
     std::map<std::string, MaterialMap> renderObjects;
+    std::vector<RenderTask> renderTasks;
 
     std::unordered_map<std::string, Shader> shaders;
     std::vector<std::function<void()>> deletedHandles;
