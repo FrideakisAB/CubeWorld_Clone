@@ -6,11 +6,14 @@
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
+#include "Render/ForwardPlusPipeline.h"
 
 namespace fs = std::filesystem;
 
 RenderSystem::RenderSystem()
 {
+    renderPipeline = new ForwardPlusPipeline();
+
     for (auto &entry : fs::recursive_directory_iterator("data\\shaders"))
     {
         std::error_code ec;
@@ -29,7 +32,7 @@ RenderSystem::RenderSystem()
 
 RenderSystem::~RenderSystem()
 {
-
+    delete renderPipeline;
 }
 
 void RenderSystem::PreUpdate()
@@ -71,9 +74,12 @@ void RenderSystem::PreUpdate()
                 }
                 else
                 {
-                    directionLight.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
+                    Utils::DirectionLight light;
+                    light.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
                     glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
-                    directionLight.direction = glm::vec4(direction, 1.0f);
+                    light.direction = glm::vec4(direction, 1.0f);
+
+                    directionLight = light;
                 }
 
                 lightSource.ReleaseUpdate();
@@ -130,11 +136,22 @@ void RenderSystem::PreUpdate()
 
 void RenderSystem::Update()
 {
+    renderPipeline->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
+    renderPipeline->ApplyMaterials(materialTranslation);
+    renderPipeline->ApplyTasks(renderObjects, renderTasks);
 
+    renderPipeline->Render();
+
+    if (sizeUpdate)
+    {
+        renderPipeline->Resize(offsetX, offsetY, width, height);
+        sizeUpdate = false;
+    }
 }
 
 void RenderSystem::PostUpdate()
 {
+    renderPipeline->Release();
     renderObjects.clear();
     materialTranslation.clear();
 }
@@ -153,4 +170,31 @@ void RenderSystem::importMaterial(Material *material)
         }
 
     materialTranslation[material] = std::move(materialSet);
+}
+
+void RenderSystem::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height) noexcept
+{
+    if (this->offsetX != offsetX)
+    {
+        this->offsetX = offsetX;
+        sizeUpdate = true;
+    }
+
+    if (this->offsetY != offsetY)
+    {
+        this->offsetY = offsetY;
+        sizeUpdate = true;
+    }
+
+    if (this->width != width)
+    {
+        this->width = width;
+        sizeUpdate = true;
+    }
+
+    if (this->height != height)
+    {
+        this->height = height;
+        sizeUpdate = true;
+    }
 }

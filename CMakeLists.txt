@@ -58,6 +58,7 @@ set(Source
 	src/Render/Render.cpp
 	src/Render/Shader.cpp
 	src/Render/Texture.cpp
+	src/Render/ForwardPlusPipeline.cpp
 
 	src/Utils/json.cpp
 	src/Utils/ShaderPackager.cpp
