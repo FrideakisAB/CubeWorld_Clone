@@ -31,6 +31,11 @@ public:
         SetUInt(name, num);
     }
 
+    void SetTextureHandle(const std::string &name, u64 handle) const
+    {
+        glUniform2uiv(glGetUniformLocation(ID, name.c_str()), 8*2, (const GLuint *)handle);
+    }
+
     void SetBool(const std::string &name, bool value) const
     {
         glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);

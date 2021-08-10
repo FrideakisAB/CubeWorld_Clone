@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include "Render/Texture.h"
+#include "Components/Camera.h"
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
@@ -28,6 +29,8 @@ RenderSystem::RenderSystem()
             }
         }
     }
+
+    renderPipeline->ApplyShaders(shaders);
 }
 
 RenderSystem::~RenderSystem()
@@ -136,17 +139,20 @@ void RenderSystem::PreUpdate()
 
 void RenderSystem::Update()
 {
-    renderPipeline->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
-    renderPipeline->ApplyMaterials(materialTranslation);
-    renderPipeline->ApplyTasks(renderObjects, renderTasks);
-
-    if (sizeUpdate)
+    if (Camera::Main != nullptr)
     {
-        renderPipeline->Resize(offsetX, offsetY, width, height);
-        sizeUpdate = false;
-    }
+        renderPipeline->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
+        renderPipeline->ApplyMaterials(materialTranslation);
+        renderPipeline->ApplyTasks(renderObjects, renderTasks);
 
-    renderPipeline->Render();
+        if (sizeUpdate)
+        {
+            renderPipeline->Resize(offsetX, offsetY, width, height);
+            sizeUpdate = false;
+        }
+
+        renderPipeline->Render();
+    }
 }
 
 void RenderSystem::PostUpdate()

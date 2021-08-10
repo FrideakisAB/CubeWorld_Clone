@@ -35,7 +35,7 @@ layout(std430, binding = 3) readonly buffer SpotVisibleLightIndicesBuffer {
 	VisibleIndex data[];
 } spotVisibleLightIndicesBuffer;
 
-uniform sampler2D texture_diffuse;
+uniform vec3 color_diffuse;
 uniform vec3 viewPos;
 uniform float main_specular;
 uniform float ambient = 0.08;
@@ -59,7 +59,7 @@ void main()
 	ivec2 tileID = location / ivec2(16, 16);
 	uint index = tileID.y * numberOfTilesX + tileID.x;
 
-	vec4 base_diffuse = texture(texture_diffuse, TexCoords);
+	vec4 base_diffuse = vec4(color_diffuse, 1.0);
     vec3 normal = normalize(Normal);
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
     vec3 viewDirection = normalize(viewPos - FragPos);

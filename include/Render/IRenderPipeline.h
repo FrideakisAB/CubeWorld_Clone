@@ -18,6 +18,11 @@ public:
         static_cast<Pipeline*>(this)->ApplyMaterials(materialTranslation);
     }
 
+    void ApplyShaders(std::unordered_map<std::string, Shader> &shaders)
+    {
+        static_cast<Pipeline*>(this)->ApplyShaders(shaders);
+    }
+
     void ApplyLights(std::optional<DirectionLight> directionLight, SSBO<PointLight> &pointLights, u16 pointLightPos, SSBO<SpotLight> &spotLights, u16 spotLightPos)
     {
         static_cast<Pipeline*>(this)->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
