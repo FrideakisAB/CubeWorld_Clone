@@ -23,14 +23,16 @@ RenderSystem::RenderSystem()
             json j = json_utils::TryParse(Utils::FileToString(std::ifstream(entry.path())));
 
             if (j["tag"] == "SHADER")
-            {
-                shaders[j["shaderName"]] = Shader();
                 shaders[j["shaderName"]].UnSerializeObj(j);
-            }
         }
     }
 
     renderPipeline->ApplyShaders(shaders);
+
+    pointLights.UploadData(1);
+    pointLightCount = 1;
+    spotLights.UploadData(1);
+    spotLightCount = 1;
 }
 
 RenderSystem::~RenderSystem()
@@ -159,6 +161,7 @@ void RenderSystem::PostUpdate()
 {
     renderPipeline->Release();
     renderObjects.clear();
+    renderTasks.clear();
     materialTranslation.clear();
 }
 

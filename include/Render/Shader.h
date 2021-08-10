@@ -61,6 +61,11 @@ public:
         glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
 
+    void SetIVec2(const std::string &name, const glm::ivec2 &value) const
+    {
+        glUniform2iv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+    }
+
     void SetVec2(const std::string &name, float x, float y) const
     {
         glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);

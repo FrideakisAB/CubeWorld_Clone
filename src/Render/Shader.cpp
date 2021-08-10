@@ -19,8 +19,7 @@ bool Shader::AddShader(GLenum type, const char *source, const std::string &types
         glCompileShader(shad);
         bool isCompile = checkCompileErrors(shad, types);
         glAttachShader(ID, shad);
-        attachments[attachmentCount] = shad;
-        ++attachmentCount;
+        attachments[attachmentCount++] = shad;
 
         return isCompile;
     }

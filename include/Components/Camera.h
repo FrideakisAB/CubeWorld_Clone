@@ -12,7 +12,7 @@ enum class Projection {
 class Camera : public ECS::Component<Camera> {
 public:
     static Camera* Main;
-    float Fov = 45.0f;
+    float Fov = 60.0f;
     float Ratio = 1.5f;
     float NearClip = 0.1f;
     float FarClip = 100.0f;

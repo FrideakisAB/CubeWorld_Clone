@@ -1,6 +1,7 @@
 #include "Render/ForwardPlusPipeline.h"
 
 #include "Components/Camera.h"
+#include "Components/Transform.h"
 
 ForwardPlusPipeline::ForwardPlusPipeline()
 : pointIndices(1024 * 64 * 48), spotIndices(1024 * 64 * 48)
@@ -27,7 +28,7 @@ ForwardPlusPipeline::ForwardPlusPipeline()
 
     glGenTextures(1, &colorBuffer);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1024, 768, 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1024, 768, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -82,10 +83,11 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     pointIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16));
     spotIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16));
@@ -96,6 +98,7 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     this->height = height;
 
     glViewport(offsetX, offsetY, width, height);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 }
 
 void ForwardPlusPipeline::Render()
@@ -118,6 +121,8 @@ void ForwardPlusPipeline::Render()
     // Light culling stage
     Shader &pointLightCulling = (*shaders)["PointLightCulling"];
     pointLightCulling.Use();
+    pointLightCulling.SetIVec2("screenSize", glm::ivec2(width, height));
+    pointLightCulling.SetInt("lightCount", pointLightPos);
     pointLightCulling.SetMat4("projection", Camera::Main->GetProjMatrix(width, height));
     pointLightCulling.SetMat4("view", Camera::Main->GetViewMatrix());
 
@@ -132,6 +137,8 @@ void ForwardPlusPipeline::Render()
 
     Shader &spotLightCulling = (*shaders)["SpotLightCulling"];
     spotLightCulling.Use();
+    pointLightCulling.SetIVec2("screenSize", glm::ivec2(width, height));
+    pointLightCulling.SetInt("lightCount", spotLightPos);
     spotLightCulling.SetMat4("projection", Camera::Main->GetProjMatrix(width, height));
     spotLightCulling.SetMat4("view", Camera::Main->GetViewMatrix());
 
@@ -148,11 +155,24 @@ void ForwardPlusPipeline::Render()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Render opaque stage
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    pointLights->Bind(0);
+    spotLights->Bind(1);
+
+    pointIndices.Bind(2);
+    spotIndices.Bind(3);
+
+    glm::vec3 cameraPosition = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
+
     for (const auto &[name, materialMap] : *renderObjects)
     {
         Shader &shader = (*shaders)[name];
         shader.Use();
-        depth.SetMat4("vp", Camera::Main->GetVPMatrix(width, height));
+        shader.SetMat4("vp", Camera::Main->GetVPMatrix(width, height));
+        shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
+        shader.SetVec3("viewPos", cameraPosition);
 
         for (const auto &[materialPtr, taskIDs] : materialMap)
         {
@@ -161,7 +181,7 @@ void ForwardPlusPipeline::Render()
             {
                 RenderSystem::RenderTask &renderTask = (*renderTasks)[id];
 
-                depth.SetMat4("model", renderTask.Transform);
+                shader.SetMat4("model", renderTask.Transform);
                 glBindVertexArray(renderTask.DrawData.VAO);
                 glDrawElements(Utils::GetDrawModeGL(renderTask.DrawData.Mode), renderTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
             }
@@ -169,6 +189,7 @@ void ForwardPlusPipeline::Render()
     }
 
     // HDR stage
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Shader &hdr = (*shaders)["HDR"];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
     hdr.Use();

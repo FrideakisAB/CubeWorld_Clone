@@ -73,6 +73,10 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         return -4;
     }
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glEnable(GL_CULL_FACE);
+
     GameEngine = new Engine();
 
     while (!glfwWindowShouldClose(glfwWindow))
