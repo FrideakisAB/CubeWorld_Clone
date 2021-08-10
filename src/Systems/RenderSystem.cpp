@@ -140,13 +140,13 @@ void RenderSystem::Update()
     renderPipeline->ApplyMaterials(materialTranslation);
     renderPipeline->ApplyTasks(renderObjects, renderTasks);
 
-    renderPipeline->Render();
-
     if (sizeUpdate)
     {
         renderPipeline->Resize(offsetX, offsetY, width, height);
         sizeUpdate = false;
     }
+
+    renderPipeline->Render();
 }
 
 void RenderSystem::PostUpdate()

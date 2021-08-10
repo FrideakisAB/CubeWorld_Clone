@@ -32,7 +32,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow *glfwWindow = glfwCreateWindow(1280, 720, "Cube World", nullptr, nullptr);
+    GLFWwindow *glfwWindow = glfwCreateWindow(1024, 768, "Cube World", nullptr, nullptr);
     if (glfwWindow == nullptr)
     {
         logger->Error("Error, window creation failed");
@@ -82,6 +82,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
+        GameEngine->GetRenderSystem().Resize(0, 0, width, height);
         GameEngine->GetRenderSystem().PreUpdate();
         //Render only, remove it
         GameEngine->Update();

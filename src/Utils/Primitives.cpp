@@ -2,8 +2,6 @@
 
 #include "Log.h"
 #include <array>
-#include <vector>
-#include <algorithm>
 #include "Render/Mesh.h"
 
 Mesh *Utils::CreatePlane(u32 xVertices, u32 yVertices)
@@ -160,7 +158,7 @@ Mesh *Utils::CreateSphere(u32 detail)
             }
         }
     }
-    
+
     auto *mesh = new Mesh(vert, (detail + 1) * (detail + 1), ind, indSize);
     mesh->Apply();
 

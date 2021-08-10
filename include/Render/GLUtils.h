@@ -20,9 +20,9 @@ namespace Utils {
         glm::vec4 directionAndCutterAngle;
     };
 
-    constexpr unsigned int GetPrimitiveGL(Primitive prim) noexcept
+    constexpr u32 GetPrimitiveGL(Primitive prim) noexcept
     {
-        unsigned int primGL = 0;
+        u32 primGL = 0;
         switch(prim)
         {
         case Primitive::Triangles:
@@ -45,9 +45,9 @@ namespace Utils {
         return primGL;
     }
 
-    constexpr unsigned int GetDrawTypeGL(DrawType dt) noexcept
+    constexpr u32 GetDrawTypeGL(DrawType dt) noexcept
     {
-        unsigned int dtGL = 0;
+        u32 dtGL = 0;
         switch(dt)
         {
         case DrawType::Static:
@@ -70,9 +70,69 @@ namespace Utils {
         return dtGL;
     }
 
-    constexpr unsigned int GetValueTypeGL(ValueType vt) noexcept
+    constexpr u32 GetDrawModeGL(DrawMode dm) noexcept
     {
-        unsigned int vtGL = 0;
+        u32 dmGL = 0;
+        switch(dm)
+        {
+        case DrawMode::Points:
+            dmGL = GL_POINTS;
+            break;
+
+        case DrawMode::LineStrip:
+            dmGL = GL_LINE_STRIP;
+            break;
+
+        case DrawMode::LineLoop:
+            dmGL = GL_LINE_LOOP;
+            break;
+
+        case DrawMode::Lines:
+            dmGL = GL_LINES;
+            break;
+
+        case DrawMode::LineStripAdjacency:
+            dmGL = GL_LINE_STRIP_ADJACENCY;
+            break;
+
+        case DrawMode::LinesAdjacency:
+            dmGL = GL_LINES_ADJACENCY;
+            break;
+
+        case DrawMode::TriangleStrip:
+            dmGL = GL_TRIANGLE_STRIP;
+            break;
+
+        case DrawMode::TriangleFan:
+            dmGL = GL_TRIANGLE_FAN;
+            break;
+
+        case DrawMode::Triangles:
+            dmGL = GL_TRIANGLES;
+            break;
+
+        case DrawMode::TriangleStripAdjacency:
+            dmGL = GL_TRIANGLE_STRIP_ADJACENCY;
+            break;
+
+        case DrawMode::TrianglesAdjacency:
+            dmGL = GL_TRIANGLES_ADJACENCY;
+            break;
+
+        case DrawMode::Patches:
+            dmGL = GL_PATCHES;
+            break;
+
+        default:
+            dmGL = 0;
+        }
+
+        return dmGL;
+    }
+
+    constexpr u32 GetValueTypeGL(ValueType vt) noexcept
+    {
+        u32 vtGL = 0;
         switch(vt)
         {
         case ValueType::Byte:
@@ -119,9 +179,9 @@ namespace Utils {
         return vtGL;
     }
 
-    constexpr unsigned int GetTextDataTypeGL(TexDataType tdt) noexcept
+    constexpr u32 GetTextDataTypeGL(TexDataType tdt) noexcept
     {
-        unsigned int ttGL = 0;
+        u32 ttGL = 0;
         switch(tdt)
         {
         case TexDataType::R:
@@ -188,9 +248,9 @@ namespace Utils {
         return ttGL;
     }
 
-    constexpr unsigned int GetWrapTypeGL(WrapType wt) noexcept
+    constexpr u32 GetWrapTypeGL(WrapType wt) noexcept
     {
-        unsigned int wtGL = 0;
+        u32 wtGL = 0;
         switch(wt)
         {
         case WrapType::Repeat:
@@ -217,9 +277,9 @@ namespace Utils {
         return wtGL;
     }
 
-    constexpr unsigned int GetFilteringGL(Filtering fg) noexcept
+    constexpr u32 GetFilteringGL(Filtering fg) noexcept
     {
-        unsigned int fgGL = 0;
+        u32 fgGL = 0;
         switch(fg)
         {
         case Filtering::Nearest:
@@ -237,6 +297,8 @@ namespace Utils {
 
         return fgGL;
     }
+
+    void DrawQuad();
 }
 
 #endif

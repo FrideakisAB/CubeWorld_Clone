@@ -17,6 +17,21 @@ enum class DrawType {
     Stream
 };
 
+enum class DrawMode {
+    Points = 0,
+    LineStrip,
+    LineLoop,
+    Lines,
+    LineStripAdjacency,
+    LinesAdjacency,
+    TriangleStrip,
+    TriangleFan,
+    Triangles,
+    TriangleStripAdjacency,
+    TrianglesAdjacency,
+    Patches
+};
+
 enum class ValueType {
     Byte = 0,
     UByte,
@@ -136,9 +151,10 @@ public:
 };
 
 struct DrawData {
-    Primitive Primitive;
     u32 VAO;
     u32 Count;
+    Primitive Primitive;
+    DrawMode Mode;
 };
 using DrawObject = RenderObject<DrawData>;
 

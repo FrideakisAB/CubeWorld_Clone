@@ -63,6 +63,7 @@ void Mesh::SubmitData(DrawData &drawData)
     {
         createMesh();
         drawData.VAO = VAO;
+        drawData.Mode = DrawMode::TriangleStrip;
         drawData.Primitive = Primitive::Triangles;
         drawData.Count = indCount;
     }
