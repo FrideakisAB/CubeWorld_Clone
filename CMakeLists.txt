@@ -61,6 +61,7 @@ set(Source
 	src/Render/ForwardPlusPipeline.cpp
 
 	src/Utils/json.cpp
+	src/Utils/Primitives.cpp
 	src/Utils/ShaderPackager.cpp
 
 	src/ECS/API.cpp
