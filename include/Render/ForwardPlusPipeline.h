@@ -11,6 +11,10 @@ private:
     u32 pingPongBuffers[2];
     u32 blurAmount = 10;
 
+    u16 shaderMapEdgeSize = 1024;
+
+    u32 dirDepthMapFBO, dirDepthMap;
+
     u16 offsetX = 0, offsetY = 0;
     u16 width = 0, height = 0;
 
@@ -27,6 +31,7 @@ private:
     u16 pointLightPos, spotLightPos;
 
     void setupMaterial(Shader &shader, Material *material);
+    void initShadows();
 
 public:
     ForwardPlusPipeline();

@@ -6,6 +6,7 @@ layout (location = 2) in vec2 aTexCoords;
 
 uniform mat4 model;
 uniform mat4 vp;
+uniform mat4 lightSpaceMatrix;
 
 out vec3 FragPos;
 out vec3 Normal;

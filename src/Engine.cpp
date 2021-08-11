@@ -48,10 +48,10 @@ Engine::Engine()
     mesh->SetMesh(Utils::CreateSphere(32));
 
     auto *light = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    pos.position.y = 10;
+    pos.rotate = glm::radians(glm::vec3(-45.0f, 0.0f, 0.0f));
     light->AddComponent<Transform>()->SetLocalPos(pos);
-    auto *lightSource = light->AddComponent<LightSource>();
-    lightSource->SetLightType(LightType::Point);
-    lightSource->SetRadius(100);
+    light->AddComponent<LightSource>()->SetIntensity(0.5);
 
     auto *cube = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
     pos = cube->AddComponent<Transform>()->GetLocalPos();
@@ -79,7 +79,7 @@ Engine::Engine()
     materialComponent = plane->AddComponent<MaterialComponent>();
     pos.position.x = -10;
     pos.position.y = -8;
-    pos.position.z = 21;
+    pos.position.z = 24;
     pos.scale = glm::vec3(10.0f);
     pos.rotate = glm::radians(glm::vec3(-90.0f, 0.0f, 0.0f));
     plane->GetComponent<Transform>()->SetLocalPos(pos);

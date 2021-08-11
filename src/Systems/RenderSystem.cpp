@@ -80,6 +80,8 @@ void RenderSystem::PreUpdate()
                 else
                 {
                     Utils::DirectionLight light;
+                    auto position = glm::vec3(transform->GetMat()[3]);
+                    light.position = glm::vec4(position, 1.0f);
                     light.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
                     glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
                     light.direction = glm::vec4(direction, 1.0f);

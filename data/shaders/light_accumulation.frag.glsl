@@ -1,10 +1,12 @@
 #version 440 core
 
+in vec4 FragPosLightSpace;
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
 struct DirectionLight {
+    vec4 position;
     vec4 color;
     vec4 direction;
 };
@@ -40,6 +42,7 @@ layout(std430, binding = 3) readonly buffer SpotVisibleLightIndicesBuffer {
 	VisibleIndex data[];
 } spotVisibleLightIndicesBuffer;
 
+uniform sampler2D shadowMap;
 uniform DirectionLight dirLight;
 uniform vec3 color_diffuse;
 uniform vec3 viewPos;
@@ -58,6 +61,40 @@ float attenuate(vec3 lightDirection, float radius)
 	attenuation = (attenuation - cutoff) / (1.0 - cutoff);
 
 	return clamp(attenuation, 0.0, 1.0);
+}
+
+float ShadowCalculation(vec4 fragPosLightSpace, vec4 lightPos)
+{
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = normalize(Normal);
+    vec3 lightDir = normalize(lightPos.xyz - FragPos);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    // PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+    
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return shadow;
 }
 
 void main()
@@ -81,7 +118,7 @@ void main()
 		if (diffuse == 0.0)
 			specular = 0.0;
 
-		vec3 irradiance = dirLight.color.rgb * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular));
+		vec3 irradiance = dirLight.color.rgb * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * dirLight.color.w;
 		color.rgb += irradiance;
     }
 
@@ -139,7 +176,9 @@ void main()
 		vec3 irradiance = lightColor * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * attenuation;
 		color.rgb += irradiance;
 	}
-
+        
+    float shadow = ShadowCalculation(FragPosLightSpace, dirLight.position);
+    color.rgb = (1.0 - shadow) * color.rgb;
 	color.rgb += base_diffuse.rgb * ambient;
 
 	if (base_diffuse.a <= 0.2)
