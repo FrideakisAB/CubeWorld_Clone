@@ -2,6 +2,8 @@
 
 [![C/C++ CI](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml)
 
+![Illustration](https://github.com/FrideakisAB/CubeWorld_Clone/blob/main/Sample.png)
+
 Проект по созданию копии **печально** известной игры Cube World.
 
 ## Поддерживаемые платформы
