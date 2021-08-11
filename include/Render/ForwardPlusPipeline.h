@@ -6,7 +6,10 @@
 class ForwardPlusPipeline : public IRenderPipeline<ForwardPlusPipeline> {
 private:
     u32 depthMapFBO, depthMap;
-    u32 hdrFBO, colorBuffer, rboDepth;
+    u32 hdrFBO, rboDepth, colorBuffers[2];
+    u32 pingPongFBO[2];
+    u32 pingPongBuffers[2];
+    u32 blurAmount = 10;
 
     u16 offsetX = 0, offsetY = 0;
     u16 width = 0, height = 0;

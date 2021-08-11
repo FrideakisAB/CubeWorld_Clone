@@ -24,28 +24,50 @@ ForwardPlusPipeline::ForwardPlusPipeline()
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glGenFramebuffers(1, &hdrFBO);
+    glGenFramebuffers(2, pingPongFBO);
+    glGenTextures(2, pingPongBuffers);
+    for (u32 i = 0; i < 2; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingPongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingPongBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1024, 768, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingPongBuffers[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glGenTextures(1, &colorBuffer);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 1024, 768, 0, GL_RGBA, GL_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glGenFramebuffers(1, &hdrFBO);
+    glGenTextures(2, colorBuffers);
+    for (u32 colorBuffer : colorBuffers)
+    {
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1024, 768, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
 
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
 
     glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+    for (u32 i = 0; i < 2; ++i)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+    u32 attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 ForwardPlusPipeline::~ForwardPlusPipeline()
 {
-    u32 texs[] = { depthMap, colorBuffer };
-    glDeleteTextures(2, texs);
+    u32 texs[] = { depthMap, colorBuffers[0], colorBuffers[1] };
+    glDeleteTextures(3, texs);
 
     glDeleteRenderbuffers(1, &rboDepth);
 
@@ -82,8 +104,16 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
 {
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    for (u32 colorBuffer : colorBuffers)
+    {
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
+    for (u32 pingPongBuffer : pingPongBuffers)
+    {
+        glBindTexture(GL_TEXTURE_2D, pingPongBuffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+    }
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -98,7 +128,7 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     this->height = height;
 
     glViewport(offsetX, offsetY, width, height);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
 void ForwardPlusPipeline::Render()
@@ -188,13 +218,33 @@ void ForwardPlusPipeline::Render()
         }
     }
 
+    // Bloom blur stage
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    bool horizontal = true, first_iteration = true;
+    Shader &blur = (*shaders)["Blur"];
+    blur.Use();
+    for (u32 i = 0; i < blurAmount; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingPongFBO[horizontal]);
+        blur.SetInt("horizontal", horizontal);
+        glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingPongBuffers[!horizontal]);
+        Utils::DrawQuad();
+        horizontal = !horizontal;
+        if (first_iteration)
+            first_iteration = false;
+    }
+
     // HDR stage
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Shader &hdr = (*shaders)["HDR"];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
     hdr.Use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+    hdr.SetInt("hdrBuffer", 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, pingPongBuffers[!horizontal]);
+    hdr.SetInt("bloomBlur", 1);
     //TODO: add exposure change
     hdr.SetFloat("exposure", 1.0f);
     Utils::DrawQuad();

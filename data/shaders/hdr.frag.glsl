@@ -3,6 +3,7 @@
 in vec2 TextureCoordinates;
 
 uniform sampler2D hdrBuffer;
+uniform sampler2D bloomBlur;
 uniform float exposure;
 
 out vec4 fragColor;
@@ -10,6 +11,7 @@ out vec4 fragColor;
 void main()
 {
     vec3 color = texture(hdrBuffer, TextureCoordinates).rgb;
+    color += texture(bloomBlur, TextureCoordinates).rgb;
     vec3 result = vec3(1.0) - exp(-color * exposure);
 
     // Expand it

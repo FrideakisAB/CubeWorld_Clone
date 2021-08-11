@@ -1,0 +1,6 @@
+{
+    "fragment": "#version 440 core\n\nin vec3 FragPos;\nin vec3 Normal;\nin vec2 TexCoords;\n\nuniform vec3 lightColor;\nuniform vec3 viewPos;\nuniform float ambient = 0.08;\nuniform int numberOfTilesX;\n\nlayout (location = 0) out vec4 fragColor;\nlayout (location = 1) out vec4 brightColor;\n\nvoid main()\n{\n\tfragColor = vec4(lightColor, 1.0);\n    float brightness = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));\n    if(brightness > 1.0)\n        brightColor = vec4(fragColor.rgb, 1.0);\n\telse\n\t\tbrightColor = vec4(0.0, 0.0, 0.0, 1.0);\n}",
+    "shaderName": "LightBloom",
+    "tag": "SHADER",
+    "vertex": "#version 440 core\n\nlayout (location = 0) in vec3 aPos;\nlayout (location = 1) in vec3 aNormal;\nlayout (location = 2) in vec2 aTexCoords;\n\nuniform mat4 model;\nuniform mat4 vp;\n\nout vec3 FragPos;\nout vec3 Normal;\nout vec2 TexCoords;\n\nvoid main()\n{\n    FragPos = vec3(model * vec4(aPos, 1.0));\n    Normal = normalize(mat3(transpose(inverse(model))) * aNormal);  \n    TexCoords = aTexCoords;\n\n    gl_Position = vp * vec4(FragPos, 1.0);\n}"
+}

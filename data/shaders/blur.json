@@ -1,0 +1,6 @@
+{
+    "fragment": "#version 440 core\n\nout vec4 fragColor;\n\nin vec2 TextureCoordinates;\n\nuniform sampler2D image;\n\nuniform bool horizontal;\nuniform float weight[5] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);\n\nvoid main()\n{             \n     vec2 tex_offset = 1.0 / textureSize(image, 0);\n     vec3 result = texture(image, TextureCoordinates).rgb * weight[0];\n     if(horizontal)\n     {\n         for(int i = 1; i < 5; ++i)\n         {\n            result += texture(image, TextureCoordinates + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];\n            result += texture(image, TextureCoordinates - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];\n         }\n     }\n     else\n     {\n         for(int i = 1; i < 5; ++i)\n         {\n             result += texture(image, TextureCoordinates + vec2(0.0, tex_offset.y * i)).rgb * weight[i];\n             result += texture(image, TextureCoordinates - vec2(0.0, tex_offset.y * i)).rgb * weight[i];\n         }\n     }\n     fragColor = vec4(result, 1.0);\n}",
+    "shaderName": "Blur",
+    "tag": "SHADER",
+    "vertex": "#version 440 core\n\nlayout(location = 0) in vec3 position;\nlayout(location = 1) in vec2 textureCoordinates;\n\nout vec2 TextureCoordinates;\n\nvoid main()\n{\n    gl_Position = vec4(position, 1.0);\n    TextureCoordinates = textureCoordinates;\n}"
+}
