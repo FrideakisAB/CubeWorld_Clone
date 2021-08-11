@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "Systems/RenderSystem.h"
+#include "ECS/util/Timer.h"
 
 void error_callback(int error, const char* description);
 void window_focus_callback(GLFWwindow *window, int focused);
@@ -79,12 +80,23 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     GameEngine = new Engine();
 
+    f32 accumulateTime = 0;
+
     while (!glfwWindowShouldClose(glfwWindow))
     {
         glfwPollEvents();
 
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
+
+        accumulateTime += ECS::ECS_Engine->GetTimer()->GetDeltaTime();
+
+        if (accumulateTime >= 0.75f)
+        {
+            std::string title = std::string("Cube World - ") + std::to_string((int)(1.0f / ECS::ECS_Engine->GetTimer()->GetDeltaTime())) + " FPS";
+            glfwSetWindowTitle(glfwWindow, title.c_str());
+            accumulateTime = 0.0f;
+        }
 
         GameEngine->GetRenderSystem().Resize(0, 0, width, height);
         GameEngine->GetRenderSystem().PreUpdate();

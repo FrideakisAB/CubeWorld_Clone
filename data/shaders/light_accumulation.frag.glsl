@@ -4,6 +4,11 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
+struct DirectionLight {
+    vec4 color;
+    vec4 direction;
+};
+
 struct PointLight {
     vec4 positionAndIntensity;
     vec4 colorAndRadius;
@@ -35,6 +40,7 @@ layout(std430, binding = 3) readonly buffer SpotVisibleLightIndicesBuffer {
 	VisibleIndex data[];
 } spotVisibleLightIndicesBuffer;
 
+uniform DirectionLight dirLight;
 uniform vec3 color_diffuse;
 uniform vec3 viewPos;
 uniform float main_specular;
@@ -64,6 +70,20 @@ void main()
     vec3 normal = normalize(Normal);
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
     vec3 viewDirection = normalize(viewPos - FragPos);
+    
+    {
+		vec3 lightDirection = normalize(-dirLight.direction.xyz);
+		vec3 halfway = normalize(lightDirection + viewDirection);
+
+		float diffuse = max(dot(lightDirection, normal), 0.0);
+		float specular = pow(max(dot(normal, halfway), 0.0), 32.0);
+
+		if (diffuse == 0.0)
+			specular = 0.0;
+
+		vec3 irradiance = dirLight.color.rgb * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular));
+		color.rgb += irradiance;
+    }
 
 	uint offset = index * 1024;
 	for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; ++i)

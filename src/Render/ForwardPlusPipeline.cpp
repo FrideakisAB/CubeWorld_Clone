@@ -204,6 +204,12 @@ void ForwardPlusPipeline::Render()
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
         shader.SetVec3("viewPos", cameraPosition);
 
+        if (directionLight)
+        {
+            shader.SetVec4("dirLight.color", directionLight.value().colorAndIntensity);
+            shader.SetVec4("dirLight.direction", directionLight.value().direction);
+        }
+
         for (const auto &[materialPtr, taskIDs] : materialMap)
         {
             setupMaterial(shader, materialPtr);

@@ -4,10 +4,16 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
+struct DirectionLight {
+    vec4 color;
+    vec4 direction;
+};
+
 uniform vec3 lightColor;
 uniform vec3 viewPos;
 uniform float ambient = 0.08;
 uniform int numberOfTilesX;
+uniform DirectionLight dirLight;
 
 layout (location = 0) out vec4 fragColor;
 layout (location = 1) out vec4 brightColor;
