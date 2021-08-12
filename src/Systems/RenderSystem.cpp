@@ -28,6 +28,7 @@ RenderSystem::RenderSystem()
     }
 
     renderPipeline->ApplyShaders(shaders);
+    renderPipeline->ApplyLightSources(pointLightSources, spotLightSources);
 
     pointLights.UploadData(1);
     pointLightCount = 1;
@@ -45,9 +46,7 @@ void RenderSystem::PreUpdate()
     auto *CM = ECS::ECS_Engine->GetComponentManager();
     auto *EM = ECS::ECS_Engine->GetEntityManager();
 
-    std::vector<Utils::PointLight> pointLightSources;
     pointLightSources.reserve(pointLightCount);
-    std::vector<Utils::SpotLight> spotLightSources;
     spotLightSources.reserve(spotLightCount);
     for (auto& lightSource : CM->GetIterator<LightSource>())
     {
@@ -165,6 +164,8 @@ void RenderSystem::PostUpdate()
     renderObjects.clear();
     renderTasks.clear();
     materialTranslation.clear();
+    pointLightSources.clear();
+    spotLightSources.clear();
 }
 
 void RenderSystem::importMaterial(Material *material)

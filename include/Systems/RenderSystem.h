@@ -40,6 +40,8 @@ private:
     std::optional<Utils::DirectionLight> directionLight;
     SSBO<Utils::PointLight> pointLights;
     SSBO<Utils::SpotLight> spotLights;
+    std::vector<Utils::PointLight> pointLightSources;
+    std::vector<Utils::SpotLight> spotLightSources;
     u16 pointLightCount = 0;
     u16 pointLightPos = 0;
     u16 spotLightCount = 0;

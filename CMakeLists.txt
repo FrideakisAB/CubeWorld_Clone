@@ -59,6 +59,7 @@ set(Source
 	src/Render/Shader.cpp
 	src/Render/Texture.cpp
 	src/Render/GLUtils.cpp
+	src/Render/ShadowsManager.cpp
 	src/Render/ForwardPlusPipeline.cpp
 
 	src/Utils/json.cpp

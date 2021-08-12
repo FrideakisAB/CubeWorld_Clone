@@ -1,5 +1,6 @@
 #include "Render/ForwardPlusPipeline.h"
 
+#include <array>
 #include "Components/Camera.h"
 #include "Components/Transform.h"
 
@@ -62,8 +63,6 @@ ForwardPlusPipeline::ForwardPlusPipeline()
     u32 attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    initShadows();
 }
 
 ForwardPlusPipeline::~ForwardPlusPipeline()
@@ -102,6 +101,12 @@ void ForwardPlusPipeline::ApplyLights(std::optional<DirectionLight> directionLig
     this->spotLightPos = spotLightPos;
 }
 
+void ForwardPlusPipeline::ApplyLightSources(std::vector<Utils::PointLight> &pointLightSources, std::vector<Utils::SpotLight> &spotLightSources)
+{
+    this->pointLightSources = &pointLightSources;
+    this->spotLightSources = &spotLightSources;
+}
+
 void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height)
 {
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -135,30 +140,17 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
 
 void ForwardPlusPipeline::Render()
 {
-    // Direction light shadow stage
-    Shader &depth = (*shaders)["Depth"];
-    depth.Use();
+    glm::vec3 cameraPosition = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
 
-    if (directionLight)
-    {
-        glm::mat4 vp = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
-        vp *= glm::lookAt(glm::vec3(directionLight.value().position), glm::vec3(directionLight.value().position) + glm::vec3(directionLight.value().direction), glm::vec3(0.0, 1.0, 0.0));
-        depth.SetMat4("vp", vp);
-
-        glViewport(0, 0, shaderMapEdgeSize, shaderMapEdgeSize);
-        glBindFramebuffer(GL_FRAMEBUFFER, dirDepthMapFBO);
-        glClear(GL_DEPTH_BUFFER_BIT);
-        for (const auto &rTask : *renderTasks)
-        {
-            depth.SetMat4("model", rTask.Transform);
-            glBindVertexArray(rTask.DrawData.VAO);
-            glDrawElements(Utils::GetDrawModeGL(rTask.DrawData.Mode), rTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
-        }
-    }
+    // Shadows stage
+    shadowsManager.ApplyLightSources(directionLight, *pointLightSources, *spotLightSources);
+    shadowsManager.Render(cameraPosition, *shaders, *renderTasks);
 
     glViewport(offsetX, offsetY, width, height);
 
     // Depth stage
+    Shader &depth = (*shaders)["Depth"];
+    depth.Use();
     depth.SetMat4("vp", Camera::Main->GetVPMatrix(width, height));
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -217,18 +209,13 @@ void ForwardPlusPipeline::Render()
     pointIndices.Bind(2);
     spotIndices.Bind(3);
 
-    glm::vec3 cameraPosition = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
-
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, dirDepthMap);
+    glBindTexture(GL_TEXTURE_2D, shadowsManager.GetDirectionDepthMap());
 
     glm::mat4 camVP = Camera::Main->GetVPMatrix(width, height);
     glm::mat4 dirVP;
     if (directionLight)
-    {
-        dirVP = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 50.0f);
-        dirVP *= glm::lookAt(glm::vec3(directionLight.value().position), glm::vec3(directionLight.value().position) + glm::vec3(directionLight.value().direction), glm::vec3(0.0, 1.0, 0.0));
-    }
+        dirVP = shadowsManager.GetDirectionVP();
     else
         dirVP = camVP;
 
@@ -351,25 +338,4 @@ void ForwardPlusPipeline::setupMaterial(Shader &shader, Material *material)
 
     for (const auto &sampler : materialSet.Samplers)
         shader.SetTextureHandle(sampler.first, sampler.second.Handle);
-}
-
-void ForwardPlusPipeline::initShadows()
-{
-    glGenFramebuffers(1, &dirDepthMapFBO);
-    glGenTextures(1, &dirDepthMap);
-    glBindTexture(GL_TEXTURE_2D, dirDepthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shaderMapEdgeSize, shaderMapEdgeSize, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    float borderColor[] = { 1.0, 1.0, 1.0, 1.0 };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, dirDepthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, dirDepthMap, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

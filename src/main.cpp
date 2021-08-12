@@ -100,7 +100,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
         GameEngine->GetRenderSystem().Resize(0, 0, width, height);
         GameEngine->GetRenderSystem().PreUpdate();
-        //Render only, remove it
+        // Render only, remove it
         GameEngine->Update();
         GameEngine->GetRenderSystem().Update();
 

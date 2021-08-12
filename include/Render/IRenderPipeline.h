@@ -28,6 +28,11 @@ public:
         static_cast<Pipeline*>(this)->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
     }
 
+    void ApplyLightSources(std::vector<Utils::PointLight> &pointLightSources, std::vector<Utils::SpotLight> &spotLightSources)
+    {
+        static_cast<Pipeline*>(this)->ApplyLightSources(pointLightSources, spotLightSources);
+    }
+
     void Resize(u16 offsetX, u16 offsetY, u16 width, u16 height)
     {
         static_cast<Pipeline*>(this)->Resize(offsetX, offsetY, width, height);
