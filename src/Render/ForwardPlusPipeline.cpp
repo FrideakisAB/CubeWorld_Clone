@@ -208,9 +208,16 @@ void ForwardPlusPipeline::Render()
 
     pointIndices.Bind(2);
     spotIndices.Bind(3);
+    shadowsManager.GetPointPositions().Bind(4);
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, shadowsManager.GetDirectionDepthMap());
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointHighDepthMap());
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointMediumDepthMap());
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointLowDepthMap());
 
     glm::mat4 camVP = Camera::Main->GetVPMatrix(width, height);
     glm::mat4 dirVP;
@@ -223,8 +230,15 @@ void ForwardPlusPipeline::Render()
     {
         Shader &shader = (*shaders)[name];
         shader.Use();
-        shader.SetMat4("vp", camVP);
+
         shader.SetMat4("lightSpaceMatrix", dirVP);
+        shader.SetInt("dirShadowMap", 2);
+        shader.SetUVec3("pointShadowsCount", shadowsManager.GetPointCount());
+        shader.SetInt("pointHighShadowMap", 3);
+        shader.SetInt("pointMediumShadowMap", 4);
+        shader.SetInt("pointLowShadowMap", 5);
+
+        shader.SetMat4("vp", camVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
         shader.SetVec3("viewPos", cameraPosition);
 
@@ -251,6 +265,7 @@ void ForwardPlusPipeline::Render()
 
     // Bloom blur stage
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glActiveTexture(GL_TEXTURE0);
     bool horizontal = true, first_iteration = true;
     Shader &blur = (*shaders)["Blur"];
     blur.Use();

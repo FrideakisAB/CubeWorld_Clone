@@ -1,6 +1,6 @@
 {
     "fragment": "#version 440 core\n\nin vec4 fragPos;\n\nuniform vec3 lightPos;\nuniform float far_plane;\n\nvoid main()\n{\n    float lightDistance = length(fragPos.xyz - lightPos);\n    \n    lightDistance = lightDistance / far_plane;\n    \n    gl_FragDepth = lightDistance;\n}",
-    "geometry": "#version 440 core\n\nlayout (triangles) in;\nlayout (triangle_strip, max_vertices=18) out;\n\nuniform mat4 shadowMatrices[6];\n\nout vec4 fragPos;\n\nvoid main()\n{\n    for(int face = 0; face < 6; ++face)\n    {\n        gl_Layer = face;\n        for(int i = 0; i < 3; ++i)\n        {\n            fragPos = gl_in[i].gl_Position;\n            gl_Position = shadowMatrices[face] * fragPos;\n            EmitVertex();\n        }    \n        EndPrimitive();\n    }\n}",
+    "geometry": "#version 440 core\n\nlayout (triangles) in;\nlayout (triangle_strip, max_vertices=18) out;\n\nuniform mat4 shadowMatrices[6];\nuniform int layer;\n\nout vec4 fragPos;\n\nvoid main()\n{\n    for(int face = 0; face < 6; ++face)\n    {\n        gl_Layer = layer * 6 + face;\n        for(int i = 0; i < 3; ++i)\n        {\n            fragPos = gl_in[i].gl_Position;\n            gl_Position = shadowMatrices[face] * fragPos;\n            EmitVertex();\n        }    \n        EndPrimitive();\n    }\n}",
     "shaderName": "PointDepth",
     "tag": "SHADER",
     "vertex": "#version 440 core\n\nlayout(location = 0) in vec3 position;\n\nuniform mat4 model;\n\nvoid main()\n{\n    gl_Position = model * vec4(position, 1.0);\n}"

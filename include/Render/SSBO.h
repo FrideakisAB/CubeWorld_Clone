@@ -48,7 +48,7 @@ public:
     void Open()
     {
         glBindBuffer(buffType, buffId);
-        data = glMapBuffer(buffType, GL_READ_WRITE);
+        data = (T*)glMapBuffer(buffType, GL_READ_WRITE);
     }
 
     void Close()
