@@ -7,6 +7,7 @@
 class ForwardPlusPipeline : public IRenderPipeline<ForwardPlusPipeline> {
 private:
     u32 depthMapFBO, depthMap;
+    u32 skyboxVAO, skyboxVBO;
     u32 hdrFBO, rboDepth, colorBuffers[2];
     u32 pingPongFBO[2];
     u32 pingPongBuffers[2];

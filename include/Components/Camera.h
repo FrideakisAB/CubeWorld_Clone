@@ -3,6 +3,8 @@
 
 #include "ECS/ECS.h"
 #include "Utils/glm.h"
+#include "Render/Texture.h"
+#include "Assets/AssetsManager.h"
 
 enum class Projection {
     Perspective = 0,
@@ -10,6 +12,10 @@ enum class Projection {
 };
 
 class Camera : public ECS::Component<Camera> {
+private:
+    AssetsHandle skyboxHandle;
+    Texture *skybox = nullptr;
+
 public:
     static Camera* Main;
     float Fov = 60.0f;
@@ -21,6 +27,14 @@ public:
     [[nodiscard]] glm::mat4 GetVPMatrix(u32 width, u32 height) const;
     [[nodiscard]] glm::mat4 GetViewMatrix() const;
     [[nodiscard]] glm::mat4 GetProjMatrix(u32 width, u32 height) const;
+
+    [[nodiscard]] bool IsValidSkybox() const noexcept { return skybox != nullptr; }
+
+    void SetSkybox(Texture *skybox);
+    void SetSkybox(const AssetsHandle &skybox);
+
+    inline AssetsHandle& GetAsset() { return skyboxHandle; }
+    [[nodiscard]] Texture &GetSkybox() const noexcept { return *skybox; }
 };
 
 #endif

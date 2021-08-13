@@ -39,7 +39,7 @@ public:
     {
         if(auto *meshPtr = dynamic_cast<Mesh *>(newMesh.get()))
         {
-            this->meshHandle = newMesh;
+            meshHandle = newMesh;
             mesh = meshPtr;
         }
         else

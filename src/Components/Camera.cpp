@@ -67,3 +67,31 @@ glm::mat4 Camera::GetProjMatrix(u32 width, u32 height) const
     else
         return glm::ortho(0.0f, Ratio * (float)width/(float)height, 0.0f, Ratio * (float)height/(float)height, NearClip, FarClip);
 }
+
+void Camera::SetSkybox(const AssetsHandle &skybox)
+{
+    if(auto *skyboxPtr = dynamic_cast<Texture*>(skybox.get()))
+    {
+        skyboxHandle = skybox;
+        this->skybox = skyboxPtr;
+    }
+    else
+    {
+        skyboxHandle = {};
+        this->skybox = nullptr;
+    }
+}
+
+void Camera::SetSkybox(Texture *skybox)
+{
+    if (skybox != nullptr)
+    {
+        skyboxHandle = AssetsHandle(skybox);
+        this->skybox = skybox;
+    }
+    else
+    {
+        skyboxHandle = {};
+        this->skybox = nullptr;
+    }
+}

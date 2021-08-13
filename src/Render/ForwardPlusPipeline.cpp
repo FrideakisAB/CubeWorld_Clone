@@ -63,6 +63,58 @@ ForwardPlusPipeline::ForwardPlusPipeline()
     u32 attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, attachments);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    float skyboxVertices[] = {
+            -1.0f,  1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f,
+            -1.0f, -1.0f,  1.0f,
+
+            -1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f, -1.0f,
+            1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f,  1.0f,
+            -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f,  1.0f,
+            1.0f, -1.0f,  1.0f
+    };
+
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 }
 
 ForwardPlusPipeline::~ForwardPlusPipeline()
@@ -141,6 +193,7 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
 void ForwardPlusPipeline::Render()
 {
     glm::vec3 cameraPosition = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
+    glm::mat4 mainVP = Camera::Main->GetVPMatrix(width, height);
 
     // Shadows stage
     shadowsManager.ApplyLightSources(directionLight, *pointLightSources, *spotLightSources);
@@ -151,7 +204,7 @@ void ForwardPlusPipeline::Render()
     // Depth stage
     Shader &depth = (*shaders)["Depth"];
     depth.Use();
-    depth.SetMat4("vp", Camera::Main->GetVPMatrix(width, height));
+    depth.SetMat4("vp", mainVP);
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -211,8 +264,6 @@ void ForwardPlusPipeline::Render()
 
     shadowsManager.AttachShadowsData();
 
-    glm::mat4 camVP = Camera::Main->GetVPMatrix(width, height);
-
     for (const auto &[name, materialMap] : *renderObjects)
     {
         Shader &shader = (*shaders)[name];
@@ -220,7 +271,7 @@ void ForwardPlusPipeline::Render()
 
         shadowsManager.SetUniforms(shader);
 
-        shader.SetMat4("vp", camVP);
+        shader.SetMat4("vp", mainVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
         shader.SetVec3("viewPos", cameraPosition);
 
@@ -243,6 +294,23 @@ void ForwardPlusPipeline::Render()
                 glDrawElements(Utils::GetDrawModeGL(renderTask.DrawData.Mode), renderTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
             }
         }
+    }
+
+    // Render skybox
+    if (Camera::Main->IsValidSkybox() && Camera::Main->GetSkybox().GetDrawData().TextureType == TexType::TextureCube)
+    {
+        glDepthFunc(GL_LEQUAL);
+        Shader &skyboxShader = (*shaders)["Skybox"];
+        skyboxShader.Use();
+        skyboxShader.SetInt("skybox", 2);
+        glm::mat4 view = glm::mat4(glm::mat3(Camera::Main->GetViewMatrix()));
+        skyboxShader.SetMat4("vp", Camera::Main->GetProjMatrix(width, height) * view);
+
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, Camera::Main->GetSkybox().GetDrawData().Handle);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
     }
 
     // Bloom blur stage
