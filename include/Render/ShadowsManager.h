@@ -3,6 +3,12 @@
 
 #include "Render/IRenderPipeline.h"
 
+struct SpotShadowData {
+    glm::vec4 positionAndFarPlane;
+    glm::vec4 directionAndCutterAngle;
+    glm::mat4 vp;
+};
+
 class ShadowsManager {
 private:
     glm::mat4 dirLightVP = glm::mat4(1.0f);
@@ -18,7 +24,7 @@ private:
     glm::uvec3 pointShadowCount = glm::uvec3(0);
     u32 pointDepthMaps[3]{};
 
-    SSBO<glm::vec4> spotLightPositions;
+    SSBO<SpotShadowData> spotLightData;
     glm::uvec3 spotShadowCount = glm::uvec3(0);
     u32 spotDepthMaps[3]{};
 
@@ -61,6 +67,15 @@ public:
     [[nodiscard]] u32 GetPointLowDepthMap() const noexcept { return pointDepthMaps[2]; }
     [[nodiscard]] glm::uvec3 GetPointCount() const noexcept { return pointShadowCount; }
     [[nodiscard]] SSBO<glm::vec4> &GetPointPositions() noexcept { return pointLightPositions; }
+
+    [[nodiscard]] u32 GetSpotHighDepthMap() const noexcept { return spotDepthMaps[0]; }
+    [[nodiscard]] u32 GetSpotMediumDepthMap() const noexcept { return spotDepthMaps[1]; }
+    [[nodiscard]] u32 GetSpotLowDepthMap() const noexcept { return spotDepthMaps[2]; }
+    [[nodiscard]] glm::uvec3 GetSpotCount() const noexcept { return spotShadowCount; }
+    [[nodiscard]] SSBO<SpotShadowData> &GetSpotShadowData() noexcept { return spotLightData; }
+
+    void AttachShadowsData() noexcept;
+    void SetUniforms(Shader &shader) const noexcept;
 };
 
 #endif

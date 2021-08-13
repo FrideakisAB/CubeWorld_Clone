@@ -208,35 +208,17 @@ void ForwardPlusPipeline::Render()
 
     pointIndices.Bind(2);
     spotIndices.Bind(3);
-    shadowsManager.GetPointPositions().Bind(4);
 
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, shadowsManager.GetDirectionDepthMap());
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointHighDepthMap());
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointMediumDepthMap());
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, shadowsManager.GetPointLowDepthMap());
+    shadowsManager.AttachShadowsData();
 
     glm::mat4 camVP = Camera::Main->GetVPMatrix(width, height);
-    glm::mat4 dirVP;
-    if (directionLight)
-        dirVP = shadowsManager.GetDirectionVP();
-    else
-        dirVP = camVP;
 
     for (const auto &[name, materialMap] : *renderObjects)
     {
         Shader &shader = (*shaders)[name];
         shader.Use();
 
-        shader.SetMat4("lightSpaceMatrix", dirVP);
-        shader.SetInt("dirShadowMap", 2);
-        shader.SetUVec3("pointShadowsCount", shadowsManager.GetPointCount());
-        shader.SetInt("pointHighShadowMap", 3);
-        shader.SetInt("pointMediumShadowMap", 4);
-        shader.SetInt("pointLowShadowMap", 5);
+        shadowsManager.SetUniforms(shader);
 
         shader.SetMat4("vp", camVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);

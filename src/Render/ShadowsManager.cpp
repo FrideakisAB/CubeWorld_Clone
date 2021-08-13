@@ -4,7 +4,7 @@
 
 ShadowsManager::ShadowsManager()
     : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount),
-    spotLightPositions(spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount)
+      spotLightData(spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount)
 {
     //TODO: read all variables from config file
     isDirectionalShadowsActive = true;
@@ -138,10 +138,12 @@ ShadowsManager::ShadowsManager()
 
 ShadowsManager::~ShadowsManager()
 {
-    std::array textures = { dirDepthMap, pointDepthMaps[0], pointDepthMaps[1], pointDepthMaps[2], spotDepthMaps[0], spotDepthMaps[1], spotDepthMaps[2] };
+    std::array textures = { dirDepthMap, pointDepthMaps[0], pointDepthMaps[1], pointDepthMaps[2],
+                            spotDepthMaps[0], spotDepthMaps[1], spotDepthMaps[2] };
     glDeleteTextures(textures.size(), textures.data());
 
-    std::array FBOs = { dirDepthMapFBO, pointDepthMapFBO[0], pointDepthMapFBO[1], pointDepthMapFBO[2], spotDepthMapFBO[0], spotDepthMapFBO[1], spotDepthMapFBO[2] };
+    std::array FBOs = { dirDepthMapFBO, pointDepthMapFBO[0], pointDepthMapFBO[1], pointDepthMapFBO[2],
+                        spotDepthMapFBO[0], spotDepthMapFBO[1], spotDepthMapFBO[2] };
     glDeleteFramebuffers(FBOs.size(), FBOs.data());
 }
 
@@ -156,6 +158,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
 {
     if (isShadowsActive)
     {
+        glCullFace(GL_FRONT);
         if (isDirectionalShadowsActive)
         {
             if (directionLight)
@@ -288,8 +291,8 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
             Shader &depth = shaders["SpotDepth"];
             depth.Use();
 
-            spotLightPositions.Open();
-            glm::vec4 *lights = spotLightPositions.GetData();
+            spotLightData.Open();
+            SpotShadowData *lights = spotLightData.GetData();
 
             for (u32 i = 0; i < (spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount) && i < (*spotLightSources).size(); ++i)
             {
@@ -341,8 +344,10 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                     glm::mat4 shadowView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0,1,0));
                     glm::mat4 vp = shadowProj * shadowView;
 
-                    lights[i] = (*spotLightSources)[i].positionAndIntensity;
-                    lights[i].w = (*spotLightSources)[i].colorAndRadius.w;
+                    lights[i].positionAndFarPlane = (*spotLightSources)[i].positionAndIntensity;
+                    lights[i].positionAndFarPlane.w = (*spotLightSources)[i].colorAndRadius.w;
+                    lights[i].directionAndCutterAngle = (*spotLightSources)[i].directionAndCutterAngle;
+                    lights[i].vp = vp;
 
                     for (const auto &task : renderTasks)
                     {
@@ -352,9 +357,48 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                     }
                 }
             }
-            spotLightPositions.Close();
+            spotLightData.Close();
         }
+
+        glCullFace(GL_BACK);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+}
+
+void ShadowsManager::AttachShadowsData() noexcept
+{
+    pointLightPositions.Bind(4);
+    spotLightData.Bind(5);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, dirDepthMap);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[0]);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[1]);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[2]);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[0]);
+    glActiveTexture(GL_TEXTURE7);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[1]);
+    glActiveTexture(GL_TEXTURE8);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[2]);
+}
+
+void ShadowsManager::SetUniforms(Shader &shader) const noexcept
+{
+    shader.SetMat4("lightSpaceMatrix", dirLightVP);
+    shader.SetInt("dirShadowMap", 2);
+
+    shader.SetUVec3("pointShadowsCount", pointShadowCount);
+    shader.SetInt("pointHighShadowMap", 3);
+    shader.SetInt("pointMediumShadowMap", 4);
+    shader.SetInt("pointLowShadowMap", 5);
+
+    shader.SetUVec3("spotShadowsCount", spotShadowCount);
+    shader.SetInt("spotHighShadowMap", 6);
+    shader.SetInt("spotMediumShadowMap", 7);
+    shader.SetInt("spotLowShadowMap", 8);
 }

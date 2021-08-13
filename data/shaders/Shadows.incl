@@ -1,0 +1,128 @@
+#define HIGH_POINT_SHADOWS_COUNT 4
+#define MEDIUM_POINT_SHADOWS_COUNT 8
+#define LOW_POINT_SHADOWS_COUNT 48
+
+#define HIGH_SPOT_SHADOWS_COUNT 4
+#define MEDIUM_SPOT_SHADOWS_COUNT 8
+#define LOW_SPOT_SHADOWS_COUNT 48
+
+struct PointShadowData {
+	vec4 posAndFarPlane;
+};
+
+struct SpotShadowData {
+	vec4 posAndFarPlane;
+    vec4 directionAndCutterAngle;
+    mat4 vp;
+};
+
+layout(std430, binding = 4) readonly buffer PointShadowDataBuffer {
+	PointShadowData data[];
+} pointShadowData;
+
+layout(std430, binding = 5) readonly buffer SpotShadowDataBuffer {
+	SpotShadowData data[];
+} spotShadowData;
+
+uniform sampler2D dirShadowMap;
+
+uniform uvec3 pointShadowsCount;
+uniform samplerCubeArray pointHighShadowMap;
+uniform samplerCubeArray pointMediumShadowMap;
+uniform samplerCubeArray pointLowShadowMap;
+
+uniform uvec3 spotShadowsCount;
+uniform sampler2DArray spotHighShadowMap;
+uniform sampler2DArray spotMediumShadowMap;
+uniform sampler2DArray spotLowShadowMap;
+
+float DirectionalShadowCalculation(vec3 normal, vec3 fragPos, vec4 fragPosLightSpace, vec4 lightPos)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(dirShadowMap, projCoords.xy).r; 
+
+    float currentDepth = projCoords.z;
+
+    vec3 lightDir = normalize(lightPos.xyz - fragPos);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(dirShadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(dirShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+    
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return shadow;
+}
+
+float PointShadowCalculation(vec3 fragPos, uint i, uint pos, samplerCubeArray arr)
+{
+    vec4 posAndFarPlane = pointShadowData.data[pos].posAndFarPlane;
+    vec3 fragToLight = fragPos - posAndFarPlane.xyz;
+    
+    float closestDepth = texture(arr, vec4(fragToLight, i)).r;
+    closestDepth *= posAndFarPlane.w;
+
+    float currentDepth = length(fragToLight);
+
+    float bias = 0.05; 
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
+float SpotShadowCalculation(vec3 normal, vec3 fragPos, uint i, uint pos, sampler2DArray arr)
+{
+    vec4 posAndFarPlane = spotShadowData.data[pos].posAndFarPlane;
+    vec4 fragPosLightSpace = spotShadowData.data[pos].vp * vec4(fragPos, 1.0);
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(arr, vec3(projCoords.xy, i)).r;
+
+    float currentDepth = projCoords.z;
+
+    vec3 lightDir = normalize(posAndFarPlane.xyz - fragPos);
+    
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float shadow = currentDepth -  bias > closestDepth  ? 1.0 : 0.0;
+    
+    vec4 directionAndCutterAngle = spotShadowData.data[pos].directionAndCutterAngle;
+    float theta = dot(lightDir, normalize(-directionAndCutterAngle.xyz));
+    if(projCoords.z > 1.0 || theta <= directionAndCutterAngle.w)
+        shadow = 0.0;
+        
+    return shadow;
+}
+
+float CalculateShadows(vec3 normal, vec3 fragPos, vec4 fragPosLightSpace, vec4 lightPos)
+{
+    float shadow = DirectionalShadowCalculation(normal, fragPos, fragPosLightSpace, lightPos);
+    for (uint i = 0; i < pointShadowsCount.x; ++i)
+        shadow += PointShadowCalculation(fragPos, i, i, pointHighShadowMap);
+    for (uint i = 0; i < pointShadowsCount.y; ++i)
+        shadow += PointShadowCalculation(fragPos, i, pointShadowsCount.x + i, pointMediumShadowMap);
+    for (uint i = 0; i < pointShadowsCount.z; ++i)
+        shadow += PointShadowCalculation(fragPos, i, pointShadowsCount.x + pointShadowsCount.y + i, pointLowShadowMap);
+    for (uint i = 0; i < spotShadowsCount.x; ++i)
+        shadow += SpotShadowCalculation(normal, fragPos, i, i, spotHighShadowMap);
+    for (uint i = 0; i < spotShadowsCount.y; ++i)
+        shadow += SpotShadowCalculation(normal, fragPos, i, spotShadowsCount.x + i, spotMediumShadowMap);
+    for (uint i = 0; i < spotShadowsCount.z; ++i)
+        shadow += SpotShadowCalculation(normal, fragPos, i, spotShadowsCount.x + spotShadowsCount.y + i, spotLowShadowMap);
+        
+    return shadow;
+}
