@@ -3,7 +3,8 @@
 #include <array>
 
 ShadowsManager::ShadowsManager()
-    : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount)
+    : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount),
+    spotLightPositions(spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount)
 {
     //TODO: read all variables from config file
     isDirectionalShadowsActive = true;
@@ -83,14 +84,64 @@ ShadowsManager::ShadowsManager()
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (!isSpotShadowsActive)
+        spotLightShadowResolution = 1;
+    glGenFramebuffers(3, spotDepthMapFBO);
+
+    glGenTextures(3, spotDepthMaps);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[0]);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT,
+                 spotLightShadowResolution, spotLightShadowResolution, spotLightHighShadowCount, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[1]);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT,
+                 spotLightShadowResolution / 2, spotLightShadowResolution / 2, spotLightMediumShadowCount, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[2]);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT,
+                 spotLightShadowResolution / 4, spotLightShadowResolution / 4, spotLightLowShadowCount, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[0]);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, spotDepthMaps[0], 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[1]);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, spotDepthMaps[1], 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[2]);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, spotDepthMaps[2], 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 ShadowsManager::~ShadowsManager()
 {
-    std::array textures = { dirDepthMap, pointDepthMaps[0], pointDepthMaps[1], pointDepthMaps[2] };
+    std::array textures = { dirDepthMap, pointDepthMaps[0], pointDepthMaps[1], pointDepthMaps[2], spotDepthMaps[0], spotDepthMaps[1], spotDepthMaps[2] };
     glDeleteTextures(textures.size(), textures.data());
 
-    std::array FBOs = { dirDepthMapFBO, pointDepthMapFBO[0], pointDepthMapFBO[1], pointDepthMapFBO[2] };
+    std::array FBOs = { dirDepthMapFBO, pointDepthMapFBO[0], pointDepthMapFBO[1], pointDepthMapFBO[2], spotDepthMapFBO[0], spotDepthMapFBO[1], spotDepthMapFBO[2] };
     glDeleteFramebuffers(FBOs.size(), FBOs.data());
 }
 
@@ -224,6 +275,84 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                 }
             }
             pointLightPositions.Close();
+        }
+
+        spotShadowCount = glm::uvec3(0);
+
+        if (isSpotShadowsActive && !(*spotLightSources).empty())
+        {
+            std::sort((*spotLightSources).begin(), (*spotLightSources).end(), [cameraPosition](const SpotLight &p1, const SpotLight &p2){
+                return glm::distance(glm::vec3(p1.positionAndIntensity), cameraPosition) < glm::distance(glm::vec3(p2.positionAndIntensity), cameraPosition);
+            });
+
+            Shader &depth = shaders["SpotDepth"];
+            depth.Use();
+
+            spotLightPositions.Open();
+            glm::vec4 *lights = spotLightPositions.GetData();
+
+            for (u32 i = 0; i < (spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount) && i < (*spotLightSources).size(); ++i)
+            {
+                if (glm::distance(glm::vec3((*spotLightSources)[i].positionAndIntensity), cameraPosition) < shadowDrawDistance)
+                {
+                    if (i < spotLightHighShadowCount)
+                    {
+                        ++spotShadowCount.x;
+                        depth.SetInt("layer", i);
+
+                        if (i == 0)
+                        {
+                            glViewport(0, 0, spotLightShadowResolution, spotLightShadowResolution);
+                            glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[0]);
+                            glClear(GL_DEPTH_BUFFER_BIT);
+                        }
+                    }
+                    else if (i < spotLightMediumShadowCount + spotLightHighShadowCount)
+                    {
+                        ++spotShadowCount.y;
+                        depth.SetInt("layer", i - spotLightHighShadowCount);
+
+                        if (i - spotLightHighShadowCount == 0)
+                        {
+                            glViewport(0, 0, spotLightShadowResolution / 2, spotLightShadowResolution / 2);
+                            glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[1]);
+                            glClear(GL_DEPTH_BUFFER_BIT);
+                        }
+                    }
+                    else if (i < spotLightLowShadowCount + spotLightMediumShadowCount + spotLightHighShadowCount)
+                    {
+                        ++spotShadowCount.z;
+                        depth.SetInt("layer", i - spotLightHighShadowCount - spotLightMediumShadowCount);
+
+                        if (i - spotLightHighShadowCount - spotLightMediumShadowCount == 0)
+                        {
+                            glViewport(0, 0, spotLightShadowResolution / 4, spotLightShadowResolution / 4);
+                            glBindFramebuffer(GL_FRAMEBUFFER, spotDepthMapFBO[2]);
+                            glClear(GL_DEPTH_BUFFER_BIT);
+                        }
+                    }
+                    else
+                        break;
+
+                    auto lightPos = glm::vec3((*spotLightSources)[i].positionAndIntensity);
+                    auto lightDir = glm::vec3((*spotLightSources)[i].directionAndCutterAngle);
+
+                    glm::mat4 shadowProj = glm::perspective(2 * (*spotLightSources)[i].directionAndCutterAngle.w, 1.0f, 1.0f, (*spotLightSources)[i].colorAndRadius.w);
+                    glm::mat4 shadowView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0,1,0));
+                    glm::mat4 vp = shadowProj * shadowView;
+
+                    lights[i] = (*spotLightSources)[i].positionAndIntensity;
+                    lights[i].w = (*spotLightSources)[i].colorAndRadius.w;
+
+                    for (const auto &task : renderTasks)
+                    {
+                        depth.SetMat4("model", vp * task.Transform);
+                        glBindVertexArray(task.DrawData.VAO);
+                        glDrawElements(Utils::GetDrawModeGL(task.DrawData.Mode), task.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+                    }
+                }
+            }
+            spotLightPositions.Close();
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

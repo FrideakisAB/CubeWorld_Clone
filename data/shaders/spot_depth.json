@@ -1,0 +1,7 @@
+{
+    "fragment": "#version 440 core\n\nvoid main()\n{\n\n}",
+    "geometry": "#version 440 core\n\nlayout (triangles) in;\nlayout (triangle_strip, max_vertices=3) out;\n\nuniform int layer;\n\nout vec4 fragPos;\n\nvoid main()\n{\n    gl_Layer = layer;\n    \n    gl_Position = gl_in[0].gl_Position;\n    EmitVertex();\n    gl_Position = gl_in[1].gl_Position;\n    EmitVertex();\n    gl_Position = gl_in[2].gl_Position;\n    EmitVertex();\n    EndPrimitive();\n}",
+    "shaderName": "SpotDepth",
+    "tag": "SHADER",
+    "vertex": "#version 440 core\n\nlayout(location = 0) in vec3 position;\n\nuniform mat4 model;\n\nvoid main()\n{\n    gl_Position = model * vec4(position, 1.0);\n}"
+}

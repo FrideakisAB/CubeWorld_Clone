@@ -12,10 +12,15 @@ private:
 
     u32 dirDepthMapFBO = 0, dirDepthMap = 0;
     u32 pointDepthMapFBO[3]{};
+    u32 spotDepthMapFBO[3]{};
 
     SSBO<glm::vec4> pointLightPositions;
     glm::uvec3 pointShadowCount = glm::uvec3(0);
     u32 pointDepthMaps[3]{};
+
+    SSBO<glm::vec4> spotLightPositions;
+    glm::uvec3 spotShadowCount = glm::uvec3(0);
+    u32 spotDepthMaps[3]{};
 
     static constexpr u16 pointLightHighShadowCount = 4;    // 72Mb
     static constexpr u16 pointLightMediumShadowCount = 8; //  36Mb

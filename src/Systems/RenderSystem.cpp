@@ -72,7 +72,7 @@ void RenderSystem::PreUpdate()
                     auto position = glm::vec3(transform->GetMat()[3]);
                     light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
                     glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
-                    light.directionAndCutterAngle = glm::vec4(direction, lightSource.GetCutterOff());
+                    light.directionAndCutterAngle = glm::vec4(direction, glm::radians(lightSource.GetCutterOff()));
 
                     spotLightSources.emplace_back(light);
                 }
