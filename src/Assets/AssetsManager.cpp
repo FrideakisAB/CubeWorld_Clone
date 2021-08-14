@@ -91,8 +91,6 @@ bool AssetsManager::SaveAsset(const std::string &name, const fs::path &path)
                     return true;
                 }
             }
-            else
-                return true;
         }
     }
 

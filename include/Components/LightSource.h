@@ -17,7 +17,6 @@ private:
     float radius = 1.0f;
     float intensity = 1.0f;
     float cuttOff = 0.0f;
-    bool update = true;
 
 public:
     [[nodiscard]] LightType GetLightType() const noexcept { return type; }
@@ -30,9 +29,6 @@ public:
     void SetIntensity(float intensity);
     [[nodiscard]] float GetCutterOff() const noexcept { return cuttOff; }
     void SetCutterOff(float cutterOff);
-
-    inline void ReleaseUpdate() { update = false; }
-    [[nodiscard]] bool IsUpdate() const noexcept { return update; }
 };
 
 #endif

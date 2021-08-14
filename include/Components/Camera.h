@@ -17,7 +17,7 @@ private:
     Texture *skybox = nullptr;
 
 public:
-    static Camera* Main;
+    static Camera *Main;
     float Fov = 60.0f;
     float Ratio = 1.5f;
     float NearClip = 0.1f;
@@ -33,7 +33,7 @@ public:
     void SetSkybox(Texture *skybox);
     void SetSkybox(const AssetsHandle &skybox);
 
-    inline AssetsHandle& GetAsset() { return skyboxHandle; }
+    inline AssetsHandle &GetAsset() { return skyboxHandle; }
     [[nodiscard]] Texture &GetSkybox() const noexcept { return *skybox; }
 };
 

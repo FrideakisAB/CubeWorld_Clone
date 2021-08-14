@@ -1,5 +1,6 @@
 #include "Components/MaterialComponent.h"
 
+#include "Engine.h"
 #include <boost/type_index.hpp>
 
 IAsset *Material::Clone() const
@@ -44,15 +45,14 @@ void Material::UnSerializeObj(const json &j)
 
     for (auto &elm : j["samplers_map"].items())
     {
-        //TODO: on singleton implementation
-        //if (auto asset = AssetsManager.GetAsset(elm.value()[1].get<std::string>()))
-        //    Samplers[elm.value()[0].get<std::string>()] = std::move(asset);
+        if (auto asset = GameEngine->GetAssetsManager().GetAsset(elm.value()[1].get<std::string>()))
+            Samplers[elm.value()[0].get<std::string>()] = std::move(asset);
     }
 }
 
 void MaterialComponent::SetMaterial(const AssetsHandle &materialHandle)
 {
-    if (auto *matPtr = dynamic_cast<Material *>(materialHandle.get()))
+    if (auto *matPtr = dynamic_cast<Material*>(materialHandle.get()))
     {
         this->materialHandle = materialHandle;
         material = matPtr;
@@ -80,7 +80,11 @@ void MaterialComponent::UnSerializeObj(const json &j)
 {
     if (j.contains("materialName"))
     {
-        //TODO: on singleton implementation
+        if (auto asset = GameEngine->GetAssetsManager().GetAsset(j["materialName"]))
+        {
+            materialHandle = std::move(asset);
+            material = static_cast<Material*>(materialHandle.get());
+        }
     }
     else if (j.contains("materialSave"))
     {

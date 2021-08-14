@@ -87,8 +87,6 @@ void RenderSystem::PreUpdate()
 
                     directionLight = light;
                 }
-
-                lightSource.ReleaseUpdate();
             }
         }
     }

@@ -7,7 +7,7 @@
 class ISerialize {
 public:
 	virtual json SerializeObj() { return {}; }
-	virtual void UnSerializeObj(const json& j) {}
+	virtual void UnSerializeObj(const json &j) {}
 };
 
 #endif

@@ -40,7 +40,7 @@ public:
             return assets[name] = asset;
         }
 
-        return AssetsHandle();
+        return {};
     }
 
     bool SaveAsset(const std::string &name, const fs::path &path);

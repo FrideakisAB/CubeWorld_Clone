@@ -17,7 +17,7 @@ protected:
 public:
     virtual ~IAsset() = default;
 
-    [[nodiscard]] virtual IAsset* Clone() const { return nullptr; }
+    [[nodiscard]] virtual IAsset *Clone() const { return nullptr; }
 
     [[nodiscard]] bool IsDynamic() const noexcept { return dynamic; }
     [[nodiscard]] virtual size_t GetTypeID() const noexcept = 0;

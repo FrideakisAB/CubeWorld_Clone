@@ -1,6 +1,7 @@
 #ifndef MESHCOMPONENT_H
 #define MESHCOMPONENT_H
 
+#include "Engine.h"
 #include "ECS/ECS.h"
 #include "Render/Mesh.h"
 #include <boost/type_index.hpp>
@@ -21,7 +22,7 @@ public:
     inline Mesh& GetMesh() { return *mesh; }
     inline AssetsHandle& GetAsset() { return meshHandle; }
 
-    void SetMesh(Mesh* newMesh)
+    void SetMesh(Mesh *newMesh)
     {
         if (newMesh != nullptr)
         {
@@ -35,9 +36,9 @@ public:
         }
     }
 
-    void SetMesh(const AssetsHandle& newMesh)
+    void SetMesh(const AssetsHandle &newMesh)
     {
-        if(auto *meshPtr = dynamic_cast<Mesh *>(newMesh.get()))
+        if(auto *meshPtr = dynamic_cast<Mesh*>(newMesh.get()))
         {
             meshHandle = newMesh;
             mesh = meshPtr;
@@ -65,9 +66,17 @@ public:
         return data;
     }
 
-    void UnSerializeObj(const json& j) override
+    void UnSerializeObj(const json &j) override
     {
-        //TODO: on singleton implementation
+        if (j["mesh"] != "")
+        {
+            if (auto asset = GameEngine->GetAssetsManager().GetAsset(j["mesh"]))
+            {
+                meshHandle = std::move(asset);
+                mesh = static_cast<Mesh*>(meshHandle.get());
+            }
+        }
+
     }
 };
 
