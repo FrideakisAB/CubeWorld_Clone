@@ -1,6 +1,7 @@
 #include "Render/ForwardPlusPipeline.h"
 
 #include <array>
+#include "Engine.h"
 #include "Components/Camera.h"
 #include "Components/Transform.h"
 
@@ -119,13 +120,15 @@ ForwardPlusPipeline::ForwardPlusPipeline()
 
 ForwardPlusPipeline::~ForwardPlusPipeline()
 {
-    u32 texs[] = { depthMap, colorBuffers[0], colorBuffers[1] };
-    glDeleteTextures(3, texs);
+    glDeleteBuffers(1, &skyboxVBO);
 
-    glDeleteRenderbuffers(1, &rboDepth);
+    glDeleteVertexArrays(1, &skyboxVBO);
 
-    u32 fbos[] = { depthMapFBO, hdrFBO };
-    glDeleteFramebuffers(2, fbos);
+    std::array textures = { depthMap, colorBuffers[0], colorBuffers[1] };
+    glDeleteTextures(textures.size(), textures.data());
+
+    std::array FBOs = { depthMapFBO, hdrFBO };
+    glDeleteFramebuffers(FBOs.size(), FBOs.data());
 }
 
 void ForwardPlusPipeline::ApplyTasks(std::map<std::string, RenderSystem::MaterialMap> &renderObjects, std::vector<RenderSystem::RenderTask> &renderTasks)
@@ -271,6 +274,8 @@ void ForwardPlusPipeline::Render()
 
         shadowsManager.SetUniforms(shader);
 
+        shader.SetFloat("ambient", GameEngine->GetLighting().Ambient);
+
         shader.SetMat4("vp", mainVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
         shader.SetVec3("viewPos", cameraPosition);
@@ -341,8 +346,7 @@ void ForwardPlusPipeline::Render()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, pingPongBuffers[!horizontal]);
     hdr.SetInt("bloomBlur", 1);
-    //TODO: add exposure change
-    hdr.SetFloat("exposure", 1.0f);
+    hdr.SetFloat("exposure", GameEngine->GetLighting().Exposure);
     Utils::DrawQuad();
 }
 
@@ -372,7 +376,7 @@ void ForwardPlusPipeline::setupMaterial(Shader &shader, Material *material)
             break;
 
         case Utils::ShaderValue::Double:
-            shader.SetFloat(uniform.first, std::get<f64>(uniform.second.value));
+            shader.SetDouble(uniform.first, std::get<f64>(uniform.second.value));
             break;
 
         case Utils::ShaderValue::Vector2:

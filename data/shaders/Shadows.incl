@@ -24,6 +24,8 @@ layout(std430, binding = 5) readonly buffer SpotShadowDataBuffer {
 	SpotShadowData data[];
 } spotShadowData;
 
+uniform float shadowPower;
+
 uniform sampler2D dirShadowMap;
 
 uniform uvec3 pointShadowsCount;
@@ -124,5 +126,5 @@ float CalculateShadows(vec3 normal, vec3 fragPos, vec4 fragPosLightSpace, vec4 l
     for (uint i = 0; i < spotShadowsCount.z; ++i)
         shadow += SpotShadowCalculation(normal, fragPos, i, spotShadowsCount.x + spotShadowsCount.y + i, spotLowShadowMap);
         
-    return shadow;
+    return shadow * shadowPower;
 }

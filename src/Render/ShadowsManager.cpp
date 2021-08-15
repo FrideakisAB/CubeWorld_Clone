@@ -1,6 +1,7 @@
 #include "Render/ShadowsManager.h"
 
 #include <array>
+#include "Engine.h"
 
 ShadowsManager::ShadowsManager()
     : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount),
@@ -389,6 +390,8 @@ void ShadowsManager::AttachShadowsData() noexcept
 
 void ShadowsManager::SetUniforms(Shader &shader) const noexcept
 {
+    shader.SetFloat("shadowPower", GameEngine->GetLighting().ShadowsPower);
+
     shader.SetMat4("lightSpaceMatrix", dirLightVP);
     shader.SetInt("dirShadowMap", 2);
 

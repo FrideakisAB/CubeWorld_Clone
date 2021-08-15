@@ -56,6 +56,11 @@ public:
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
     }
 
+    void SetDouble(const std::string &name, double value) const
+    {
+        glUniform1d(glGetUniformLocation(ID, name.c_str()), value);
+    }
+
     void SetVec2(const std::string &name, const glm::vec2 &value) const
     {
         glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
