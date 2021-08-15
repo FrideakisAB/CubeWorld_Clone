@@ -1,6 +1,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include <random>
 #include "Render/Lighting.h"
 
 class RenderSystem;
@@ -10,6 +11,7 @@ class Engine {
 private:
     RenderSystem *renderSystem;
     AssetsManager *assetsManager;
+    std::mt19937* randomEngine;
     Lighting lighting;
 
 public:
@@ -19,6 +21,7 @@ public:
     [[nodiscard]] inline AssetsManager& GetAssetsManager() const noexcept { return *assetsManager; }
     [[nodiscard]] inline RenderSystem& GetRenderSystem() const noexcept { return *renderSystem; }
     [[nodiscard]] inline Lighting& GetLighting() noexcept { return lighting; }
+    [[nodiscard]] inline std::mt19937& GetRandomEngine() const noexcept{ return *randomEngine; }
 
     void Update();
 };

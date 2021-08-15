@@ -63,6 +63,9 @@ set(Source
 	src/Render/ForwardPlusPipeline.cpp
 
 	src/Utils/json.cpp
+	src/Utils/Mathf.cpp
+	src/Utils/Curve.cpp
+	src/Utils/Gradient.cpp
 	src/Utils/Primitives.cpp
 	src/Utils/ShaderPackager.cpp
 

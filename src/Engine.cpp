@@ -17,6 +17,8 @@ Engine* GameEngine = nullptr;
 
 Engine::Engine()
 {
+    std::random_device randomDevice;
+    randomEngine = new std::mt19937(randomDevice());
     assetsManager = new AssetsManager();
     Memory::InitializeMemoryManager();
     ECS::Initialize();
