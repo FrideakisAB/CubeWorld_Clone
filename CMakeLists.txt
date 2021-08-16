@@ -50,6 +50,7 @@ set(Source
 	src/Components/Camera.cpp
 	src/Components/Transform.cpp
 	src/Components/LightSource.cpp
+	src/Components/ParticleSystem.cpp
 	src/Components/MaterialComponent.cpp
 
 	src/Systems/RenderSystem.cpp
