@@ -3,6 +3,7 @@
 
 #include "ECS/ECS.h"
 #include "Utils/Gradient.h"
+#include "Assets/AssetsManager.h"
 
 enum class EmissionType : u8 {
     OverTime = 0,
@@ -25,7 +26,7 @@ enum class ParticleState : u8 {
 };
 
 struct Burst {
-    float Time;
+    f32 Time;
     u32 MinCount;
     u32 MaxCount;
     bool IsMake;
@@ -82,7 +83,7 @@ public:
     glm::vec4 StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     struct Emission {
-        u32 Rate = 250.0f;
+        u32 Rate = 250;
         EmissionType TypeRate = EmissionType::OverTime;
         std::vector<Burst> Bursts;
     } Emission;
@@ -167,13 +168,20 @@ public:
         f32 MinSpeed = 0.0f;
     } TextureBySpeed;
 
+    struct ParticleTexture {
+        bool Active = false;
+        AssetsHandle Texture;
+        glm::uvec2 Tiles = glm::uvec2(1);
+    } ParticleTexture;
+
 private:
-    void update();
     [[nodiscard]] Particle genParticle() const;
 
 public:
     ParticleSystem();
     ~ParticleSystem() override;
+
+    void Update();
 
     void Play() noexcept;
     void Stop() noexcept;

@@ -4,8 +4,9 @@
 #include <list>
 #include "Platform.h"
 #include <glm/glm.hpp>
+#include "Assets/ISerialize.h"
 
-class Gradient {
+class Gradient : public ISerialize {
 public:
     struct Mark {
         glm::vec4 color;
@@ -31,6 +32,9 @@ public:
 
     [[nodiscard]] const std::list<Mark> &GetMarks() const noexcept { return marks; }
     void RefreshCache();
+
+    json SerializeObj() override;
+    void UnSerializeObj(const json &j) override;
 };
 
 #endif

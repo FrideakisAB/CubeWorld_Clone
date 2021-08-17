@@ -19,9 +19,9 @@ void Gradient::computeColorAt(f32 position, glm::vec4 *color) const noexcept
             upper = mark;
     }
 
-    if (float distance = upper.position - lower.position; distance != 0)
+    if (f32 distance = upper.position - lower.position; distance != 0)
     {
-        float delta = (position - lower.position) / distance;
+        f32 delta = (position - lower.position) / distance;
         *color = ((1.0f - delta) * lower.color) + ((delta) * upper.color);
     }
     else
@@ -40,7 +40,7 @@ glm::vec4 Gradient::GetColorAt(f32 position) const noexcept
 {
     position = position < 0.0f? 0.0f : position > 1.0f? 1.0f : position;
 
-    glm::vec4 color = cachedValues[int(position * (CacheSize - 1))];
+    glm::vec4 color = cachedValues[i32(position * (CacheSize - 1))];
 
     for(i32 i = 0; i < 4; ++i)
         if(color[i] < 0)
@@ -75,5 +75,40 @@ void Gradient::RefreshCache()
     });
 
     for(u32 i = 0; i < CacheSize; ++i)
-        computeColorAt(float(i) / (CacheSize - 1.0f), &cachedValues[i]);
+        computeColorAt(f32(i) / (CacheSize - 1.0f), &cachedValues[i]);
+}
+
+json Gradient::SerializeObj()
+{
+    json data;
+
+    data["markCount"] = marks.size();
+    data["marks"] = {};
+
+    for (const auto &mark : marks)
+    {
+        json jMark;
+
+        jMark["color"] = {mark.color.x, mark.color.y, mark.color.z, mark.color.w};
+        jMark["position"] = mark.position;
+
+        data["marks"].push_back(jMark);
+    }
+
+    return data;
+}
+
+void Gradient::UnSerializeObj(const json &j)
+{
+    size_t markCount = j["markCount"];
+
+    for (size_t i = 0; i < markCount; ++i)
+    {
+        Mark mark{};
+
+        mark.color = glm::vec4(j["marks"][i]["color"][0], j["marks"][i]["color"][1], j["marks"][i]["color"][2], j["marks"][i]["color"][3]);
+        mark.position = j["marks"][i]["position"];
+
+        marks.push_back(mark);
+    }
 }

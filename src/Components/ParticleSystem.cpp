@@ -97,7 +97,7 @@ Particle ParticleSystem::genParticle() const
     return particle;
 }
 
-void ParticleSystem::update()
+void ParticleSystem::Update()
 {
     float deltaTime = ECS::ECS_Engine->GetTimer()->GetDeltaTime();
     if (state == ParticleState::Run)
@@ -276,12 +276,193 @@ void ParticleSystem::SetMaxParticles(u32 maxParticles)
     Restart();
 }
 
+void SavePoint(json &j, const std::string &name, glm::vec2 *base, u32 count)
+{
+    for(u32 i = 0; i < count; ++i)
+        j[name][i] = {base[i].x, base[i].y};
+}
+
 json ParticleSystem::SerializeObj()
 {
-    return ISerialize::SerializeObj();
+    json data;
+
+    data["cmpName"] = typeid(ParticleSystem).name();
+
+    data["Duration"] = Duration;
+    data["MaxParticles"] = maxParticlesCount;
+    data["Loop"] = Loop;
+    data["GlobalSpace"] = GlobalSpace;
+    data["PlayOnStart"] = PlayOnStart;
+
+    data["StartDelay"] = StartDelay;
+    data["StartLifetime"] = StartLifetime;
+    data["StartSpeed"] = StartSpeed;
+    data["StartSize"] = StartSize;
+    data["StartRotation"] = StartRotation;
+    data["StartColor"] = {StartColor.x, StartColor.y, StartColor.z, StartColor.w};
+
+    data["Rate"] = Emission.Rate;
+    data["TypeRate"] = static_cast<u8>(Emission.TypeRate);
+    data["burstsCount"] = Emission.Bursts.size();
+    for(u32 i = 0; i < Emission.Bursts.size(); ++i)
+        data["bursts"][i] = {Emission.Bursts[i].Time, Emission.Bursts[i].MinCount, Emission.Bursts[i].MaxCount, Emission.Bursts[i].IsMake};
+
+    data["Shape"] = static_cast<u8>(Shape);
+
+    data["ColorOverLifetime_Active"] = ColorOverLifetime.Active;
+    data["ColorOverLifetime_Gradient"] = ColorOverLifetime.Gradient.SerializeObj();
+
+    data["SizeOverLifetime_Active"] = SizeOverLifetime.Active;
+    SavePoint(data, "SizeOverLifetime_Points", SizeOverLifetime.Points, 10);
+
+    data["SpeedOverLifetime_Active"] = SpeedOverLifetime.Active;
+    SavePoint(data, "SpeedOverLifetime_Points", SpeedOverLifetime.Points, 10);
+
+    data["RotationOverLifetime_Active"] = RotationOverLifetime.Active;
+    data["RotationOverLifetime_Speed"] = RotationOverLifetime.Speed;
+
+    data["ForceOverLifetime_Active"] = ForceOverLifetime.Active;
+    SavePoint(data, "ForceOverLifetime_XPoints", ForceOverLifetime.XPoints, 10);
+    SavePoint(data, "ForceOverLifetime_YPoints", ForceOverLifetime.YPoints, 10);
+    SavePoint(data, "ForceOverLifetime_ZPoints", ForceOverLifetime.ZPoints, 10);
+    data["ForceOverLifetime_BaseForce"] = {ForceOverLifetime.BaseForce.x, ForceOverLifetime.BaseForce.y, ForceOverLifetime.BaseForce.z};
+
+    data["BrightOverLifetime_Active"] = BrightOverLifetime.Active;
+    SavePoint(data, "BrightOverLifetime_Points", BrightOverLifetime.Points, 10);
+    data["BrightOverLifetime_BaseBright"] = BrightOverLifetime.BaseBright;
+
+    data["TextureOverLifetime_Active"] = TextureOverLifetime.Active;
+    SavePoint(data, "TextureOverLifetime_Points", TextureOverLifetime.Points, 10);
+    data["TextureOverLifetime_BaseTexture"] = TextureOverLifetime.BaseTexture;
+
+    data["ColorBySpeed_Active"] = ColorBySpeed.Active;
+    data["ColorBySpeed_MaxSpeed"] = ColorBySpeed.MaxSpeed;
+    data["ColorBySpeed_MinSpeed"] = ColorBySpeed.MinSpeed;
+    data["ColorBySpeed_Gradient"] = ColorBySpeed.Gradient.SerializeObj();
+
+    data["RotationBySpeed_Active"] = RotationBySpeed.Active;
+    data["RotationBySpeed_MaxSpeed"] = RotationBySpeed.MaxSpeed;
+    data["RotationBySpeed_MinSpeed"] = RotationBySpeed.MinSpeed;
+    data["RotationBySpeed_BaseSpeed"] = RotationBySpeed.BaseSpeed;
+
+    data["SizeBySpeed_Active"] = SizeBySpeed.Active;
+    data["SizeBySpeed_MaxSpeed"] = SizeBySpeed.MaxSpeed;
+    data["SizeBySpeed_MinSpeed"] = SizeBySpeed.MinSpeed;
+    data["SizeBySpeed_BaseSize"] = SizeBySpeed.BaseSize;
+
+    data["BrightBySpeed_Active"] = BrightBySpeed.Active;
+    data["BrightBySpeed_MaxSpeed"] = BrightBySpeed.MaxSpeed;
+    data["BrightBySpeed_MinSpeed"] = BrightBySpeed.MinSpeed;
+    data["BrightBySpeed_BaseBright"] = BrightBySpeed.BaseBright;
+
+    data["TextureBySpeed_Active"] = TextureBySpeed.Active;
+    data["TextureBySpeed_MaxSpeed"] = TextureBySpeed.MaxSpeed;
+    data["TextureBySpeed_MinSpeed"] = TextureBySpeed.MinSpeed;
+    data["TextureBySpeed_BaseTexture"] = TextureBySpeed.BaseTexture;
+
+    data["State"] = static_cast<u8>(state);
+
+    data["ParticleTexture_Active"] = ParticleTexture.Active;
+    if(ParticleTexture.Texture && !ParticleTexture.Texture->GetName().empty())
+        data["ParticleTexture_Texture"] = ParticleTexture.Texture->GetName();
+    else
+        data["ParticleTexture_Texture"] = "";
+    data["ParticleTexture_Tiles"] = {ParticleTexture.Tiles.x, ParticleTexture.Tiles.y};
+
+    return data;
+}
+
+void LoadPoint(const json &j, const std::string &name, glm::vec2 *base, u32 count)
+{
+    for(u32 i = 0; i < count; ++i)
+    {
+        base[i].x = j[name][i][0];
+        base[i].y = j[name][i][1];
+    }
 }
 
 void ParticleSystem::UnSerializeObj(const json &j)
 {
-    ISerialize::UnSerializeObj(j);
+    Duration = j["Duration"];
+    maxParticlesCount = j["MaxParticles"];
+    Loop = j["Loop"];
+    GlobalSpace = j["GlobalSpace"];
+    PlayOnStart = j["PlayOnStart"];
+
+    StartDelay = j["StartDelay"];
+    StartLifetime = j["StartLifetime"];
+    StartSpeed = j["StartSpeed"];
+    StartSize = j["StartSize"];
+    StartRotation = j["StartRotation"];
+    StartColor = glm::vec4(j["StartColor"][0], j["StartColor"][1], j["StartColor"][2], j["StartColor"][3]);
+
+    Emission.Rate = j["Rate"];
+    Emission.TypeRate = static_cast<EmissionType>(j["TypeRate"]);
+    size_t burstSize = j["burstsCount"];
+    Emission.Bursts.reserve(burstSize);
+    for(u32 i = 0; i < burstSize; ++i)
+        Emission.Bursts.push_back({j["bursts"][i][0], j["bursts"][i][1], j["bursts"][i][2], j["bursts"][i][3]});
+
+    Shape = static_cast<Emitter>(j["Shape"]);
+
+    ColorOverLifetime.Active = j["ColorOverLifetime_Active"];
+    ColorOverLifetime.Gradient.UnSerializeObj(j["ColorOverLifetime_Gradient"]);
+
+    SizeOverLifetime.Active = j["SizeOverLifetime_Active"];
+    LoadPoint(j, "SizeOverLifetime_Points", SizeOverLifetime.Points, 10);
+
+    SpeedOverLifetime.Active = j["SpeedOverLifetime_Active"];
+    LoadPoint(j, "SpeedOverLifetime_Points", SpeedOverLifetime.Points, 10);
+
+    RotationOverLifetime.Active = j["RotationOverLifetime_Active"];
+    RotationOverLifetime.Speed = j["RotationOverLifetime_Speed"];
+
+    ForceOverLifetime.Active = j["ForceOverLifetime_Active"];
+    LoadPoint(j, "ForceOverLifetime_XPoints", ForceOverLifetime.XPoints, 10);
+    LoadPoint(j, "ForceOverLifetime_YPoints", ForceOverLifetime.YPoints, 10);
+    LoadPoint(j, "ForceOverLifetime_ZPoints", ForceOverLifetime.ZPoints, 10);
+    ForceOverLifetime.BaseForce = glm::vec3(j["ForceOverLifetime_BaseForce"][0], j["ForceOverLifetime_BaseForce"][1], j["ForceOverLifetime_BaseForce"][2]);
+
+    BrightOverLifetime.Active = j["BrightOverLifetime_Active"];
+    LoadPoint(j, "BrightOverLifetime_Points", BrightOverLifetime.Points, 10);
+    BrightOverLifetime.BaseBright = j["BrightOverLifetime_BaseBright"];
+
+    TextureOverLifetime.Active = j["TextureOverLifetime_Active"];
+    LoadPoint(j, "TextureOverLifetime_Points", TextureOverLifetime.Points, 10);
+    TextureOverLifetime.BaseTexture = j["TextureOverLifetime_BaseTexture"];
+
+    ColorBySpeed.Active = j["ColorBySpeed_Active"];
+    ColorBySpeed.MaxSpeed = j["ColorBySpeed_MaxSpeed"];
+    ColorBySpeed.MinSpeed = j["ColorBySpeed_MinSpeed"];
+    ColorBySpeed.Gradient.UnSerializeObj(j["ColorBySpeed_Gradient"]);
+
+    RotationBySpeed.Active = j["RotationBySpeed_Active"];
+    RotationBySpeed.MaxSpeed = j["RotationBySpeed_MaxSpeed"];
+    RotationBySpeed.MinSpeed = j["RotationBySpeed_MinSpeed"];
+    RotationBySpeed.BaseSpeed = j["RotationBySpeed_BaseSpeed"];
+
+    SizeBySpeed.Active = j["SizeBySpeed_Active"];
+    SizeBySpeed.MaxSpeed = j["SizeBySpeed_MaxSpeed"];
+    SizeBySpeed.MinSpeed = j["SizeBySpeed_MinSpeed"];
+    SizeBySpeed.BaseSize = j["SizeBySpeed_BaseSize"];
+
+    BrightBySpeed.Active = j["BrightBySpeed_Active"];
+    BrightBySpeed.MaxSpeed = j["BrightBySpeed_MaxSpeed"];
+    BrightBySpeed.MinSpeed = j["BrightBySpeed_MinSpeed"];
+    BrightBySpeed.BaseBright = j["BrightBySpeed_BaseBright"];
+
+    TextureBySpeed.Active = j["TextureBySpeed_Active"];
+    TextureBySpeed.MaxSpeed = j["TextureBySpeed_MaxSpeed"];
+    TextureBySpeed.MinSpeed = j["TextureBySpeed_MinSpeed"];
+    TextureBySpeed.BaseTexture = j["TextureBySpeed_BaseTexture"];
+
+    state = static_cast<ParticleState>(j["State"]);
+
+    ParticleTexture.Active = j["ParticleTexture_Active"];
+    if(j["ParticleTexture_Texture"] != "")
+        ParticleTexture.Texture = GameEngine->GetAssetsManager().GetAsset(j["ParticleTexture_Texture"]);
+    ParticleTexture.Tiles = glm::uvec2(j["ParticleTexture_Tiles"][0], j["ParticleTexture_Tiles"][1]);
+
+    delete[] particles;
+    particles = new Particle[maxParticlesCount];
 }
