@@ -36,13 +36,13 @@ struct Particle {
     f32 MaxLifetime;
     f32 Speed;
     f32 Size;
+    f32 Sprite;
     f32 Rotation;
     f32 BrightMultiplier;
-    bool Active;
     glm::vec4 Color;
     glm::vec3 Position;
     glm::vec3 Velocity;
-    glm::uvec2 SpritePosition;
+    bool Active;
 };
 
 struct RenderData {
@@ -123,6 +123,12 @@ public:
         f32 BaseBright = 0.0f;
     } BrightOverLifetime;
 
+    struct TextureOverLifetime {
+        bool Active = false;
+        glm::vec2 Points[10]{};
+        f32 BaseTexture = 0.0f;
+    } TextureOverLifetime;
+
     struct ColorBySpeed {
         bool Active = false;
         Gradient Gradient;
@@ -152,6 +158,14 @@ public:
         f32 MaxSpeed = 1.0f;
         f32 MinSpeed = 0.0f;
     } BrightBySpeed;
+
+    struct TextureBySpeed {
+        bool Active = false;
+        glm::vec2 Points[10]{};
+        f32 BaseTexture = 0.0f;
+        f32 MaxSpeed = 1.0f;
+        f32 MinSpeed = 0.0f;
+    } TextureBySpeed;
 
 private:
     void update();

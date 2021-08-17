@@ -44,7 +44,7 @@ Particle ParticleSystem::genParticle() const
     particle.Rotation = StartRotation;
     particle.Color = StartColor;
     particle.BrightMultiplier = StartBright;
-    particle.SpritePosition = glm::uvec2(0);
+    particle.Sprite = 0.0f;
 
     switch(Shape)
     {
@@ -179,8 +179,19 @@ void ParticleSystem::update()
                 }
             }
 
+            if (SizeOverLifetime.Active)
+                particles[i].Size = (StartSize / 10) * Curve::CurveValue(particleLifetimeAspect, 10, SizeOverLifetime.Points);
+            else if (SizeBySpeed.Active && SizeBySpeed.MinSpeed != SizeBySpeed.MaxSpeed)
+            {
+                f32 speedAspect = (particles[i].Speed - SizeBySpeed.MinSpeed) / (SizeBySpeed.MaxSpeed - SizeBySpeed.MinSpeed);
+                particles[i].Size = SizeBySpeed.BaseSize * Curve::CurveValue(speedAspect, 10, SizeBySpeed.Points);
+            }
+
             if (SpeedOverLifetime.Active)
                 particles[i].Speed = StartSpeed * Curve::CurveValue(particleLifetimeAspect, 10, SpeedOverLifetime.Points);
+
+            if (RotationOverLifetime.Active)
+                particles[i].Rotation += RotationOverLifetime.Speed * deltaTime;
 
             particles[i].Position += particles[i].Velocity * particles[i].Speed * deltaTime;
 
@@ -190,29 +201,26 @@ void ParticleSystem::update()
                         Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.YPoints),
                         Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.ZPoints)));
 
-            if (RotationBySpeed.Active)
-            {
-                if (particles[i].Speed >= RotationBySpeed.MinSpeed && particles[i].Speed <= RotationBySpeed.MaxSpeed)
-                    particles[i].Rotation += RotationBySpeed.BaseSpeed * deltaTime;
-            }
-
-            if (RotationOverLifetime.Active)
-                particles[i].Rotation += RotationOverLifetime.Speed * deltaTime;
-
-            if (SizeOverLifetime.Active)
-                particles[i].Size = (StartSize / 10) * Curve::CurveValue(particleLifetimeAspect, 10, SizeOverLifetime.Points);
-            else if (SizeBySpeed.Active && SizeBySpeed.MinSpeed != SizeBySpeed.MaxSpeed)
-            {
-                particles[i].Size = SizeBySpeed.BaseSize *
-                    Curve::CurveValue((particles[i].Speed - SizeBySpeed.MinSpeed) / (SizeBySpeed.MaxSpeed - SizeBySpeed.MinSpeed), 10, SizeBySpeed.Points);
-            }
-
             if (BrightOverLifetime.Active)
                 particles[i].BrightMultiplier = BrightOverLifetime.BaseBright * Curve::CurveValue(particleLifetimeAspect, 10, BrightOverLifetime.Points);
             else if (BrightBySpeed.Active && BrightBySpeed.MinSpeed != BrightBySpeed.MaxSpeed)
             {
-                particles[i].BrightMultiplier = BrightBySpeed.BaseBright *
-                    Curve::CurveValue((particles[i].Speed - BrightBySpeed.MinSpeed) / (BrightBySpeed.MaxSpeed - BrightBySpeed.MinSpeed), 10, BrightBySpeed.Points);
+                f32 speedAspect = (particles[i].Speed - BrightBySpeed.MinSpeed) / (BrightBySpeed.MaxSpeed - BrightBySpeed.MinSpeed);
+                particles[i].BrightMultiplier = BrightBySpeed.BaseBright * Curve::CurveValue(speedAspect, 10, BrightBySpeed.Points);
+            }
+
+            if (TextureOverLifetime.Active)
+                particles[i].Sprite = TextureOverLifetime.BaseTexture * Curve::CurveValue(particleLifetimeAspect, 10, TextureOverLifetime.Points);
+            else if (TextureBySpeed.Active)
+            {
+                f32 speedAspect = (particles[i].Speed - TextureBySpeed.MinSpeed) / (TextureBySpeed.MaxSpeed - TextureBySpeed.MinSpeed);
+                particles[i].Sprite = TextureBySpeed.BaseTexture * Curve::CurveValue(speedAspect, 10, TextureBySpeed.Points);
+            }
+
+            if (RotationBySpeed.Active)
+            {
+                if (particles[i].Speed >= RotationBySpeed.MinSpeed && particles[i].Speed <= RotationBySpeed.MaxSpeed)
+                    particles[i].Rotation += RotationBySpeed.BaseSpeed * deltaTime;
             }
 
             ++updateCount;
