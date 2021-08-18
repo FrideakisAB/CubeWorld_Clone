@@ -169,7 +169,7 @@ public:
     } ParticleTexture;
 
 private:
-    [[nodiscard]] Particle genParticle() const;
+    [[nodiscard]] Particle genParticle(glm::mat4 transformMat, glm::quat transformRotate) const;
 
 public:
     ParticleSystem();

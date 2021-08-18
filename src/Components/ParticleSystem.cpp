@@ -4,6 +4,7 @@
 #include "Utils/Mathf.h"
 #include "Utils/Curve.h"
 #include "ECS/util/Timer.h"
+#include "Components/Transform.h"
 
 ParticleSystem::ParticleSystem()
 {
@@ -36,7 +37,7 @@ ParticleSystem::~ParticleSystem()
     delete[] particles;
 }
 
-Particle ParticleSystem::genParticle() const
+Particle ParticleSystem::genParticle(glm::mat4 transformMat, glm::quat transformRotate) const
 {
     Particle particle{};
 
@@ -112,6 +113,12 @@ Particle ParticleSystem::genParticle() const
         break;
     }
 
+    if (GlobalSpace)
+    {
+        particle.Position = transformMat * glm::vec4(particle.Position, 1.0f);
+        particle.Velocity = transformRotate * glm::vec4(particle.Velocity, 1.0f);
+    }
+
     return particle;
 }
 
@@ -123,14 +130,29 @@ void ParticleSystem::Update()
 
     if (activeTime > StartDelay && state == ParticleState::Run && (activeTime < Duration || Loop))
     {
+        glm::mat4 transformMat;
+        glm::quat transformRotate;
+
+        if (GlobalSpace)
+        {
+            auto *EM = ECS::ECS_Engine->GetEntityManager();
+
+            auto *entity = EM->GetEntity(GetOwner());
+            auto *transform = entity->GetComponent<Transform>();
+
+            transformMat = transform->GetMat();
+            transformRotate = transform->GetGlobalPos().rotate;
+        }
+
         auto count = static_cast<u32>((deltaTime + accumulateTime) * (f32)Emission.Rate);
         if (count != 0)
         {
+
             if (Loop && releasePosition > 0)
             {
                 for (u32 i = releasePosition; i > 0 && count > 0; --i)
                 {
-                    Particle part = genParticle();
+                    Particle part = genParticle(transformMat, transformRotate);
                     particles[releasedParticles[i - 1]] = part;
                     --count;
                     --releasePosition;
@@ -144,7 +166,7 @@ void ParticleSystem::Update()
 
             for (u32 i = 0; i < launchCount; ++i)
             {
-                Particle part = genParticle();
+                Particle part = genParticle(transformMat, transformRotate);
                 particles[position++] = part;
             }
 
@@ -163,7 +185,7 @@ void ParticleSystem::Update()
 
                 for (u32 i = 0; i < particleCount; ++i)
                 {
-                    Particle part = genParticle();
+                    Particle part = genParticle(transformMat, transformRotate);
                     particles[position++] = part;
                 }
 

@@ -170,7 +170,10 @@ void RenderSystem::PreUpdate()
 
                 if (data.VAO != 0)
                 {
-                    renderTasks.push_back({data, NoShadows, transform->GetMat()});
+                    if (!ps.GlobalSpace)
+                        renderTasks.push_back({data, NoShadows, transform->GetMat()});
+                    else
+                        renderTasks.push_back({data, NoShadows, glm::mat4(1.0f)});
                     renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
                 }
             }
