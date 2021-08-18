@@ -213,9 +213,15 @@ void ForwardPlusPipeline::Render()
     glClear(GL_DEPTH_BUFFER_BIT);
     for (const auto &rTask : *renderTasks)
     {
+        if (rTask.Mask.NoShadows)
+            continue;
+
         depth.SetMat4("model", rTask.Transform);
         glBindVertexArray(rTask.DrawData.VAO);
-        glDrawElements(Utils::GetDrawModeGL(rTask.DrawData.Mode), rTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+        if (!rTask.DrawData.Arrays)
+            glDrawElements(Utils::GetDrawModeGL(rTask.DrawData.Mode), rTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+        else
+            glDrawArrays(Utils::GetDrawModeGL(rTask.DrawData.Mode), 0, rTask.DrawData.Count);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -275,6 +281,7 @@ void ForwardPlusPipeline::Render()
         shadowsManager.SetUniforms(shader);
 
         shader.SetFloat("ambient", GameEngine->GetLighting().Ambient);
+        shader.SetFloat("wh", (f32)width / (f32)height);
 
         shader.SetMat4("vp", mainVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
@@ -296,7 +303,10 @@ void ForwardPlusPipeline::Render()
 
                 shader.SetMat4("model", renderTask.Transform);
                 glBindVertexArray(renderTask.DrawData.VAO);
-                glDrawElements(Utils::GetDrawModeGL(renderTask.DrawData.Mode), renderTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+                if (!renderTask.DrawData.Arrays)
+                    glDrawElements(Utils::GetDrawModeGL(renderTask.DrawData.Mode), renderTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+                else
+                    glDrawArrays(Utils::GetDrawModeGL(renderTask.DrawData.Mode), 0, renderTask.DrawData.Count);
             }
         }
     }

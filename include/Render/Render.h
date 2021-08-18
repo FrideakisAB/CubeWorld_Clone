@@ -155,6 +155,7 @@ struct DrawData {
     u32 Count;
     Primitive Primitive;
     DrawMode Mode;
+    bool Arrays;
 };
 using DrawObject = RenderObject<DrawData>;
 

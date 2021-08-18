@@ -66,6 +66,7 @@ void Mesh::SubmitData(DrawData &drawData)
         drawData.Mode = DrawMode::Triangles;
         drawData.Primitive = Primitive::Triangles;
         drawData.Count = indCount;
+        drawData.Arrays = false;
     }
 }
 

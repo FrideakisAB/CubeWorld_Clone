@@ -7,6 +7,7 @@
 
 ParticleSystem::ParticleSystem()
 {
+    render.Initialize(this);
     particles = new Particle[maxParticlesCount];
     releasedParticles = new u32[maxParticlesCount];
 
@@ -22,6 +23,9 @@ ParticleSystem::ParticleSystem()
 
         SizeBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
     }
+
+    if (PlayOnStart)
+        state = ParticleState::Run;
 }
 
 ParticleSystem::~ParticleSystem()
@@ -79,6 +83,20 @@ Particle ParticleSystem::genParticle() const
         }
         break;
 
+    case Emitter::Hemisphere:
+    {
+        f32 a1 = Mathf::RangeRandom(0.0f, 180.0f);
+        f32 a2 = Mathf::RangeRandom(0.0f, 180.0f);
+        f32 sina = sin(a1);
+        f32 x = sina * cos(a2);
+        f32 y = sina * sin(a2);
+        f32 z = cos(a1);
+
+        particle.Position = glm::vec3(x, y, z);
+        particle.Velocity = glm::vec3(x, y, z);
+    }
+    break;
+
     case Emitter::Cone:
         {
             f32 x = Mathf::RangeRandom(-1.0f, 1.0f);
@@ -103,9 +121,9 @@ void ParticleSystem::Update()
     if (state == ParticleState::Run)
         activeTime += deltaTime;
 
-    if (activeTime > StartDelay && state == ParticleState::Run && (activeTime < Duration || Duration == 0.0f))
+    if (activeTime > StartDelay && state == ParticleState::Run && (activeTime < Duration || Loop))
     {
-        auto count = static_cast<u32>(deltaTime * (float)Emission.Rate);
+        auto count = static_cast<u32>((deltaTime + accumulateTime) * (f32)Emission.Rate);
         if (count != 0)
         {
             if (Loop && releasePosition > 0)
@@ -129,7 +147,11 @@ void ParticleSystem::Update()
                 Particle part = genParticle();
                 particles[position++] = part;
             }
+
+            accumulateTime = 0.0f;
         }
+        else
+            accumulateTime += deltaTime;
 
         for (auto& Burst : Emission.Bursts)
         {
@@ -154,15 +176,6 @@ void ParticleSystem::Update()
         {
             if (!particles[i].Active)
                 continue;
-
-            particles[i].Lifetime += deltaTime;
-            if (particles[i].Lifetime > particles[i].MaxLifetime)
-            {
-                if(Loop)
-                    releasedParticles[releasePosition++] = i;
-
-                particles[i].Active = false;
-            }
 
             f32 particleLifetimeAspect = particles[i].Lifetime / particles[i].MaxLifetime;
 
@@ -196,10 +209,10 @@ void ParticleSystem::Update()
             particles[i].Position += particles[i].Velocity * particles[i].Speed * deltaTime;
 
             if (ForceOverLifetime.Active)
-                particles[i].Position += glm::vec3(ForceOverLifetime.BaseForce * glm::vec3(
+                particles[i].Position += ForceOverLifetime.BaseForce * glm::vec3(
                         Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.XPoints),
                         Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.YPoints),
-                        Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.ZPoints)));
+                        Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.ZPoints));
 
             if (BrightOverLifetime.Active)
                 particles[i].BrightMultiplier = BrightOverLifetime.BaseBright * Curve::CurveValue(particleLifetimeAspect, 10, BrightOverLifetime.Points);
@@ -223,11 +236,27 @@ void ParticleSystem::Update()
                     particles[i].Rotation += RotationBySpeed.BaseSpeed * deltaTime;
             }
 
+            particles[i].Lifetime += deltaTime;
+            if (particles[i].Lifetime > particles[i].MaxLifetime)
+            {
+                if(Loop)
+                    releasedParticles[releasePosition++] = i;
+
+                particles[i].Active = false;
+            }
+
             ++updateCount;
         }
 
         activeCount = updateCount;
     }
+    else if (activeTime > Duration && !Loop)
+    {
+        position = 0;
+        state = ParticleState::Executed;
+    }
+
+    render.UpdateData(maxParticlesCount, particles, position);
 }
 
 void ParticleSystem::Play() noexcept
@@ -363,10 +392,6 @@ json ParticleSystem::SerializeObj()
     data["State"] = static_cast<u8>(state);
 
     data["ParticleTexture_Active"] = ParticleTexture.Active;
-    if(ParticleTexture.Texture && !ParticleTexture.Texture->GetName().empty())
-        data["ParticleTexture_Texture"] = ParticleTexture.Texture->GetName();
-    else
-        data["ParticleTexture_Texture"] = "";
     data["ParticleTexture_Tiles"] = {ParticleTexture.Tiles.x, ParticleTexture.Tiles.y};
 
     return data;
@@ -459,8 +484,6 @@ void ParticleSystem::UnSerializeObj(const json &j)
     state = static_cast<ParticleState>(j["State"]);
 
     ParticleTexture.Active = j["ParticleTexture_Active"];
-    if(j["ParticleTexture_Texture"] != "")
-        ParticleTexture.Texture = GameEngine->GetAssetsManager().GetAsset(j["ParticleTexture_Texture"]);
     ParticleTexture.Tiles = glm::uvec2(j["ParticleTexture_Tiles"][0], j["ParticleTexture_Tiles"][1]);
 
     delete[] particles;

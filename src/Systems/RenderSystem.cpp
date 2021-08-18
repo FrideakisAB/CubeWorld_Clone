@@ -7,6 +7,7 @@
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
+#include "Components/ParticleSystem.h"
 #include "Render/ForwardPlusPipeline.h"
 
 namespace fs = std::filesystem;
@@ -115,6 +116,9 @@ void RenderSystem::PreUpdate()
         spotLights.UploadData(spotLightCount, spotLightSources.data());
     }
 
+    RenderMask Shadows; Shadows.NoShadows = false;
+    RenderMask NoShadows; NoShadows.NoShadows = true;
+
     for (auto& mesh : CM->GetIterator<MeshComponent>())
     {
         auto *entity = EM->GetEntity(mesh.GetOwner());
@@ -131,8 +135,43 @@ void RenderSystem::PreUpdate()
                 if (materialTranslation.find(material) == materialTranslation.end())
                     importMaterial(material);
 
-                renderTasks.push_back({mesh.GetMesh().GetDrawData(), transform->GetMat()});
-                renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                DrawData data = mesh.GetMesh().GetDrawData();
+
+                if (data.VAO != 0)
+                {
+                    renderTasks.push_back({data, Shadows, transform->GetMat()});
+                    renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                }
+            }
+        }
+    }
+
+    for (auto& ps : CM->GetIterator<ParticleSystem>())
+    {
+        auto *entity = EM->GetEntity(ps.GetOwner());
+        if (entity != nullptr && entity->IsActive() && ps.IsActive())
+        {
+            auto *materialComponent = entity->GetComponent<MaterialComponent>();
+            auto *transform = entity->GetComponent<Transform>();
+            if (materialComponent != nullptr && materialComponent->IsActive() && transform != nullptr && transform->IsActive())
+            {
+                //Remove it
+                ps.Update();
+
+                ps.GetRender().RenderUpdate();
+
+                Material *material = materialComponent->GetMaterial();
+
+                if (materialTranslation.find(material) == materialTranslation.end())
+                    importMaterial(material);
+
+                DrawData data = ps.GetRender().GetDrawData();
+
+                if (data.VAO != 0)
+                {
+                    renderTasks.push_back({data, NoShadows, transform->GetMat()});
+                    renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                }
             }
         }
     }

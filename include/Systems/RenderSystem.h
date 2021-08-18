@@ -21,8 +21,14 @@ public:
         std::map<std::string, SamplerData> Samplers;
     };
 
+    struct RenderMask {
+        u8 NoShadows : 1;
+        u8 reserved : 7;
+    };
+
     struct RenderTask {
         DrawData DrawData;
+        RenderMask Mask;
         glm::mat4 Transform;
     };
 

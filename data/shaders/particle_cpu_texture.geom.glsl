@@ -8,6 +8,7 @@ uniform float wh;
 in VS_OUT {
     vec4 Color;
     vec2 SecData;
+    vec4 UV;
     float Size;
     float Rotation;
 } gs_in[]; 
@@ -15,6 +16,7 @@ in VS_OUT {
 out GS_OUT {
     vec4 Color;
     vec2 SecData;
+    vec4 UV;
     float Pos;
 } gs_out;
 
@@ -32,6 +34,7 @@ void main()
 {
     gs_out.Color = gs_in[0].Color;
     gs_out.SecData = gs_in[0].SecData;
+    gs_out.UV = gs_in[0].UV;
 
     vec3 p = gl_in[0].gl_Position.xyz;
     float w = gl_in[0].gl_Position.w;

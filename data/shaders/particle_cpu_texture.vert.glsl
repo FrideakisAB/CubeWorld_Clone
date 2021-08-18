@@ -12,6 +12,7 @@ uniform mat4 vp;
 out VS_OUT {
     vec4 Color;
     vec2 SecData;
+    vec4 UV;
     float Size;
     float Rotation;
 } vs_out;
@@ -22,6 +23,7 @@ void main()
 
     vs_out.Color = aColor;
     vs_out.SecData = aSecData;
+    vs_out.UV = aUV;
     vs_out.Size = aPosAndSize.w;
     vs_out.Rotation = aRotation;
 }

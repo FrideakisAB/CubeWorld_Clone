@@ -12,6 +12,7 @@
 #include "Components/Transform.h"
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
+#include "Components/ParticleSystem.h"
 
 Engine* GameEngine = nullptr;
 
@@ -73,23 +74,16 @@ Engine::Engine()
 
     auto *cube = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
     pos = cube->AddComponent<Transform>()->GetLocalPos();
-    mesh = cube->AddComponent<MeshComponent>();
+    cube->AddComponent<ParticleSystem>();
     materialComponent = cube->AddComponent<MaterialComponent>();
     pos.position.z = 18;
     pos.position.x = 5;
     cube->GetComponent<Transform>()->SetLocalPos(pos);
     materialHandle = std::make_shared<Material>();
     material = static_cast<Material*>(materialHandle.get());
-    material->Shader = "LightAccumulation";
-    Utils::ShaderParamValue uniformNow;
-    uniformNow.value = glm::vec3(0.0f, 1.0f, 0.0f);
-    uniformNow.valueType = Utils::ShaderValue::Vector3;
-    material->Uniforms["color_diffuse"] = uniformNow;
-    uniformNow.value = 0.5f;
-    uniformNow.valueType = Utils::ShaderValue::Float;
-    material->Uniforms["main_specular"] = uniformNow;
+    material->Shader = "ParticleCPU";
+    //material->Samplers["texture_diffuse"] = ;
     materialComponent->SetMaterial(materialHandle);
-    mesh->SetMesh(Utils::CreateCube());
 
     auto *plane = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
     pos = plane->AddComponent<Transform>()->GetLocalPos();

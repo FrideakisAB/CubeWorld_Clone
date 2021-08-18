@@ -4,6 +4,7 @@
 #include "ECS/ECS.h"
 #include "Utils/Gradient.h"
 #include "Assets/AssetsManager.h"
+#include "Render/ParticleRender.h"
 
 enum class EmissionType : u8 {
     OverTime = 0,
@@ -46,17 +47,10 @@ struct Particle {
     bool Active;
 };
 
-struct RenderData {
-    glm::vec4 PositionAndSize = glm::vec4(0.0f);
-    glm::vec4 Color = glm::vec4(1.0f);
-    // X - active state (is 1.0), Y - bright multiplier, ZW - texture coords
-    glm::vec4 SecondData = glm::vec4(0.0f);
-    float Rotation = 0;
-};
-
 class ParticleSystem : public ECS::Component<ParticleSystem> {
 private:
     u32 activeCount = 0;
+    f32 accumulateTime = 0.0f;
     f32 activeTime = 0.0f;
     ParticleState state = ParticleState::NotRun;
 
@@ -65,7 +59,8 @@ private:
     u32 releasePosition = 0;
     u32 *releasedParticles = nullptr;
 
-private:
+    ParticleRender render;
+
     u32 maxParticlesCount = 1000;
 
 public:
@@ -170,7 +165,6 @@ public:
 
     struct ParticleTexture {
         bool Active = false;
-        AssetsHandle Texture;
         glm::uvec2 Tiles = glm::uvec2(1);
     } ParticleTexture;
 
@@ -194,6 +188,8 @@ public:
     void SetMaxParticles(u32 maxParticles);
 
     [[nodiscard]] inline u32 GetActiveParticlesCount() const noexcept { return activeCount; }
+
+    [[nodiscard]] ParticleRender &GetRender() noexcept { return render; }
 
     json SerializeObj() override;
     void UnSerializeObj(const json &j) override;

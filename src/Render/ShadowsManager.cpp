@@ -180,6 +180,9 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                 glClear(GL_DEPTH_BUFFER_BIT);
                 for (const auto &rTask : renderTasks)
                 {
+                    if (rTask.Mask.NoShadows)
+                        continue;
+
                     depth.SetMat4("model", rTask.Transform);
                     glBindVertexArray(rTask.DrawData.VAO);
                     glDrawElements(Utils::GetDrawModeGL(rTask.DrawData.Mode), rTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
@@ -272,6 +275,9 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
 
                     for (const auto &task : renderTasks)
                     {
+                        if (task.Mask.NoShadows)
+                            continue;
+
                         depth.SetMat4("model", task.Transform);
                         glBindVertexArray(task.DrawData.VAO);
                         glDrawElements(Utils::GetDrawModeGL(task.DrawData.Mode), task.DrawData.Count, GL_UNSIGNED_INT, nullptr);
@@ -352,9 +358,15 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
 
                     for (const auto &task : renderTasks)
                     {
+                        if (task.Mask.NoShadows)
+                            continue;
+
                         depth.SetMat4("model", vp * task.Transform);
                         glBindVertexArray(task.DrawData.VAO);
-                        glDrawElements(Utils::GetDrawModeGL(task.DrawData.Mode), task.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+                        if (!task.DrawData.Arrays)
+                            glDrawElements(Utils::GetDrawModeGL(task.DrawData.Mode), task.DrawData.Count, GL_UNSIGNED_INT, nullptr);
+                        else
+                            glDrawArrays(Utils::GetDrawModeGL(task.DrawData.Mode), 0, task.DrawData.Count);
                     }
                 }
             }
