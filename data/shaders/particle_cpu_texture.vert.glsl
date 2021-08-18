@@ -3,8 +3,8 @@
 layout (location = 0) in vec4 aPosAndSize;
 layout (location = 1) in vec4 aColor;
 layout (location = 2) in vec2 aSecData;
-layout (location = 2) in vec4 aUV;
-layout (location = 3) in float aRotation;
+layout (location = 3) in vec4 aUV;
+layout (location = 4) in float aRotation;
 
 uniform mat4 model;
 uniform mat4 vp;

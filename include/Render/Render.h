@@ -160,7 +160,7 @@ struct DrawData {
 using DrawObject = RenderObject<DrawData>;
 
 struct SamplerData {
-    u64 Handle;
+    u32 Handle;
     TexType TextureType;
     TexDataType TextureDataType;
 };

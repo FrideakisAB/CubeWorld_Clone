@@ -32,7 +32,7 @@ private:
     SSBO<int> spotIndices;
     u16 pointLightPos, spotLightPos;
 
-    void setupMaterial(Shader &shader, Material *material);
+    void setupMaterial(Shader &shader, Material *material, u8 lastTexture);
 
 public:
     ForwardPlusPipeline();

@@ -24,16 +24,11 @@ public:
     bool Build();
     void Use() const;
 
-    void SetTexture2D(const std::string &name, uint32_t id, uint32_t num = 0) const
+    void SetTexture2D(const std::string &name, u32 id, i32 num = 0) const
     {
         glActiveTexture(GL_TEXTURE0 + num);
         glBindTexture(GL_TEXTURE_2D, id);
-        SetUInt(name, num);
-    }
-
-    void SetTextureHandle(const std::string &name, u64 handle) const
-    {
-        glUniform2uiv(glGetUniformLocation(ID, name.c_str()), 8*2, (const GLuint *)handle);
+        SetInt(name, num);
     }
 
     void SetBool(const std::string &name, bool value) const

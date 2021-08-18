@@ -74,7 +74,7 @@ public:
     [[nodiscard]] glm::uvec3 GetSpotCount() const noexcept { return spotShadowCount; }
     [[nodiscard]] SSBO<SpotShadowData> &GetSpotShadowData() noexcept { return spotLightData; }
 
-    void AttachShadowsData() noexcept;
+    u8 AttachShadowsData() noexcept;
     void SetUniforms(Shader &shader) const noexcept;
 };
 

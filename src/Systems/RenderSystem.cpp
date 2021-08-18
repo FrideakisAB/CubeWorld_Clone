@@ -14,6 +14,7 @@ namespace fs = std::filesystem;
 
 RenderSystem::RenderSystem()
 {
+    Utils::SetupDebugOpenGL();
     renderPipeline = new ForwardPlusPipeline();
 
     for (auto &entry : fs::recursive_directory_iterator("data\\shaders"))

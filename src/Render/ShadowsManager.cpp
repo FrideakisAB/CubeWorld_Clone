@@ -379,7 +379,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
     }
 }
 
-void ShadowsManager::AttachShadowsData() noexcept
+u8 ShadowsManager::AttachShadowsData() noexcept
 {
     pointLightPositions.Bind(4);
     spotLightData.Bind(5);
@@ -398,6 +398,8 @@ void ShadowsManager::AttachShadowsData() noexcept
     glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[1]);
     glActiveTexture(GL_TEXTURE8);
     glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[2]);
+
+    return 8;
 }
 
 void ShadowsManager::SetUniforms(Shader &shader) const noexcept

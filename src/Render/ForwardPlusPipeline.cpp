@@ -271,7 +271,7 @@ void ForwardPlusPipeline::Render()
     pointIndices.Bind(2);
     spotIndices.Bind(3);
 
-    shadowsManager.AttachShadowsData();
+    u8 lastTexture = shadowsManager.AttachShadowsData();
 
     for (const auto &[name, materialMap] : *renderObjects)
     {
@@ -296,7 +296,7 @@ void ForwardPlusPipeline::Render()
 
         for (const auto &[materialPtr, taskIDs] : materialMap)
         {
-            setupMaterial(shader, materialPtr);
+            setupMaterial(shader, materialPtr, lastTexture);
             for (const auto id : taskIDs)
             {
                 RenderSystem::RenderTask &renderTask = (*renderTasks)[id];
@@ -365,7 +365,7 @@ void ForwardPlusPipeline::Release()
 
 }
 
-void ForwardPlusPipeline::setupMaterial(Shader &shader, Material *material)
+void ForwardPlusPipeline::setupMaterial(Shader &shader, Material *material, u8 lastTexture)
 {
     RenderSystem::MaterialSet &materialSet = (*materialTranslation)[material];
 
@@ -416,5 +416,5 @@ void ForwardPlusPipeline::setupMaterial(Shader &shader, Material *material)
     }
 
     for (const auto &sampler : materialSet.Samplers)
-        shader.SetTextureHandle(sampler.first, sampler.second.Handle);
+        shader.SetTexture2D(sampler.first, sampler.second.Handle, ++lastTexture);
 }

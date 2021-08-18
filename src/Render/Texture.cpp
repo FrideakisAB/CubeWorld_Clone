@@ -132,6 +132,7 @@ void Texture::SubmitData(SamplerData &samplerData)
 
             if (mipmaps)
                 glGenerateMipmap(GL_TEXTURE_1D);
+            glBindTexture(GL_TEXTURE_1D, 0);
             break;
 
         case TexType::Texture2D:
@@ -149,6 +150,7 @@ void Texture::SubmitData(SamplerData &samplerData)
 
             if (mipmaps)
                 glGenerateMipmap(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, 0);
             break;
 
         case TexType::TextureCube:
@@ -171,10 +173,19 @@ void Texture::SubmitData(SamplerData &samplerData)
 
             if (mipmaps)
                 glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
             break;
         }
-        samplerData.Handle = glGetTextureHandleARB(texture);
-        glMakeTextureHandleResidentARB(samplerData.Handle);
+
+        samplerData.Handle = texture;
+        samplerData.TextureDataType = type;
+        samplerData.TextureType = tt;
+
+        applyRequire = false;
+    }
+    else
+    {
+        samplerData.Handle = texture;
         samplerData.TextureDataType = type;
         samplerData.TextureType = tt;
     }

@@ -300,6 +300,7 @@ namespace Utils {
     }
 
     void DrawQuad();
+    void SetupDebugOpenGL();
 }
 
 #endif

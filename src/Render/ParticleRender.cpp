@@ -63,7 +63,7 @@ void ParticleRender::SubmitData(DrawData &drawData)
             {
                 renderParticles[i].PositionAndSize = glm::vec4(particles[i].Position, particles[i].Size);
                 renderParticles[i].Color = particles[i].Color;
-                renderParticles[i].Rotation = particles[i].Rotation;
+                renderParticles[i].Rotation = glm::radians(particles[i].Rotation);
                 if(particles[i].Active)
                     renderParticles[i].SecondData = glm::vec2(1.0f, particles[i].BrightMultiplier);
                 else
@@ -71,8 +71,8 @@ void ParticleRender::SubmitData(DrawData &drawData)
 
                 if (particleSystem->ParticleTexture.Active)
                 {
-                    renderParticles[i].SpritePositionAndSize.x = ((u32)particles[i].Sprite % particleSystem->ParticleTexture.Tiles.y);
-                    renderParticles[i].SpritePositionAndSize.y = ((u32)particles[i].Sprite / particleSystem->ParticleTexture.Tiles.x);
+                    renderParticles[i].SpritePositionAndSize.x = ((u32)particles[i].Sprite % particleSystem->ParticleTexture.Tiles.x);
+                    renderParticles[i].SpritePositionAndSize.y = ((u32)particles[i].Sprite / particleSystem->ParticleTexture.Tiles.y);
                     renderParticles[i].SpritePositionAndSize.z = 1.0f / particleSystem->ParticleTexture.Tiles.x;
                     renderParticles[i].SpritePositionAndSize.w = 1.0f / particleSystem->ParticleTexture.Tiles.y;
                 }
