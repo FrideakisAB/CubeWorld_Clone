@@ -44,6 +44,8 @@ endif()
 set(Source
 	src/Log.cpp
 	src/Engine.cpp
+	src/GameScene.cpp
+	src/GameObject.cpp
 
 	src/Assets/AssetsManager.cpp
 

@@ -109,6 +109,7 @@ namespace ECS {
         {
             IEntity *entity = this->entityHandleTable[entityId];
             entity->onDelete();
+            entity->OnDelete();
 
             if (this->numPendingDestroyedEntities < this->pendingDestroyedEntities.size())
                 this->pendingDestroyedEntities[this->numPendingDestroyedEntities++] = entityId;

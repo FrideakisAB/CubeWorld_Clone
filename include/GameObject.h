@@ -4,6 +4,9 @@
 #include "ECS/ECS.h"
 
 class GameObject : public ECS::Entity<GameObject> {
+protected:
+    void OnDelete() override;
+
 public:
     std::string Name = "GameObject";
     std::string Tag;

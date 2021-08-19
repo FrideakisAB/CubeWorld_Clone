@@ -18,7 +18,7 @@ namespace ECS {
         public:
             IComponent *Add(IEntity *ent) override
             {
-                return ent->AddComponent<T>(ent);
+                return ent->AddComponent<T>();
             }
         };
 

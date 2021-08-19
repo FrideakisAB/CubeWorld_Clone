@@ -65,13 +65,13 @@ namespace ECS {
         if (parentId != INVALID_ENTITY_ID)
             ECS_Engine->GetEntityManager()->GetEntity(parentId)->RemoveChild(entityId);
 
-        for (EntityId id : childsId)
+        for (EntityId id : childIds)
             ECS_Engine->GetEntityManager()->DestroyEntity(id);
     }
 
     void IEntity::recSetActive()
     {
-        for (auto entId : childsId)
+        for (auto entId : childIds)
         {
             auto *entity = ECS_Engine->GetEntityManager()->GetEntity(entId);
             entity->globalActive = IsActive();
@@ -104,7 +104,7 @@ namespace ECS {
         {
             entity->SetParent(INVALID_ENTITY_ID);
 
-            childsId.push_back(entity->entityId);
+            childIds.push_back(entity->entityId);
             entity->parentId = entityId;
             entity->globalActive = IsActive();
             entity->recSetActive();
@@ -125,9 +125,9 @@ namespace ECS {
     {
         if (entityId != INVALID_ENTITY_ID && entityId != this->entityId)
         {
-            if (auto It = std::find(childsId.begin(), childsId.end(), entityId); It != childsId.end())
+            if (auto It = std::find(childIds.begin(), childIds.end(), entityId); It != childIds.end())
             {
-                childsId.erase(It);
+                childIds.erase(It);
                 auto *entity = ECS_Engine->GetEntityManager()->GetEntity(entityId);
                 entity->parentId = INVALID_ENTITY_ID;
                 entity->globalActive = true;
@@ -139,7 +139,7 @@ namespace ECS {
 
     void IEntity::ReserveChildSpace(std::size_t count)
     {
-        childsId.reserve(childsId.size() + count);
+        childIds.reserve(childIds.size() + count);
     }
 
     IEntity *IEntity::GetParent() const noexcept
@@ -149,6 +149,6 @@ namespace ECS {
 
     IEntity *IEntity::GetChild(std::size_t i) const
     {
-        return ECS_Engine->GetEntityManager()->GetEntity(childsId[i]);
+        return ECS_Engine->GetEntityManager()->GetEntity(childIds[i]);
     }
 }

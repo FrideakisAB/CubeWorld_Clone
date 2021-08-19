@@ -175,7 +175,7 @@ void ParticleSystem::Update()
         else
             accumulateTime += deltaTime;
 
-        for (auto& Burst : Emission.Bursts)
+        for (auto &Burst : Emission.Bursts)
         {
             if (Burst.Time <= deltaTime && !Burst.IsMake)
             {

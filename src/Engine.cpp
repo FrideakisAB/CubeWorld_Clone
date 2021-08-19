@@ -6,6 +6,7 @@
 #include "Assets/AssetsManager.h"
 #include "Systems/RenderSystem.h"
 
+#include "GameScene.h"
 #include "GameObject.h"
 #include "Utils/Primitives.h"
 #include "Components/Camera.h"
@@ -13,6 +14,7 @@
 #include "Components/LightSource.h"
 #include "Components/MeshComponent.h"
 #include "Components/ParticleSystem.h"
+#include "Components/MaterialComponent.h"
 
 Engine* GameEngine = nullptr;
 
@@ -21,6 +23,7 @@ Engine::Engine()
     std::random_device randomDevice;
     randomEngine = new std::mt19937(randomDevice());
     assetsManager = new AssetsManager();
+    scene = new GameScene();
     Memory::InitializeMemoryManager();
     ECS::Initialize();
 
@@ -28,6 +31,18 @@ Engine::Engine()
     auto &SM = *ECS::ECS_Engine->GetSystemManager();
     renderSystem = SM.AddSystem<RenderSystem>();
     SM.DisableSystem<RenderSystem>();
+
+    auto &assetsFactory = assetsManager->GetAssetsFactory();
+    assetsFactory.Register<Mesh>();
+    assetsFactory.Register<Texture>();
+
+    auto &CF = (*ECS::ECS_Engine->GetComponentFactory());
+    CF.Register<Camera>();
+    CF.Register<LightSource>();
+    CF.Register<MaterialComponent>();
+    CF.Register<MeshComponent>();
+    CF.Register<ParticleSystem>();
+    CF.Register<Transform>();
 
     // Test scene
     auto *camera = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
@@ -114,6 +129,8 @@ Engine::~Engine()
     ECS::Terminate();
     Memory::TerminateMemoryManager();
     delete assetsManager;
+    delete randomEngine;
+    delete scene;
 }
 
 void Engine::Update()

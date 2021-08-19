@@ -24,11 +24,13 @@ namespace ECS {
         ComponentManager *componentManagerInstance;
         EntityId entityId;
         EntityId parentId = INVALID_ENTITY_ID;
-        std::vector<EntityId> childsId;
+        std::vector<EntityId> childIds;
         u8 localActive : 1;
         u8 globalActive : 1;
         u8 destroyed : 1;
         u8 reserved : 5;
+
+        virtual void OnDelete() {}
 
     public:
         IEntity();
@@ -67,9 +69,9 @@ namespace ECS {
         [[nodiscard]] IEntity *GetParent() const noexcept;
         void SetParent(IEntity *entity);
         void SetParent(EntityId entityId);
-        [[nodiscard]] inline EntityId GetChildID(std::size_t i) const { return childsId[i]; }
+        [[nodiscard]] inline EntityId GetChildID(std::size_t i) const { return childIds[i]; }
         [[nodiscard]] IEntity *GetChild(std::size_t i) const;
-        [[nodiscard]] inline std::size_t GetChildCount() const noexcept { return childsId.size(); }
+        [[nodiscard]] inline std::size_t GetChildCount() const noexcept { return childIds.size(); }
         void AddChild(IEntity *entity);
         void AddChild(EntityId entityId);
         void RemoveChild(EntityId entityId);

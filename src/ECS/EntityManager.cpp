@@ -46,4 +46,4 @@ namespace ECS {
 
         this->numPendingDestroyedEntities = 0;
     }
-} 
+}
