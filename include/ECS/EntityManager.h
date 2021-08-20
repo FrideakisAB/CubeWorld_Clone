@@ -97,8 +97,8 @@ namespace ECS {
 
             ECS::EntityId entityId = this->AcquireEntityId((T *)pObjectMemory);
 
-            ((T *)pObjectMemory)->entityId = entityId;
-            ((T *)pObjectMemory)->componentManagerInstance = this->componentManagerInstance;
+            ((T*)pObjectMemory)->entityId = entityId;
+            ((T*)pObjectMemory)->componentManagerInstance = this->componentManagerInstance;
 
             IEntity *entity = new(pObjectMemory)T(std::forward<ARGS>(args)...);
 
@@ -107,17 +107,24 @@ namespace ECS {
 
         void DestroyEntity(EntityId entityId)
         {
+            if (entityId == INVALID_ENTITY_ID)
+                return;
+
             IEntity *entity = this->entityHandleTable[entityId];
+
+            if (!entity->destroyed)
+            {
+                if (this->numPendingDestroyedEntities < this->pendingDestroyedEntities.size())
+                    this->pendingDestroyedEntities[this->numPendingDestroyedEntities++] = entityId;
+                else
+                {
+                    this->pendingDestroyedEntities.push_back(entityId);
+                    ++this->numPendingDestroyedEntities;
+                }
+            }
+
             entity->onDelete();
             entity->OnDelete();
-
-            if (this->numPendingDestroyedEntities < this->pendingDestroyedEntities.size())
-                this->pendingDestroyedEntities[this->numPendingDestroyedEntities++] = entityId;
-            else
-            {
-                this->pendingDestroyedEntities.push_back(entityId);
-                ++this->numPendingDestroyedEntities;
-            }
         }
 
         inline IEntity *GetEntity(EntityId entityId)

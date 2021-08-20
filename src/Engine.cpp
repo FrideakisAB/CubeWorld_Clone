@@ -2,6 +2,8 @@
 
 #include "ECS/Engine.h"
 #include "ECS/SystemManager.h"
+#include "ECS/Serialization/EntityFactory.h"
+#include "ECS/Serialization/ComponentFactory.h"
 #include "Memory/MemoryManager.h"
 #include "Assets/AssetsManager.h"
 #include "Systems/RenderSystem.h"
@@ -43,6 +45,9 @@ Engine::Engine()
     CF.Register<MeshComponent>();
     CF.Register<ParticleSystem>();
     CF.Register<Transform>();
+
+    auto &EF = (*ECS::ECS_Engine->GetEntityFactory());
+    EF.Register<GameObject>();
 
     // Test scene
     auto *camera = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));

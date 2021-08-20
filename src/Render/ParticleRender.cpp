@@ -35,7 +35,7 @@ void ParticleRender::SubmitData(DrawData &drawData)
 
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, maxParticleCount * sizeof(RenderData), nullptr, Utils::GetDrawTypeGL(DrawType::Dynamic));
+        glBufferData(GL_ARRAY_BUFFER, maxParticleCount * sizeof(RenderData), nullptr, Utils::GetDrawTypeGL(DrawType::Stream));
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(RenderData), nullptr);
@@ -49,6 +49,7 @@ void ParticleRender::SubmitData(DrawData &drawData)
         glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(RenderData), (void*)offsetof(ParticleRender::RenderData, Rotation));
 
         glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         isNeedRecreate = false;
     }
@@ -59,22 +60,41 @@ void ParticleRender::SubmitData(DrawData &drawData)
         {
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             auto *renderParticles = static_cast<RenderData*>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+
+            float xDiv = 1.0f / particleSystem->ParticleTexture.Tiles.x;
+            float yDiv = 1.0f / particleSystem->ParticleTexture.Tiles.y;
             for (u32 i = 0; i < position; ++i)
             {
-                renderParticles[i].PositionAndSize = glm::vec4(particles[i].Position, particles[i].Size);
-                renderParticles[i].Color = particles[i].Color;
-                renderParticles[i].Rotation = glm::radians(particles[i].Rotation);
-                if(particles[i].Active)
-                    renderParticles[i].SecondData = glm::vec2(1.0f, particles[i].BrightMultiplier);
+                Particle particle = particles[i];
+
+                renderParticles[i].PositionAndSize.x = particle.Position.x;
+                renderParticles[i].PositionAndSize.y = particle.Position.y;
+                renderParticles[i].PositionAndSize.z = particle.Position.z;
+                renderParticles[i].PositionAndSize.w = particle.Size;
+
+                renderParticles[i].Color.x = particle.Color.x;
+                renderParticles[i].Color.y = particle.Color.y;
+                renderParticles[i].Color.z = particle.Color.z;
+                renderParticles[i].Color.w = particle.Color.w;
+
+                renderParticles[i].Rotation = glm::radians(particle.Rotation);
+                if(particle.Active)
+                {
+                    renderParticles[i].SecondData.x = 1.0f;
+                    renderParticles[i].SecondData.y = particle.BrightMultiplier;
+                }
                 else
-                    renderParticles[i].SecondData = glm::vec2(0.0f, particles[i].BrightMultiplier);
+                {
+                    renderParticles[i].SecondData.x = 0.0f;
+                    renderParticles[i].SecondData.y = particle.BrightMultiplier;
+                }
 
                 if (particleSystem->ParticleTexture.Active)
                 {
-                    renderParticles[i].SpritePositionAndSize.x = ((u32)particles[i].Sprite % particleSystem->ParticleTexture.Tiles.x);
-                    renderParticles[i].SpritePositionAndSize.y = ((u32)particles[i].Sprite / particleSystem->ParticleTexture.Tiles.y);
-                    renderParticles[i].SpritePositionAndSize.z = 1.0f / particleSystem->ParticleTexture.Tiles.x;
-                    renderParticles[i].SpritePositionAndSize.w = 1.0f / particleSystem->ParticleTexture.Tiles.y;
+                    renderParticles[i].SpritePositionAndSize.x = ((u32)particle.Sprite % particleSystem->ParticleTexture.Tiles.x);
+                    renderParticles[i].SpritePositionAndSize.y = ((u32)particle.Sprite / particleSystem->ParticleTexture.Tiles.y);
+                    renderParticles[i].SpritePositionAndSize.z = xDiv;
+                    renderParticles[i].SpritePositionAndSize.w = yDiv;
                 }
                 else
                 {
@@ -85,6 +105,7 @@ void ParticleRender::SubmitData(DrawData &drawData)
                 }
             }
             glUnmapBuffer(GL_ARRAY_BUFFER);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
         isNeedUpdate = false;

@@ -39,6 +39,9 @@ namespace ECS {
         json SerializeComponents();
         void UnSerializeComponents(const json &j);
 
+        json SerializeObj() override;
+        void UnSerializeObj(const json &j) override;
+
         template<class T>
         T *GetComponent() const
         {

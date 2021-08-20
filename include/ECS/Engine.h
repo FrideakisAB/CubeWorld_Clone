@@ -27,7 +27,9 @@ namespace ECS {
     class EntityManager;
     class SystemManager;
     class ComponentManager;
+
     class ComponentFactory;
+    class EntityFactory;
 
     class ECSEngine {
         friend IEntity;
@@ -43,7 +45,9 @@ namespace ECS {
         ComponentManager *componentManager;
         SystemManager *systemManager;
         Event::EventHandler *eventHandler;
+
         ComponentFactory *componentFactory;
+        EntityFactory *entityFactory;
 
         ECSEngine(const ECSEngine &) = delete;
         ECSEngine &operator=(ECSEngine &) = delete;
@@ -64,6 +68,7 @@ namespace ECS {
         [[nodiscard]] inline ComponentManager *GetComponentManager() const noexcept { return componentManager; }
         [[nodiscard]] inline SystemManager *GetSystemManager() const noexcept { return systemManager; }
         [[nodiscard]] inline ComponentFactory *GetComponentFactory() const noexcept { return componentFactory; }
+        [[nodiscard]] inline EntityFactory *GetEntityFactory() const noexcept { return entityFactory; }
         [[nodiscard]] inline util::Timer *GetTimer() const noexcept { return engineTime; }
 
         template<class E, class... ARGS>

@@ -45,10 +45,10 @@ public:
         glBufferSubData(bufferType, sizeof(T) * offset, sizeof(T) * elementsCount, sData);
     }
 
-    void Open()
+    void Open(GLuint accessType = GL_READ_WRITE)
     {
         glBindBuffer(buffType, buffId);
-        data = (T*)glMapBuffer(buffType, GL_READ_WRITE);
+        data = (T*)glMapBuffer(buffType, accessType);
     }
 
     void Close()

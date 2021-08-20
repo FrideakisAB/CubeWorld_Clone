@@ -16,6 +16,7 @@ private:
     std::map<ECS::EntityId, GameObject*> gameObjects;
 
     void RemoveObject(ECS::EntityId eid);
+    void Validate(ECS::EntityId eid, GameObject *gameObject);
 
 public:
     ~GameScene();
@@ -39,9 +40,6 @@ public:
 
     [[nodiscard]] json SerializeObj() override;
     void UnSerializeObj(const json &j) override;
-
-    void SerializeBin(std::ofstream &file) override;
-    void UnSerializeBin(std::ifstream &file) override;
 };
 
 #endif

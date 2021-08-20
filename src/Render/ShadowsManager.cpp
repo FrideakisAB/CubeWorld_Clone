@@ -4,8 +4,8 @@
 #include "Engine.h"
 
 ShadowsManager::ShadowsManager()
-    : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount),
-      spotLightData(spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount)
+    : pointLightPositions(pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount, nullptr, GL_SHADER_STORAGE_BUFFER, GL_STREAM_DRAW),
+      spotLightData(spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount, nullptr, GL_SHADER_STORAGE_BUFFER, GL_STREAM_DRAW)
 {
     //TODO: read all variables from config file
     isDirectionalShadowsActive = true;
@@ -187,6 +187,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                     glBindVertexArray(rTask.DrawData.VAO);
                     glDrawElements(Utils::GetDrawModeGL(rTask.DrawData.Mode), rTask.DrawData.Count, GL_UNSIGNED_INT, nullptr);
                 }
+                glBindVertexArray(0);
             }
             else if (!isDeleteDirClear)
             {
@@ -207,7 +208,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
             Shader &depth = shaders["PointDepth"];
             depth.Use();
 
-            pointLightPositions.Open();
+            pointLightPositions.Open(GL_WRITE_ONLY);
             glm::vec4 *lights = pointLightPositions.GetData();
 
             for (u32 i = 0; i < (pointLightHighShadowCount + pointLightMediumShadowCount + pointLightLowShadowCount) && i < (*pointLightSources).size(); ++i)
@@ -255,7 +256,9 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
 
                     glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, (*pointLightSources)[i].colorAndRadius.w);
 
-                    lights[i] = (*pointLightSources)[i].positionAndIntensity;
+                    lights[i].x = (*pointLightSources)[i].positionAndIntensity.x;
+                    lights[i].y = (*pointLightSources)[i].positionAndIntensity.y;
+                    lights[i].z = (*pointLightSources)[i].positionAndIntensity.z;
                     lights[i].w = (*pointLightSources)[i].colorAndRadius.w;
                     auto lightPos = glm::vec3((*pointLightSources)[i].positionAndIntensity);
 
@@ -282,6 +285,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                         glBindVertexArray(task.DrawData.VAO);
                         glDrawElements(Utils::GetDrawModeGL(task.DrawData.Mode), task.DrawData.Count, GL_UNSIGNED_INT, nullptr);
                     }
+                    glBindVertexArray(0);
                 }
             }
             pointLightPositions.Close();
@@ -298,7 +302,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
             Shader &depth = shaders["SpotDepth"];
             depth.Use();
 
-            spotLightData.Open();
+            spotLightData.Open(GL_WRITE_ONLY);
             SpotShadowData *lights = spotLightData.GetData();
 
             for (u32 i = 0; i < (spotLightHighShadowCount + spotLightMediumShadowCount + spotLightLowShadowCount) && i < (*spotLightSources).size(); ++i)
@@ -351,7 +355,9 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                     glm::mat4 shadowView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0,1,0));
                     glm::mat4 vp = shadowProj * shadowView;
 
-                    lights[i].positionAndFarPlane = (*spotLightSources)[i].positionAndIntensity;
+                    lights[i].positionAndFarPlane.x = (*spotLightSources)[i].positionAndIntensity.x;
+                    lights[i].positionAndFarPlane.y = (*spotLightSources)[i].positionAndIntensity.y;
+                    lights[i].positionAndFarPlane.z = (*spotLightSources)[i].positionAndIntensity.z;
                     lights[i].positionAndFarPlane.w = (*spotLightSources)[i].colorAndRadius.w;
                     lights[i].directionAndCutterAngle = (*spotLightSources)[i].directionAndCutterAngle;
                     lights[i].vp = vp;
@@ -368,6 +374,7 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                         else
                             glDrawArrays(Utils::GetDrawModeGL(task.DrawData.Mode), 0, task.DrawData.Count);
                     }
+                    glBindVertexArray(0);
                 }
             }
             spotLightData.Close();

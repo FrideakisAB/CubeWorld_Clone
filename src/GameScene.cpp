@@ -90,22 +90,33 @@ void GameScene::RemoveObject(ECS::EntityId eid)
     gameObjects.erase(gameObjects.find(eid));
 }
 
+void GameScene::Validate(ECS::EntityId eid, GameObject *gameObject)
+{
+    if (gameObjects.find(eid) == gameObjects.end())
+        gameObjects[eid] = gameObject;
+}
+
 json GameScene::SerializeObj()
 {
-    return {};
+    json data;
+
+    size_t i = 0;
+    for (auto &&[eid, gameObject] : gameObjects)
+    {
+        if (gameObject->GetParentID() == ECS::INVALID_ENTITY_ID)
+            data["gameObjects"][i++] = gameObject->SerializeObj();
+    }
+
+    data["count"] = i;
+
+    return data;
 }
 
 void GameScene::UnSerializeObj(const json &j)
 {
-
-}
-
-void GameScene::SerializeBin(std::ofstream &file)
-{
-
-}
-
-void GameScene::UnSerializeBin(std::ifstream &file)
-{
-
+    for (size_t i = 0; i < j["count"]; ++i)
+    {
+        GameObject *go = Create("");
+        go->UnSerializeObj(j["gameObjects"][i]);
+    }
 }

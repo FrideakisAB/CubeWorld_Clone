@@ -1,4 +1,3 @@
-
 #include <Engine.h>
 
 #include "ECS/Engine.h"
@@ -8,6 +7,7 @@
 #include "ECS/EntityManager.h"
 #include "ECS/ComponentManager.h"
 #include "ECS/util/FamilyTypeID.h"
+#include "ECS/Serialization/EntityFactory.h"
 #include "ECS/Serialization/ComponentFactory.h"
 
 namespace ECS {
@@ -19,6 +19,7 @@ namespace ECS {
         componentManager = new ComponentManager();
         entityManager = new EntityManager(this->componentManager);
         componentFactory = new ComponentFactory();
+        entityFactory = new EntityFactory();
     }
 
     ECSEngine::~ECSEngine()
@@ -40,6 +41,9 @@ namespace ECS {
 
         delete componentFactory;
         componentFactory = nullptr;
+
+        delete entityFactory;
+        entityFactory = nullptr;
     }
 
     void ECSEngine::Update()

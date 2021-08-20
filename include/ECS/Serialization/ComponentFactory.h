@@ -25,25 +25,6 @@ namespace ECS {
         using CmpSetRegistry = std::unordered_map<std::string, IComponentSet *>;
         CmpSetRegistry cmpSetRegistry;
 
-        template<class T>
-        inline ComponentSet<T> *GetComponentSet()
-        {
-            std::string CSID = boost::typeindex::type_id<T>().pretty_name();
-
-            auto it = this->cmpSetRegistry.find(CSID);
-            ComponentSet<T> *ec = nullptr;
-
-            if (it == this->cmpSetRegistry.end())
-            {
-                logger->Error("Component not register!");
-            }
-            else
-                ec = (ComponentSet<T> *)it->second;
-
-            assert(ec != nullptr && "Failed to find ComponentSet<T>! Maybe component not register");
-            return ec;
-        }
-
     public:
         ~ComponentFactory()
         {

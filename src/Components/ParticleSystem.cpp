@@ -130,8 +130,8 @@ void ParticleSystem::Update()
 
     if (activeTime > StartDelay && state == ParticleState::Run && (activeTime < Duration || Loop))
     {
-        glm::mat4 transformMat;
-        glm::quat transformRotate;
+        glm::mat4 transformMat{};
+        glm::quat transformRotate{};
 
         if (GlobalSpace)
         {

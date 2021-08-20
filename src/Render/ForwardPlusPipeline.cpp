@@ -181,8 +181,8 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
-    pointIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16));
-    spotIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16));
+    pointIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16), nullptr, GL_SHADER_STORAGE_BUFFER, GL_STREAM_DRAW);
+    spotIndices.UploadData(1024 * ((width + width % 16) / 16) * ((height + height % 16) / 16), nullptr, GL_SHADER_STORAGE_BUFFER, GL_STREAM_DRAW);
 
     this->offsetX = offsetX;
     this->offsetY = offsetY;

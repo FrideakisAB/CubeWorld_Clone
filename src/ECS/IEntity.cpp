@@ -2,6 +2,7 @@
 
 #include "ECS/EntityManager.h"
 #include "ECS/ComponentManager.h"
+#include "ECS/Serialization/EntityFactory.h"
 #include "ECS/Serialization/ComponentFactory.h"
 
 namespace ECS {
@@ -150,5 +151,34 @@ namespace ECS {
     IEntity *IEntity::GetChild(std::size_t i) const
     {
         return ECS_Engine->GetEntityManager()->GetEntity(childIds[i]);
+    }
+
+    json IEntity::SerializeObj()
+    {
+        json data;
+
+        data["components"] = SerializeComponents();
+        data["childCount"] = childIds.size();
+
+        for(size_t i = 0; i < childIds.size(); ++i)
+            data["child"][i] = ECS_Engine->GetEntityManager()->GetEntity(childIds[i])->SerializeObj();
+
+        return data;
+    }
+
+    void IEntity::UnSerializeObj(const json &j)
+    {
+        auto &EF = *ECS_Engine->GetEntityFactory();
+        auto &EM = *ECS_Engine->GetEntityManager();
+
+        UnSerializeComponents(j["components"]);
+
+        size_t childCount = j["childCount"];
+        for (size_t i = 0; i < childCount; ++i)
+        {
+            IEntity *child = EM.GetEntity(EF.Create(j["child"][i]["base"]["ESID"]));
+            child->UnSerializeObj(j["child"][i]);
+            AddChild(child);
+        }
     }
 }
