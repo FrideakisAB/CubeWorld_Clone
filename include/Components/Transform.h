@@ -1,8 +1,8 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "Utils/glm.h"
 #include "ECS/ECS.h"
+#include "Utils/glm.h"
 
 struct Position {
     glm::vec3 position{};
@@ -44,6 +44,9 @@ public:
     [[nodiscard]] inline glm::vec3 Right() const noexcept { return right; }
     [[nodiscard]] inline glm::vec3 Up() const noexcept { return up; }
     [[nodiscard]] inline glm::vec3 Forward() const noexcept { return forward; }
+
+    [[nodiscard]] json SerializeObj() override;
+    void UnSerializeObj(const json &j) override;
 };
 
 #endif

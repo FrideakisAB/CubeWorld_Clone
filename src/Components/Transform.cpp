@@ -94,3 +94,25 @@ void Transform::recalculate()
             trans->recalculate();
     }
 }
+
+json Transform::SerializeObj()
+{
+    json data;
+
+    data["position"] = {position.position.x, position.position.y, position.position.z};
+    data["rotate"] = {position.rotate.x, position.rotate.y, position.rotate.z, position.rotate.w};
+    data["scale"] = {position.scale.x, position.scale.y, position.scale.z};
+    data["localFlag"] = localFlag;
+
+    return data;
+}
+
+void Transform::UnSerializeObj(const json &j)
+{
+    position.position = {j["position"][0], j["position"][1], j["position"][2]};
+    position.rotate = {j["rotate"][0], j["rotate"][1], j["rotate"][2], j["rotate"][3]};
+    position.scale = {j["scale"][0], j["scale"][1], j["scale"][2]};
+    localFlag = j["localFlag"];
+
+    recalculate();
+}

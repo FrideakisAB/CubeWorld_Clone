@@ -1,26 +1,25 @@
 #include "Components/LightSource.h"
 
-void LightSource::SetLightType(LightType lightType)
+json LightSource::SerializeObj()
 {
-    type = lightType;
+    json data;
+
+    data["cmpName"] = boost::typeindex::type_id<LightSource>().pretty_name();
+
+    data["type"] = static_cast<u8>(Type);
+    data["color"] = {Color.x, Color.y, Color.z};
+    data["radius"] = Radius;
+    data["intensity"] = Intensity;
+    data["cutterOff"] = CutterOff;
+
+    return data;
 }
 
-void LightSource::SetColor(glm::vec3 color)
+void LightSource::UnSerializeObj(const json &j)
 {
-    this->color = color;
-}
-
-void LightSource::SetRadius(float radius)
-{
-    this->radius = radius;
-}
-
-void LightSource::SetIntensity(float intensity)
-{
-    this->intensity = intensity;
-}
-
-void LightSource::SetCutterOff(float cutterOff)
-{
-    this->cuttOff = cutterOff;
+    Type = static_cast<LightType>(j["type"]);
+    Color = {j["color"][0], j["color"][1], j["color"][2]};
+    Radius = j["radius"];
+    Intensity = j["intensity"];
+    CutterOff = j["cutterOff"];
 }

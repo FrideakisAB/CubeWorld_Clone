@@ -70,10 +70,11 @@ public:
     {
         if (j["mesh"] != "")
         {
-            if (auto asset = GameEngine->GetAssetsManager().GetAsset(j["mesh"]))
+            AssetsHandle asset = GameEngine->GetAssetsManager().GetAsset(j["mesh"]);
+            if (auto *meshPtr = dynamic_cast<Mesh*>(asset.get()))
             {
                 meshHandle = std::move(asset);
-                mesh = static_cast<Mesh*>(meshHandle.get());
+                mesh = meshPtr;
             }
         }
 

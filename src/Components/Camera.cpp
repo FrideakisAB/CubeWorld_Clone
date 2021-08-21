@@ -1,7 +1,8 @@
 #include "Components/Camera.h"
 
-#include <glm/gtx/matrix_decompose.hpp>
+#include "Engine.h"
 #include "Components/Transform.h"
+#include <glm/gtx/matrix_decompose.hpp>
 
 Camera* Camera::Main = nullptr;
 
@@ -93,5 +94,45 @@ void Camera::SetSkybox(Texture *skybox)
     {
         skyboxHandle = {};
         this->skybox = nullptr;
+    }
+}
+
+json Camera::SerializeObj()
+{
+    json data;
+
+    data["cmpName"] = boost::typeindex::type_id<Camera>().pretty_name();
+
+    data["fov"] = Fov;
+    data["ratio"] = Ratio;
+    data["nearClip"] = NearClip;
+    data["farClip"] = FarClip;
+    data["proj"] = static_cast<u8>(Proj);
+    data["skybox"] = skyboxHandle->GetName();
+
+    return data;
+}
+
+void Camera::UnSerializeObj(const json &j)
+{
+    Fov = j["fov"];
+    Ratio = j["ratio"];
+    NearClip = j["nearClip"];
+    FarClip = j["farClip"];
+    Proj = static_cast<Projection>(j["proj"]);
+
+    if (j["skybox"] != "")
+    {
+        AssetsHandle asset = GameEngine->GetAssetsManager().GetAsset(j["skybox"]);
+        if(auto *skyboxPtr = dynamic_cast<Texture*>(asset.get()))
+        {
+            skyboxHandle = std::move(asset);
+            skybox = skyboxPtr;
+        }
+        else
+        {
+            skyboxHandle = {};
+            skybox = nullptr;
+        }
     }
 }

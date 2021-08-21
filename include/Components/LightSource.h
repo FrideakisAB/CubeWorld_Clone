@@ -1,8 +1,8 @@
 #ifndef LIGHTSOURCE_H
 #define LIGHTSOURCE_H
 
-#include "Utils/glm.h"
 #include "ECS/ECS.h"
+#include "Utils/glm.h"
 
 enum class LightType : u8 {
     Directional = 0,
@@ -11,24 +11,15 @@ enum class LightType : u8 {
 };
 
 class LightSource : public ECS::Component<LightSource> {
-private:
-    LightType type{};
-    glm::vec3 color = glm::vec3(1.0f);
-    float radius = 1.0f;
-    float intensity = 1.0f;
-    float cuttOff = 0.0f;
-
 public:
-    [[nodiscard]] LightType GetLightType() const noexcept { return type; }
-    void SetLightType(LightType lightType);
-    [[nodiscard]] glm::vec3 GetColor() const noexcept { return color; }
-    void SetColor(glm::vec3 color);
-    [[nodiscard]] float GetRadius() const noexcept { return radius; }
-    void SetRadius(float radius);
-    [[nodiscard]] float GetIntensity() const noexcept { return intensity; }
-    void SetIntensity(float intensity);
-    [[nodiscard]] float GetCutterOff() const noexcept { return cuttOff; }
-    void SetCutterOff(float cutterOff);
+    LightType Type = LightType::Directional;
+    glm::vec3 Color = glm::vec3(1.0f);
+    float Radius = 1.0f;
+    float Intensity = 1.0f;
+    float CutterOff = 0.0f;
+
+    [[nodiscard]] json SerializeObj() override;
+    void UnSerializeObj(const json &j) override;
 };
 
 #endif

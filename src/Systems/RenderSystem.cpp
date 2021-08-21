@@ -58,23 +58,23 @@ void RenderSystem::PreUpdate()
             auto *transform = entity->GetComponent<Transform>();
             if (transform != nullptr && transform->IsActive())
             {
-                if (lightSource.GetLightType() == LightType::Point)
+                if (lightSource.Type == LightType::Point)
                 {
                     Utils::PointLight light;
-                    light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
+                    light.colorAndRadius = glm::vec4(lightSource.Color, lightSource.Radius);
                     auto position = glm::vec3(transform->GetMat()[3]);
-                    light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
+                    light.positionAndIntensity = glm::vec4(position, lightSource.Intensity);
 
                     pointLightSources.emplace_back(light);
                 }
-                else if (lightSource.GetLightType() == LightType::Spot)
+                else if (lightSource.Type == LightType::Spot)
                 {
                     Utils::SpotLight light;
-                    light.colorAndRadius = glm::vec4(lightSource.GetColor(), lightSource.GetRadius());
+                    light.colorAndRadius = glm::vec4(lightSource.Color, lightSource.Radius);
                     auto position = glm::vec3(transform->GetMat()[3]);
-                    light.positionAndIntensity = glm::vec4(position, lightSource.GetIntensity());
+                    light.positionAndIntensity = glm::vec4(position, lightSource.Intensity);
                     glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
-                    light.directionAndCutterAngle = glm::vec4(direction, glm::radians(lightSource.GetCutterOff()));
+                    light.directionAndCutterAngle = glm::vec4(direction, glm::radians(lightSource.CutterOff));
 
                     spotLightSources.emplace_back(light);
                 }
@@ -83,7 +83,7 @@ void RenderSystem::PreUpdate()
                     Utils::DirectionLight light;
                     auto position = glm::vec3(transform->GetMat()[3]);
                     light.position = glm::vec4(position, 1.0f);
-                    light.colorAndIntensity = glm::vec4(lightSource.GetColor(), lightSource.GetIntensity());
+                    light.colorAndIntensity = glm::vec4(lightSource.Color, lightSource.Intensity);
                     glm::vec3 direction = transform->GetGlobalPos().rotate * glm::vec3(0.0f, -1.0f, 0.0f);
                     light.direction = glm::vec4(direction, 1.0f);
 
