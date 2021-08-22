@@ -30,7 +30,7 @@ public:
     void AddMark(f32 position, glm::vec4 color);
     void RemoveMark(MarkIterator element) noexcept;
 
-    [[nodiscard]] const std::list<Mark> &GetMarks() const noexcept { return marks; }
+    [[nodiscard]] std::list<Mark> &GetMarks() noexcept { return marks; }
     void RefreshCache();
 
     json SerializeObj() override;

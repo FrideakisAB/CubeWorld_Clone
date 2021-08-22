@@ -1,6 +1,6 @@
 # CubeWorld_Clone
 
-[![C/C++ CI](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml)
+[![CPP CI](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/FrideakisAB/CubeWorld_Clone/actions/workflows/c-cpp.yml)
 
 ![Illustration](https://github.com/FrideakisAB/CubeWorld_Clone/blob/main/Sample.png)
 
@@ -13,6 +13,7 @@
 ## Структура проекта
 
 * Движок (C++17 migration to 20, CMake, Conan)
+* Реадактор
 * Игра (later...)
 
 ## Используемые проекты
@@ -21,6 +22,7 @@
 * GLEW
 * GLFW
 * boost
+* ImGui
 * Catch2
 * assimp
 * stb_image

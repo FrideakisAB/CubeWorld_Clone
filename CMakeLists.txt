@@ -99,6 +99,14 @@ set(Source
 	src/Memory/Allocator/ListLinearAllocator.cpp
 )
 
+set(Editor_Source
+	src/Editor/ImGui/imgui_dock.cpp
+	src/Editor/ImGui/imgui_curve.cpp
+	src/Editor/ImGui/imgui_impl_glfw.cpp
+	src/Editor/ImGui/imgui_impl_opengl3.cpp
+	src/Editor/ImGui/imgui_color_gradient.cpp
+)
+
 add_executable(tests
 	tests/test.cpp
 	tests/ECSTests.h
@@ -131,6 +139,24 @@ if(WIN32)
 		CONAN_PKG::boost
 		CONAN_PKG::glew
 		CONAN_PKG::glfw
+		CONAN_PKG::assimp
+		CONAN_PKG::nlohmann_json
+	)
+
+	add_executable(CubeWorld_Editor WIN32
+		src/Editor/main.cpp
+		${Source}
+		${Editor_Source}
+	)
+
+	target_link_libraries(CubeWorld_Editor
+		OpenGL::GL
+		CONAN_PKG::stb
+		CONAN_PKG::glm
+		CONAN_PKG::glew
+		CONAN_PKG::glfw
+		CONAN_PKG::imgui
+		CONAN_PKG::boost
 		CONAN_PKG::assimp
 		CONAN_PKG::nlohmann_json
 	)
