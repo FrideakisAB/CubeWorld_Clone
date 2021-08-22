@@ -29,6 +29,6 @@ public:
     void Update();
 };
 
-extern Engine* GameEngine;
+extern Engine *GameEngine;
 
 #endif

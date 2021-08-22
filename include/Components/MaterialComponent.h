@@ -14,18 +14,18 @@ struct Material final : public IAsset {
     std::map<std::string, Utils::ShaderParamValue> Uniforms;
     std::map<std::string, AssetsHandle> Samplers;
 
-    [[nodiscard]] size_t GetTypeID() const noexcept override
+    [[nodiscard]] size_t GetTypeID() const noexcept final
     {
         return boost::typeindex::type_id<Material>().hash_code();
     }
 
-    [[nodiscard]] IAsset *Clone() const override;
+    [[nodiscard]] IAsset *Clone() const final;
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json& j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json& j) final;
 };
 
-class MaterialComponent : public ECS::Component<MaterialComponent> {
+class MaterialComponent final : public ECS::Component<MaterialComponent> {
 private:
     AssetsHandle materialHandle;
     Material *material = nullptr;
@@ -36,8 +36,8 @@ public:
     [[nodiscard]] AssetsHandle GetMaterialHandle() const noexcept { return materialHandle; }
     [[nodiscard]] bool IsValid() const noexcept { return material != nullptr; }
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json &j) final;
 
     bool Instancing = true;
 };

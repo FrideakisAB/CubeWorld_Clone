@@ -47,7 +47,7 @@ struct Particle {
     bool Active;
 };
 
-class ParticleSystem : public ECS::Component<ParticleSystem> {
+class ParticleSystem final : public ECS::Component<ParticleSystem> {
 private:
     u32 activeCount = 0;
     f32 accumulateTime = 0.0f;
@@ -173,7 +173,7 @@ private:
 
 public:
     ParticleSystem();
-    ~ParticleSystem() override;
+    ~ParticleSystem() final;
 
     void Update();
 
@@ -191,8 +191,8 @@ public:
 
     [[nodiscard]] ParticleRender &GetRender() noexcept { return render; }
 
-    json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    json SerializeObj() final;
+    void UnSerializeObj(const json &j) final;
 };
 
 #endif

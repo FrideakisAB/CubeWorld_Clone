@@ -12,8 +12,6 @@ json Material::SerializeObj()
 {
     json data;
 
-    data["cmpName"] = boost::typeindex::type_id<MaterialComponent>().pretty_name();
-
     data["shader_name"] = Shader;
     data["uniforms_map"] = {};
     data["samplers_map"] = {};
@@ -62,6 +60,8 @@ void MaterialComponent::SetMaterial(const AssetsHandle &materialHandle)
 json MaterialComponent::SerializeObj()
 {
     json data;
+
+    data["cmpName"] = boost::typeindex::type_id<MaterialComponent>().pretty_name();
 
     if(material != nullptr)
     {

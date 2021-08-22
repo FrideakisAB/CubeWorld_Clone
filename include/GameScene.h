@@ -9,8 +9,9 @@
 #include "Assets/IAsset.h"
 #include "boost/type_index.hpp"
 
-class GameScene : public IAsset {
+class GameScene final : public IAsset {
     friend GameObject;
+    friend class SceneViewer;
 
 private:
     std::map<ECS::EntityId, GameObject*> gameObjects;
@@ -19,7 +20,7 @@ private:
     void Validate(ECS::EntityId eid, GameObject *gameObject);
 
 public:
-    ~GameScene();
+    ~GameScene() final;
 
     GameObject *Create(const std::string &name, const std::string &tag="");
     void Delete(GameObject *go);
@@ -31,15 +32,15 @@ public:
     [[nodiscard]] std::vector<GameObject*> FindAll(const std::string &name);
     [[nodiscard]] std::vector<GameObject*> FindByTagAll(const std::string &tag);
 
-    [[nodiscard]] size_t GetTypeID() const noexcept override
+    [[nodiscard]] size_t GetTypeID() const noexcept final
     {
         return boost::typeindex::type_id<GameScene>().hash_code();
     }
 
-    [[nodiscard]] IAsset *Clone() const override;
+    [[nodiscard]] IAsset *Clone() const final;
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json &j) final;
 };
 
 #endif

@@ -337,7 +337,7 @@ json ParticleSystem::SerializeObj()
 {
     json data;
 
-    data["cmpName"] = typeid(ParticleSystem).name();
+    data["cmpName"] = boost::typeindex::type_id<ParticleSystem>().pretty_name();
 
     data["Duration"] = Duration;
     data["MaxParticles"] = maxParticlesCount;

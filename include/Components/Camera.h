@@ -11,7 +11,7 @@ enum class Projection {
     Orthographic
 };
 
-class Camera : public ECS::Component<Camera> {
+class Camera final : public ECS::Component<Camera> {
 private:
     AssetsHandle skyboxHandle;
     Texture *skybox = nullptr;
@@ -36,8 +36,8 @@ public:
     inline AssetsHandle &GetAsset() { return skyboxHandle; }
     [[nodiscard]] Texture &GetSkybox() const noexcept { return *skybox; }
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json &j) final;
 };
 
 #endif

@@ -99,6 +99,8 @@ json Transform::SerializeObj()
 {
     json data;
 
+    data["cmpName"] = boost::typeindex::type_id<Transform>().pretty_name();
+
     data["position"] = {position.position.x, position.position.y, position.position.z};
     data["rotate"] = {position.rotate.x, position.rotate.y, position.rotate.z, position.rotate.w};
     data["scale"] = {position.scale.x, position.scale.y, position.scale.z};

@@ -100,11 +100,22 @@ set(Source
 )
 
 set(Editor_Source
+	src/Editor/Editor.cpp
+	src/Editor/CacheSystem.cpp
+
+	src/Editor/UI/MenuBar.cpp
+	src/Editor/UI/IMenuEntry.cpp
+	src/Editor/UI/SceneViewer.cpp
+
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
 	src/Editor/ImGui/imgui_impl_opengl3.cpp
 	src/Editor/ImGui/imgui_color_gradient.cpp
+
+	src/Editor/Commands/CommandList.cpp
+	src/Editor/Commands/EntityValidator.cpp
+	src/Editor/Commands/SceneViewCommands.cpp
 )
 
 add_executable(tests

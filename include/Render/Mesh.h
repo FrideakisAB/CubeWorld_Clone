@@ -18,7 +18,7 @@ public:
     static const Attrib VertexAttrib[3];
 
 protected:
-    void SubmitData(DrawData &drawData) override;
+    void SubmitData(DrawData &drawData) final;
 
 private:
     Vertex *vertices = nullptr;
@@ -57,21 +57,21 @@ public:
 
     void CalculateNormals();
 
-    [[nodiscard]] size_t GetTypeID() const noexcept override
+    [[nodiscard]] size_t GetTypeID() const noexcept final
     {
         return boost::typeindex::type_id<Mesh>().hash_code();
     }
 
-    [[nodiscard]] IAsset* Clone() const override;
+    [[nodiscard]] IAsset* Clone() const final;
 
     void Apply() noexcept;
     void Recreate() noexcept;
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json& j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json& j) final;
 
-    void SerializeBin(std::ofstream &file) override;
-    void UnSerializeBin(std::ifstream &file) override;
+    void SerializeBin(std::ofstream &file) final;
+    void UnSerializeBin(std::ifstream &file) final;
 
     DrawType MeshDrawType = DrawType::Static;
 };

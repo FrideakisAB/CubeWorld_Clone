@@ -108,7 +108,10 @@ json Camera::SerializeObj()
     data["nearClip"] = NearClip;
     data["farClip"] = FarClip;
     data["proj"] = static_cast<u8>(Proj);
-    data["skybox"] = skyboxHandle->GetName();
+    if (skybox != nullptr)
+        data["skybox"] = skyboxHandle->GetName();
+    else
+        data["skybox"] = "";
 
     return data;
 }

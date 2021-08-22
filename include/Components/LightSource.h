@@ -10,7 +10,7 @@ enum class LightType : u8 {
     Spot
 };
 
-class LightSource : public ECS::Component<LightSource> {
+class LightSource final : public ECS::Component<LightSource> {
 public:
     LightType Type = LightType::Directional;
     glm::vec3 Color = glm::vec3(1.0f);
@@ -18,8 +18,8 @@ public:
     float Intensity = 1.0f;
     float CutterOff = 0.0f;
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json &j) final;
 };
 
 #endif

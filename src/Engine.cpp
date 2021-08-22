@@ -11,14 +11,9 @@
 #include "GameScene.h"
 #include "GameObject.h"
 #include "Utils/Primitives.h"
-#include "Components/Camera.h"
-#include "Components/Transform.h"
-#include "Components/LightSource.h"
-#include "Components/MeshComponent.h"
-#include "Components/ParticleSystem.h"
-#include "Components/MaterialComponent.h"
+#include "Components/Components.h"
 
-Engine* GameEngine = nullptr;
+Engine *GameEngine = nullptr;
 
 Engine::Engine()
 {
@@ -50,11 +45,11 @@ Engine::Engine()
     EF.Register<GameObject>();
 
     // Test scene
-    auto *camera = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    auto *camera = scene->Create("Camera");
     Camera::Main = camera->AddComponent<Camera>();
     camera->AddComponent<Transform>();
 
-    auto *sphere = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    auto *sphere = scene->Create("Bloom sphere");
     auto pos = sphere->AddComponent<Transform>()->GetLocalPos();
     auto *mesh = sphere->AddComponent<MeshComponent>();
     auto *materialComponent = sphere->AddComponent<MaterialComponent>();
@@ -70,7 +65,7 @@ Engine::Engine()
     materialComponent->SetMaterial(materialHandle);
     mesh->SetMesh(Utils::CreateSphere(32));
 
-    auto *light = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    auto *light = scene->Create("Spot light");
     pos = light->AddComponent<Transform>()->GetLocalPos();
     pos.position.z = 8;
     pos.position.y = 3;
@@ -81,7 +76,7 @@ Engine::Engine()
     lightSource->Radius = 50.0f;
     lightSource->CutterOff = 22.5f;
 
-    auto *cube = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    auto *cube = scene->Create("Cube");
     pos = cube->AddComponent<Transform>()->GetLocalPos();
     cube->AddComponent<ParticleSystem>();
     materialComponent = cube->AddComponent<MaterialComponent>();
@@ -91,10 +86,9 @@ Engine::Engine()
     materialHandle = std::make_shared<Material>();
     material = static_cast<Material*>(materialHandle.get());
     material->Shader = "ParticleCPU";
-    //material->Samplers["texture_diffuse"] = ;
     materialComponent->SetMaterial(materialHandle);
 
-    auto *plane = static_cast<GameObject*>(EM.GetEntity(EM.CreateEntity<GameObject>()));
+    auto *plane = scene->Create("Plane");
     pos = plane->AddComponent<Transform>()->GetLocalPos();
     mesh = plane->AddComponent<MeshComponent>();
     materialComponent = plane->AddComponent<MaterialComponent>();
@@ -120,11 +114,11 @@ Engine::Engine()
 
 Engine::~Engine()
 {
+    delete scene;
     ECS::Terminate();
     Memory::TerminateMemoryManager();
     delete assetsManager;
     delete randomEngine;
-    delete scene;
 }
 
 void Engine::Update()

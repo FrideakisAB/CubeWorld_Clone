@@ -7,7 +7,7 @@
 #include <boost/type_index.hpp>
 #include "Assets/AssetsManager.h"
 
-class MeshComponent : public ECS::Component<MeshComponent> {
+class MeshComponent final : public ECS::Component<MeshComponent> {
 private:
     AssetsHandle meshHandle;
     Mesh *mesh = nullptr;
@@ -52,7 +52,7 @@ public:
 
     [[nodiscard]] bool IsValid() const noexcept { return mesh != nullptr; }
 
-    json SerializeObj() override
+    json SerializeObj() final
     {
         json data;
 
@@ -66,7 +66,7 @@ public:
         return data;
     }
 
-    void UnSerializeObj(const json &j) override
+    void UnSerializeObj(const json &j) final
     {
         if (j["mesh"] != "")
         {

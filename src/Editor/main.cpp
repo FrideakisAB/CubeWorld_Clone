@@ -8,10 +8,13 @@
 #include "ECS/util/Timer.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "Editor/ImGui/imgui_impl_glfw.h"
 #include "Editor/ImGui/imgui_impl_opengl3.h"
 
 #include "Editor/ImGui/imgui_dock.h"
+#include "Editor/UI/SceneViewer.h"
+#include "Editor/Editor.h"
 
 void error_callback(int error, const char* description);
 void window_focus_callback(GLFWwindow *window, int focused);
@@ -97,8 +100,11 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     glEnable(GL_CULL_FACE);
 
     GameEngine = new Engine();
+    GameEditor = new Editor();
 
     f32 accumulateTime = 0;
+
+    ImGuiContext *g = ImGui::GetCurrentContext();
 
     while (!glfwWindowShouldClose(glfwWindow))
     {
@@ -111,13 +117,13 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(ImVec2(width, height));
+        float offsetMBar = g->NextWindowData.MenuBarOffsetMinVal.y + g->FontBaseSize + g->Style.FramePadding.y + 2.0f;
+        GameEditor->Menu.Draw();
+        ImGui::SetNextWindowPos(ImVec2(0, offsetMBar));
+        ImGui::SetNextWindowSize(ImVec2(width, height - offsetMBar));
         ImGui::Begin("Docks", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
         if(ImGui::BeginDockspace())
-        {
-            // All editor windows
-        }
+            GameEditor->DrawWindows();
         ImGui::EndDockspace();
         ImGui::End();
 

@@ -5,9 +5,9 @@
 #include "Assets/IAsset.h"
 #include "boost/type_index.hpp"
 
-class Texture : public SamplerObject, public IAsset {
+class Texture final : public SamplerObject, public IAsset {
 protected:
-    void SubmitData(SamplerData &samplerData) override;
+    void SubmitData(SamplerData &samplerData) final;
 
 private:
     u8 *src[6] = {};
@@ -26,7 +26,7 @@ public:
     Texture() : IAsset(true) {}
     Texture(const Texture &texture);
     Texture(Texture &&texture) noexcept;
-    ~Texture();
+    ~Texture() final;
 
     Texture &operator=(const Texture &texture);
     Texture &operator=(Texture &&texture) noexcept;
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] inline u32 GetW() const noexcept { return whd.x; }
     void SetW(u32 whd);
 
-    [[nodiscard]] inline glm::uvec2 GetWH() const noexcept { return glm::uvec2(whd.x, whd.y); }
+    [[nodiscard]] inline glm::uvec2 GetWH() const noexcept { return {whd.x, whd.y}; }
     void SetWH(glm::uvec2 whd);
 
     [[nodiscard]] inline glm::uvec3 GetWHD() const noexcept { return whd; }
@@ -70,18 +70,18 @@ public:
     void Apply() noexcept;
     [[nodiscard]] bool IsApply() const noexcept { return !applyRequire; }
 
-    [[nodiscard]] size_t GetTypeID() const noexcept override
+    [[nodiscard]] size_t GetTypeID() const noexcept final
     {
         return boost::typeindex::type_id<Texture>().hash_code();
     }
 
-    [[nodiscard]] IAsset* Clone() const override;
+    [[nodiscard]] IAsset* Clone() const final;
 
-    [[nodiscard]] json SerializeObj() override;
-    void UnSerializeObj(const json& j) override;
+    [[nodiscard]] json SerializeObj() final;
+    void UnSerializeObj(const json& j) final;
 
-    void SerializeBin(std::ofstream &file) override;
-    void UnSerializeBin(std::ifstream &file) override;
+    void SerializeBin(std::ofstream &file) final;
+    void UnSerializeBin(std::ifstream &file) final;
 };
 
 #endif
