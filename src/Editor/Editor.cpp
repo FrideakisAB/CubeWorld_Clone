@@ -1,11 +1,17 @@
 #include "Editor/Editor.h"
 
+#include <GLFW/glfw3.h>
+
 Editor *GameEditor = nullptr;
 
 Editor::Editor()
 {
-    Menu.RegisterEntry(&menu);
+    Menu.RegisterEntry(&fileMenu);
+    Menu.RegisterEntry(&editorMenu);
     Menu.RegisterEntry(sceneViewer.GetMenuEntry());
+    Menu.RegisterEntry(&windowsMenu);
+
+    windowsMenu.Windows["Scene viewer"] = &sceneViewer;
 }
 
 Editor::~Editor()
@@ -29,4 +35,25 @@ void Editor::EditorMenu::Draw()
         GameEditor->CommandList.Redo();
     if(RegisterItem("Undo", "Ctrl+Z"))
         GameEditor->CommandList.Undo();
+}
+
+Editor::FileMenu::FileMenu()
+    : IMenuEntry("File")
+{}
+
+void Editor::FileMenu::Draw()
+{
+    if(RegisterItem("Exit"))
+        glfwSetWindowShouldClose(glfwGetCurrentContext(), true);
+}
+
+Editor::WindowsMenu::WindowsMenu()
+: IMenuEntry("Windows")
+{}
+
+void Editor::WindowsMenu::Draw()
+{
+    for (auto &&[name, window] : Windows)
+        if (RegisterItem(name))
+            window->Active = true;
 }

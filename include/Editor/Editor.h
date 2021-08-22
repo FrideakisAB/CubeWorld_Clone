@@ -14,9 +14,23 @@ private:
         EditorMenu();
         void Draw() override;
     };
+    class FileMenu final : public IMenuEntry {
+    public:
+        FileMenu();
+        void Draw() override;
+    };
+    class WindowsMenu final : public IMenuEntry {
+    public:
+        WindowsMenu();
+        void Draw() override;
+
+        std::map<std::string, IEditorWindow*> Windows;
+    };
 
     SceneViewer sceneViewer;
-    EditorMenu menu;
+    EditorMenu editorMenu;
+    FileMenu fileMenu;
+    WindowsMenu windowsMenu;
 
 public:
     Editor();
