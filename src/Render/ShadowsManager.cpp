@@ -159,9 +159,11 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
 {
     if (isShadowsActive)
     {
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Shadows pass");
         glCullFace(GL_FRONT);
         if (isDirectionalShadowsActive)
         {
+            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Direction shadows pass");
             if (directionLight)
             {
                 isDeleteDirClear = false;
@@ -195,12 +197,14 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                 glClear(GL_DEPTH_BUFFER_BIT);
                 isDeleteDirClear = true;
             }
+            glPopDebugGroup();
         }
 
         pointShadowCount = glm::uvec3(0);
 
         if (isPointShadowsActive && !(*pointLightSources).empty())
         {
+            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Point shadows pass");
             std::sort((*pointLightSources).begin(), (*pointLightSources).end(), [cameraPosition](const PointLight &p1, const PointLight &p2){
                 return glm::distance(glm::vec3(p1.positionAndIntensity), cameraPosition) < glm::distance(glm::vec3(p2.positionAndIntensity), cameraPosition);
             });
@@ -289,12 +293,15 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                 }
             }
             pointLightPositions.Close();
+
+            glPopDebugGroup();
         }
 
         spotShadowCount = glm::uvec3(0);
 
         if (isSpotShadowsActive && !(*spotLightSources).empty())
         {
+            glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Spot shadows pass");
             std::sort((*spotLightSources).begin(), (*spotLightSources).end(), [cameraPosition](const SpotLight &p1, const SpotLight &p2){
                 return glm::distance(glm::vec3(p1.positionAndIntensity), cameraPosition) < glm::distance(glm::vec3(p2.positionAndIntensity), cameraPosition);
             });
@@ -378,11 +385,13 @@ void ShadowsManager::Render(glm::vec3 cameraPosition, std::unordered_map<std::st
                 }
             }
             spotLightData.Close();
+            glPopDebugGroup();
         }
 
         glCullFace(GL_BACK);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glPopDebugGroup();
     }
 }
 
@@ -391,20 +400,8 @@ u8 ShadowsManager::AttachShadowsData() noexcept
     pointLightPositions.Bind(4);
     spotLightData.Bind(5);
 
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, dirDepthMap);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[0]);
-    glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[1]);
-    glActiveTexture(GL_TEXTURE5);
-    glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, pointDepthMaps[2]);
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[0]);
-    glActiveTexture(GL_TEXTURE7);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[1]);
-    glActiveTexture(GL_TEXTURE8);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, spotDepthMaps[2]);
+    u32 textures[] = {dirDepthMap, pointDepthMaps[0], pointDepthMaps[1], pointDepthMaps[2], spotDepthMaps[0], spotDepthMaps[1], spotDepthMaps[2]};
+    glBindTextures(2, 7, textures);
 
     return 8;
 }

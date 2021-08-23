@@ -143,9 +143,11 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         GameEngine->GetRenderSystem().Update();
 
         // Place before engine render
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Render ImGui stage");
         ImGui::Render();
         glViewport(0, 0, width, height);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glPopDebugGroup();
 
         glfwSwapBuffers(glfwWindow);
 

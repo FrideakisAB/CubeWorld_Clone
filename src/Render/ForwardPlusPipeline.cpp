@@ -6,7 +6,7 @@
 #include "Components/Transform.h"
 
 ForwardPlusPipeline::ForwardPlusPipeline()
-: pointIndices(1024 * 64 * 48), spotIndices(1024 * 64 * 48)
+    : pointIndices(1024 * 64 * 48), spotIndices(1024 * 64 * 48)
 {
     glGenFramebuffers(1, &depthMapFBO);
 
@@ -204,7 +204,7 @@ void ForwardPlusPipeline::Render()
 
     glViewport(offsetX, offsetY, width, height);
 
-    // Depth stage
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Depth stage");
     Shader &depth = (*shaders)["Depth"];
     depth.Use();
     depth.SetMat4("vp", mainVP);
@@ -224,8 +224,9 @@ void ForwardPlusPipeline::Render()
             glDrawArrays(Utils::GetDrawModeGL(rTask.DrawData.Mode), 0, rTask.DrawData.Count);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glPopDebugGroup();
 
-    // Light culling stage
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Light culling stage");
     Shader &pointLightCulling = (*shaders)["PointLightCulling"];
     pointLightCulling.Use();
     pointLightCulling.SetIVec2("screenSize", glm::ivec2(width, height));
@@ -260,8 +261,9 @@ void ForwardPlusPipeline::Render()
 
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glPopDebugGroup();
 
-    // Render opaque stage
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Render opaque stage");
     glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -310,10 +312,11 @@ void ForwardPlusPipeline::Render()
             }
         }
     }
+    glPopDebugGroup();
 
-    // Render skybox
     if (Camera::Main->IsValidSkybox() && Camera::Main->GetSkybox().GetDrawData().TextureType == TexType::TextureCube)
     {
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Render skybox stage");
         glDepthFunc(GL_LEQUAL);
         Shader &skyboxShader = (*shaders)["Skybox"];
         skyboxShader.Use();
@@ -326,9 +329,10 @@ void ForwardPlusPipeline::Render()
         glBindTexture(GL_TEXTURE_CUBE_MAP, Camera::Main->GetSkybox().GetDrawData().Handle);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
+        glPopDebugGroup();
     }
 
-    // Bloom blur stage
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Bloom blur stage");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glActiveTexture(GL_TEXTURE0);
     bool horizontal = true, first_iteration = true;
@@ -344,8 +348,9 @@ void ForwardPlusPipeline::Render()
         if (first_iteration)
             first_iteration = false;
     }
+    glPopDebugGroup();
 
-    // HDR stage
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "HDR stage");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     Shader &hdr = (*shaders)["HDR"];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
@@ -358,6 +363,7 @@ void ForwardPlusPipeline::Render()
     hdr.SetInt("bloomBlur", 1);
     hdr.SetFloat("exposure", GameEngine->GetLighting().Exposure);
     Utils::DrawQuad();
+    glPopDebugGroup();
 }
 
 void ForwardPlusPipeline::Release()
