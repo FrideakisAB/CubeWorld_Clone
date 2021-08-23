@@ -69,7 +69,7 @@ void SceneViewer::Draw()
         if (deletedObjectId == GameEditor->Selected)
             GameEditor->Selected = ECS::INVALID_ENTITY_ID;
 
-        GameEditor->CommandList.AddCommand<DeleteGO>(deletedObjectId, std::ref(GameEditor->Selected));
+        GameEditor->CommandList.AddCommand<DeleteGO>(deletedObjectId);
         GameEditor->CommandList.Redo();
 
         deletedObjectId = ECS::INVALID_ENTITY_ID;
@@ -165,7 +165,7 @@ void SceneViewer::SceneMenu::Draw()
             go->Name = "Empty";
             go->AddComponent<Transform>();
         };
-        GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+        GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
         GameEditor->CommandList.Redo();
     }
     if (RegisterItem("Camera"))
@@ -175,7 +175,7 @@ void SceneViewer::SceneMenu::Draw()
             go->AddComponent<Transform>();
             go->AddComponent<Camera>();
         };
-        GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+        GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
         GameEditor->CommandList.Redo();
     }
     if (RegisterSubMenu("Solid objects"))
@@ -200,7 +200,7 @@ void SceneViewer::SceneMenu::Draw()
                 material->Uniforms["main_specular"] = uniform;
                 materialComponent->SetMaterial(materialHandle);
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         if (RegisterItem("Cube"))
@@ -223,7 +223,7 @@ void SceneViewer::SceneMenu::Draw()
                 material->Uniforms["main_specular"] = uniform;
                 materialComponent->SetMaterial(materialHandle);
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         if (RegisterItem("Sphere"))
@@ -246,7 +246,7 @@ void SceneViewer::SceneMenu::Draw()
                 material->Uniforms["main_specular"] = uniform;
                 materialComponent->SetMaterial(materialHandle);
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         EndSubMenu();
@@ -261,7 +261,7 @@ void SceneViewer::SceneMenu::Draw()
                 auto *light = go->AddComponent<LightSource>();
                 light->Type = LightType::Directional;
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         if (RegisterItem("Point light"))
@@ -273,7 +273,7 @@ void SceneViewer::SceneMenu::Draw()
                 light->Type = LightType::Point;
                 light->Radius = 50;
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         if (RegisterItem("Spot light"))
@@ -286,7 +286,7 @@ void SceneViewer::SceneMenu::Draw()
                 light->Radius = 50;
                 light->CutterOff = 12.5f;
             };
-            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func, std::ref(GameEditor->Selected));
+            GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
             GameEditor->CommandList.Redo();
         }
         EndSubMenu();
