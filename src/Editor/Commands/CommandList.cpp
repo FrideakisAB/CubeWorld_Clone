@@ -76,3 +76,13 @@ void CommandList::InvalidateAll()
 
     position = cmdBuffer.begin();
 }
+
+bool CommandList::IsRedoActive() const noexcept
+{
+    return position != --cmdBuffer.end();
+}
+
+bool CommandList::IsUndoActive() const noexcept
+{
+    return position != cmdBuffer.end() && position != cmdBuffer.begin();
+}

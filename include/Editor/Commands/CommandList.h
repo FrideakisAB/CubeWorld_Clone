@@ -41,6 +41,9 @@ public:
 
     void InvalidateAll();
 
+    [[nodiscard]] bool IsRedoActive() const noexcept;
+    [[nodiscard]] bool IsUndoActive() const noexcept;
+
     void Redo();
     void Undo();
 

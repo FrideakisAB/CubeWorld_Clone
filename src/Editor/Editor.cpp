@@ -31,9 +31,9 @@ Editor::EditorMenu::EditorMenu()
 
 void Editor::EditorMenu::Draw()
 {
-    if(RegisterItem("Redo", "Ctrl+Y"))
+    if(RegisterItem("Redo", "Ctrl+Y", false, GameEditor->CommandList.IsRedoActive()))
         GameEditor->CommandList.Redo();
-    if(RegisterItem("Undo", "Ctrl+Z"))
+    if(RegisterItem("Undo", "Ctrl+Z", false, GameEditor->CommandList.IsUndoActive()))
         GameEditor->CommandList.Undo();
 }
 

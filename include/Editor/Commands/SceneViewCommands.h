@@ -9,13 +9,18 @@
 
 class DeleteGO final : public ICommand {
 private:
-    ECS::EntityId &select;
     GameObject *gameObject, *parent = nullptr;
     u64 gameObjectId = 0, parentId = 0;
     CacheEntry cache;
+    size_t pos = 0;
+    std::vector<u64> ids;
+
+    void recMap(GameObject *go);
+    void recInv(GameObject *go);
+    void recVal(GameObject *go);
 
 public:
-    DeleteGO(ECS::EntityId entityId, ECS::EntityId &select);
+    DeleteGO(ECS::EntityId entityId);
     ~DeleteGO() final;
 
     void Execute() final;
@@ -51,14 +56,19 @@ public:
 
 class CustomCreate final : public ICommand {
 private:
-    ECS::EntityId &select;
     ECS::EntityId *resultId;
     GameObject *go = nullptr;
     u64 goId = 0;
     std::function<void(GameObject*)> func;
+    size_t pos = 0;
+    std::vector<u64> ids;
+
+    void recMap(GameObject *go);
+    void recInv(GameObject *go);
+    void recVal(GameObject *go);
 
 public:
-    CustomCreate(ECS::EntityId *resultId, const std::function<void(GameObject*)> &func, ECS::EntityId &select);
+    CustomCreate(ECS::EntityId *resultId, const std::function<void(GameObject*)> &func);
 
     void Execute() final;
     void Undo() final;

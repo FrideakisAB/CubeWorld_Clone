@@ -8,8 +8,7 @@
 
 namespace fs = std::filesystem;
 
-DeleteGO::DeleteGO(ECS::EntityId entityId, ECS::EntityId &select)
-    : select(select)
+DeleteGO::DeleteGO(ECS::EntityId entityId)
 {
     name = typeid(DeleteGO).name();
     name = name.substr(name.find(' '));
@@ -26,15 +25,50 @@ DeleteGO::~DeleteGO()
         GameEditor->CacheSystem.RemoveCache(cache);
 }
 
+void DeleteGO::recMap(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        ids.push_back(validator.Map(child));
+        recMap(child);
+    }
+}
+
+void DeleteGO::recInv(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        validator.Invalidate(ids[pos++]);
+        recInv(child);
+    }
+}
+
+void DeleteGO::recVal(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        validator.Validate(ids[pos++], child);
+        recVal(child);
+    }
+}
+
 void DeleteGO::Execute()
 {
     if (gameObjectId == 0)
+    {
         gameObjectId = validator.Map(gameObject);
+        recMap(gameObject);
+    }
 
     if (parentId == 0 && parent != nullptr)
         parentId = validator.Map(parent);
 
     validator.Invalidate(gameObjectId);
+    pos = 0;
+    recInv(gameObject);
 
     cache = GameEditor->CacheSystem.CreateCache(8);
     std::ofstream file = std::ofstream(fs::current_path().string() + cache.GetPath());
@@ -42,8 +76,8 @@ void DeleteGO::Execute()
     file.write(jsonStr.c_str(), jsonStr.size());
     file.close();
 
-    if (select == gameObject->GetEntityID())
-        select = ECS::INVALID_ENTITY_ID;
+    if (gameObject->GetEntityID() == GameEditor->Selected)
+        GameEditor->Selected = ECS::INVALID_ENTITY_ID;
 
     GameEngine->GetGameScene().Delete(gameObject);
 }
@@ -67,6 +101,8 @@ void DeleteGO::Undo()
         gameObject = newGO;
 
         validator.Validate(gameObjectId, gameObject);
+        pos = 0;
+        recVal(gameObject);
     }
 }
 
@@ -127,18 +163,51 @@ void RemoveParent::Undo()
         validator.Get(childId)->SetParent(validator.Get(prevParentId));
 }
 
-CustomCreate::CustomCreate(ECS::EntityId *resultId, const std::function<void(GameObject*)> &func, ECS::EntityId &select)
-    : resultId(resultId), func(func), select(select)
+CustomCreate::CustomCreate(ECS::EntityId *resultId, const std::function<void(GameObject*)> &func)
+    : resultId(resultId), func(func)
 {
     name = typeid(CustomCreate).name();
     name = name.substr(name.find(' '));
+}
+
+void CustomCreate::recMap(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        ids.push_back(validator.Map(child));
+        recMap(child);
+    }
+}
+
+void CustomCreate::recInv(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        validator.Invalidate(ids[pos++]);
+        recInv(child);
+    }
+}
+
+void CustomCreate::recVal(GameObject *go)
+{
+    for (size_t i = 0; i < go->GetChildCount(); ++i)
+    {
+        auto *child = static_cast<GameObject*>(go->GetChild(i));
+        validator.Validate(ids[pos++], child);
+        recVal(child);
+    }
 }
 
 void CustomCreate::Execute()
 {
     GameObject *secGO = GameEngine->GetGameScene().Create("load");
     if (goId == 0)
+    {
         goId = validator.Map(secGO);
+        recMap(secGO);
+    }
 
     go = secGO;
 
@@ -148,15 +217,18 @@ void CustomCreate::Execute()
         *resultId = go->GetEntityID();
 
     validator.Validate(goId, secGO);
+    pos = 0;
+    recVal(secGO);
 }
 
 void CustomCreate::Undo()
 {
     GameObject *secGO = validator.Get(goId);
 
-    if (secGO->GetEntityID() == select)
-        select = ECS::INVALID_ENTITY_ID;
+    if (secGO->GetEntityID() == GameEditor->Selected)
+        GameEditor->Selected = ECS::INVALID_ENTITY_ID;
 
+    recInv(secGO);
     GameEngine->GetGameScene().Delete(secGO);
     validator.Invalidate(goId);
 }

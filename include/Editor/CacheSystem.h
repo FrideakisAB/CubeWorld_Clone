@@ -30,7 +30,7 @@ public:
 
 class CacheSystem {
 private:
-    u64 currentFreeId;
+    u64 currentFreeId = 1;
     json registry;
 
 public:

@@ -159,6 +159,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui::DestroyContext();
 
     delete GameEngine;
+    delete GameEditor;
     glfwTerminate();
     delete logger;
 
@@ -194,4 +195,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    //TODO: remove on input system implement
+    if(glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_LEFT_CONTROL))
+    {
+        if(key == GLFW_KEY_Z && action == GLFW_PRESS)
+            GameEditor->CommandList.Undo();
+        else if(key == GLFW_KEY_Y && action == GLFW_PRESS)
+            GameEditor->CommandList.Redo();
+    }
 }

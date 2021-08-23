@@ -9,21 +9,9 @@
 class ICommand {
     friend class CommandList;
 
-private:
-    bool validate = false;
-
 protected:
     std::string name;
     EntityValidator validator;
-
-    bool IsValidate()
-    {
-        if(validate)
-            return false;
-
-        validate = true;
-        return true;
-    }
 
 public:
     virtual ~ICommand() = default;
