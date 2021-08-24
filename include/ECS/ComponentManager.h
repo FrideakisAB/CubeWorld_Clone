@@ -13,6 +13,7 @@ class SceneEditor;
 
 namespace ECS {
     class ComponentManager final : ::Memory::GlobalMemoryUser {
+        friend SceneEditor;
         friend class IComponent;
         friend class IEntity;
 

@@ -20,7 +20,7 @@ private:
     void recVal(GameObject *go);
 
 public:
-    DeleteGO(ECS::EntityId entityId);
+    explicit DeleteGO(ECS::EntityId entityId);
     ~DeleteGO() final;
 
     void Execute() final;

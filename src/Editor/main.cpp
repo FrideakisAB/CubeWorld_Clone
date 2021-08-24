@@ -93,7 +93,9 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
     ImGui_ImplOpenGL3_Init("#version 410");
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+    ImGui::InitDock();
+
+    //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -122,8 +124,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         ImGui::SetNextWindowPos(ImVec2(0, offsetMBar));
         ImGui::SetNextWindowSize(ImVec2(width, height - offsetMBar));
         ImGui::Begin("Docks", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
-        if(ImGui::BeginDockspace())
-            GameEditor->DrawWindows();
+        ImGui::BeginDockspace();
+        GameEditor->DrawWindows();
         ImGui::EndDockspace();
         ImGui::End();
 
@@ -154,7 +156,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         GameEngine->GetRenderSystem().PostUpdate();
     }
 
-    ImGui::PopStyleVar();
+    //ImGui::PopStyleVar();
+    ImGui::ShutdownDock();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

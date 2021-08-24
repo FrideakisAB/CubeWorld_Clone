@@ -5,6 +5,7 @@
 #include "Editor/UI/MenuBar.h"
 #include "Editor/CacheSystem.h"
 #include "Editor/UI/SceneViewer.h"
+#include "Editor/UI/SceneEditor.h"
 #include "Editor/Commands/CommandList.h"
 
 class Editor {
@@ -28,6 +29,7 @@ private:
     };
 
     SceneViewer sceneViewer;
+    SceneEditor sceneEditor;
     EditorMenu editorMenu;
     FileMenu fileMenu;
     WindowsMenu windowsMenu;

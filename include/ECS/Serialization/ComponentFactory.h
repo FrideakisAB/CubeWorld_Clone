@@ -5,8 +5,12 @@
 #include <boost/type_index.hpp>
 #include "ECS/ComponentManager.h"
 
+class SceneEditor;
+
 namespace ECS {
     class ComponentFactory {
+        friend SceneEditor;
+
         class IComponentSet {
         public:
             virtual IComponent *Add(IEntity *ent) = 0;

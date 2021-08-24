@@ -81,6 +81,7 @@ namespace ECS {
         void ReserveChildSpace(std::size_t count);
 
         void SetActive(bool active);
+        [[nodiscard]] bool IsLocalActive() const noexcept { return this->localActive; }
         [[nodiscard]] inline bool IsActive() const noexcept { return this->localActive && this->globalActive; }
 
         virtual void OnEnable() {}

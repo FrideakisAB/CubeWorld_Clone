@@ -106,6 +106,9 @@ set(Editor_Source
 	src/Editor/UI/MenuBar.cpp
 	src/Editor/UI/IMenuEntry.cpp
 	src/Editor/UI/SceneViewer.cpp
+	src/Editor/UI/SceneEditor.cpp
+
+	src/Editor/UI/Viewers/TransformViewer.cpp
 
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
@@ -116,6 +119,7 @@ set(Editor_Source
 	src/Editor/Commands/CommandList.cpp
 	src/Editor/Commands/EntityValidator.cpp
 	src/Editor/Commands/SceneViewCommands.cpp
+	src/Editor/Commands/SceneEditorCommands.cpp
 )
 
 add_executable(tests

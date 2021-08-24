@@ -24,7 +24,7 @@ private:
     void recursiveTreeDraw(const std::string &name, GameObject *gameObject);
 
 public:
-    void Draw() override;
+    void Draw() final;
     IMenuEntry *GetMenuEntry() final { return &menu; }
 };
 

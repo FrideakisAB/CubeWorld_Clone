@@ -1,6 +1,8 @@
 #include "Editor/Editor.h"
 
 #include <GLFW/glfw3.h>
+#include "Components/Transform.h"
+#include "Editor/UI/Viewers/TransformViewer.h"
 
 Editor *GameEditor = nullptr;
 
@@ -12,6 +14,9 @@ Editor::Editor()
     Menu.RegisterEntry(&windowsMenu);
 
     windowsMenu.Windows["Scene viewer"] = &sceneViewer;
+    windowsMenu.Windows["Scene editor"] = &sceneEditor;
+
+    sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
 }
 
 Editor::~Editor()
@@ -23,6 +28,7 @@ Editor::~Editor()
 void Editor::DrawWindows()
 {
     sceneViewer.Draw();
+    sceneEditor.Draw();
 }
 
 Editor::EditorMenu::EditorMenu()
@@ -55,5 +61,5 @@ void Editor::WindowsMenu::Draw()
 {
     for (auto &&[name, window] : Windows)
         if (RegisterItem(name))
-            window->Active = true;
+            window->Active = !window->Active;
 }
