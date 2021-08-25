@@ -108,6 +108,7 @@ set(Editor_Source
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
 
+	src/Editor/UI/Viewers/CameraViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
 
 	src/Editor/ImGui/imgui_dock.cpp
@@ -118,6 +119,7 @@ set(Editor_Source
 
 	src/Editor/Commands/CommandList.cpp
 	src/Editor/Commands/EntityValidator.cpp
+	src/Editor/Commands/ViewersCommands.cpp
 	src/Editor/Commands/SceneViewCommands.cpp
 	src/Editor/Commands/SceneEditorCommands.cpp
 )

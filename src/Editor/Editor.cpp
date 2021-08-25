@@ -1,7 +1,9 @@
 #include "Editor/Editor.h"
 
 #include <GLFW/glfw3.h>
+#include "Components/Camera.h"
 #include "Components/Transform.h"
+#include "Editor/UI/Viewers/CameraViewer.h"
 #include "Editor/UI/Viewers/TransformViewer.h"
 
 Editor *GameEditor = nullptr;
@@ -16,6 +18,7 @@ Editor::Editor()
     windowsMenu.Windows["Scene viewer"] = &sceneViewer;
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
 
+    sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
 }
 

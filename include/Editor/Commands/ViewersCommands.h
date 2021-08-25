@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "Engine.h"
 #include "GameObject.h"
+#include "Editor/Editor.h"
 #include "Editor/CacheSystem.h"
 #include "Editor/Commands/ICommand.h"
 
@@ -108,6 +109,19 @@ public:
         json j = json_utils::TryParse(Utils::FileToString(std::ifstream(fs::current_path().string() + cacheUndo.GetPath())));
         validator.Get(id)->template GetComponent<T>()->UnSerializeObj(j);
     }
+};
+
+class SetCamera final : public ICommand {
+private:
+    GameObject* goOld;
+    GameObject* goNew;
+    u64 goOldId = 0, goNewId = 0;
+
+public:
+    explicit SetCamera(GameObject *newCamera);
+
+    void Execute() final;
+    void Undo() final;
 };
 
 #endif

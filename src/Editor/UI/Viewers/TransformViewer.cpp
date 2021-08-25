@@ -33,7 +33,7 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                 update = true;
 
             glm::vec3 postRotate = glm::radians(secChange);
-            if(!Mathf::Approximately(postRotate, secRotate))
+            if (!Mathf::Approximately(postRotate, secRotate))
             {
                 auto fg = glm::quat(postRotate);
                 pos.rotate = fg;
@@ -42,7 +42,7 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             ImGui::TreePop();
         }
 
-        if(ImGui::TreeNode("Global position"))
+        if (ImGui::TreeNode("Global position"))
         {
             local = false;
             pos = transform.GetGlobalPos();
@@ -50,15 +50,15 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             glm::vec3 secRotate = glm::eulerAngles(pos.rotate);
             glm::vec3 secChange = glm::degrees(secRotate);
 
-            if(ImGui::InputFloat3("Position", glm::value_ptr(pos.position)))
+            if (ImGui::InputFloat3("Position", glm::value_ptr(pos.position)))
                 update = true;
-            if(ImGui::InputFloat3("Rotation (YPR)", glm::value_ptr(secChange)))
+            if (ImGui::InputFloat3("Rotation (YPR)", glm::value_ptr(secChange)))
                 update = true;
-            if(ImGui::InputFloat3("Scale", glm::value_ptr(pos.scale)))
+            if (ImGui::InputFloat3("Scale", glm::value_ptr(pos.scale)))
                 update = true;
 
             glm::vec3 postRotate = glm::radians(secChange);
-            if(!Mathf::Approximately(postRotate, secRotate))
+            if (!Mathf::Approximately(postRotate, secRotate))
             {
                 auto fg = glm::quat(postRotate);
                 pos.rotate = fg;
@@ -67,7 +67,7 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             ImGui::TreePop();
         }
 
-        if(update)
+        if (update)
         {
             GameEditor->CommandList.AddCommand<ChangeState<Transform>>(&go);
 
@@ -79,7 +79,7 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             GameEditor->CommandList.Redo();
         }
     }
-    if(!closed)
+    if (!closed)
     {
         GameEditor->CommandList.AddCommand<DeleteComponent<Transform>>(&go);
         GameEditor->CommandList.Redo();
