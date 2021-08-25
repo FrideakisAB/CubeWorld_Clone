@@ -207,6 +207,7 @@ void RenderSystem::PostUpdate()
     materialTranslation.clear();
     pointLightSources.clear();
     spotLightSources.clear();
+    directionLight = std::nullopt;
 }
 
 void RenderSystem::importMaterial(Material *material)

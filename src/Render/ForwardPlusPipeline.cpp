@@ -295,6 +295,11 @@ void ForwardPlusPipeline::Render()
             shader.SetVec4("dirLight.colorAndIntensity", directionLight.value().colorAndIntensity);
             shader.SetVec4("dirLight.direction", directionLight.value().direction);
         }
+        else
+        {
+            static auto colorAndIntensity = glm::vec4(0.0f);
+            shader.SetVec4("dirLight.colorAndIntensity", colorAndIntensity);
+        }
 
         for (const auto &[materialPtr, taskIDs] : materialMap)
         {
