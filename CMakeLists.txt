@@ -108,6 +108,7 @@ set(Editor_Source
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
 
+	src/Editor/UI/Viewers/LightViewer.cpp
 	src/Editor/UI/Viewers/CameraViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
 

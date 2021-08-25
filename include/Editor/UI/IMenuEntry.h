@@ -14,6 +14,7 @@ public:
     [[nodiscard]] const std::string &GetName() const noexcept { return name; }
 
     static bool RegisterItem(const std::string &name, const std::string &shortCuts = "", bool selected = false, bool enabled = true);
+    static bool RegisterItemSelectable(const std::string &name, const std::string &shortCuts = "", bool *selected = nullptr, bool enabled = true);
     static bool RegisterSubMenu(const std::string &name, bool enabled = true);
     static void EndSubMenu();
 

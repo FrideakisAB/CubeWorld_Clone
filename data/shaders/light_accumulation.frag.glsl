@@ -9,7 +9,7 @@ in vec2 TexCoords;
 
 struct DirectionLight {
     vec4 position;
-    vec4 color;
+    vec4 colorAndIntensity;
     vec4 direction;
 };
 
@@ -86,7 +86,7 @@ void main()
 		if (diffuse == 0.0)
 			specular = 0.0;
 
-		vec3 irradiance = dirLight.color.rgb * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * dirLight.color.w;
+		vec3 irradiance = dirLight.colorAndIntensity.rgb * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * dirLight.colorAndIntensity.w;
 		color.rgb += irradiance;
     }
 
@@ -111,7 +111,7 @@ void main()
 		if (diffuse == 0.0)
 			specular = 0.0;
 
-		vec3 irradiance = lightColor * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * attenuation;
+		vec3 irradiance = lightColor * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * attenuation * light.positionAndIntensity.w;
 		color.rgb += irradiance;
 	}
     
@@ -141,7 +141,7 @@ void main()
 		if (diffuse == 0.0)
 			specular = 0.0;
 
-		vec3 irradiance = lightColor * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * attenuation;
+		vec3 irradiance = lightColor * ((base_diffuse.rgb * diffuse) + vec3(specular * main_specular)) * attenuation * light.positionAndIntensity.w;
 		color.rgb += irradiance;
 	}
         

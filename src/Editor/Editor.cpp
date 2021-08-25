@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include "Components/Camera.h"
 #include "Components/Transform.h"
+#include "Components/LightSource.h"
+#include "Editor/UI/Viewers/LightViewer.h"
 #include "Editor/UI/Viewers/CameraViewer.h"
 #include "Editor/UI/Viewers/TransformViewer.h"
 
@@ -19,6 +21,7 @@ Editor::Editor()
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
+    sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
     sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
 }
 
@@ -63,6 +66,5 @@ Editor::WindowsMenu::WindowsMenu()
 void Editor::WindowsMenu::Draw()
 {
     for (auto &&[name, window] : Windows)
-        if (RegisterItem(name))
-            window->Active = !window->Active;
+        RegisterItemSelectable(name, "", &window->Active);
 }

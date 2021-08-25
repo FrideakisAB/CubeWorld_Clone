@@ -292,7 +292,7 @@ void ForwardPlusPipeline::Render()
         if (directionLight)
         {
             shader.SetVec4("dirLight.position", directionLight.value().position);
-            shader.SetVec4("dirLight.color", directionLight.value().colorAndIntensity);
+            shader.SetVec4("dirLight.colorAndIntensity", directionLight.value().colorAndIntensity);
             shader.SetVec4("dirLight.direction", directionLight.value().direction);
         }
 
