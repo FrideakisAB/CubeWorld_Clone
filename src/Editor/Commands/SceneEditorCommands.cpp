@@ -6,8 +6,6 @@
 TextEdit::TextEdit(GameObject *go, std::string value, bool isTag)
     : gameObject(go), newValue(std::move(value)), isTag(isTag)
 {
-    name = boost::typeindex::type_id<TextEdit>().pretty_name();
-
     if(!isTag)
         saveValue = gameObject->Name;
     else
@@ -35,9 +33,7 @@ void TextEdit::Undo()
 
 AddComponent::AddComponent(GameObject *go, std::string cmp)
     : gameObject(go), cmpName(std::move(cmp))
-{
-    name = boost::typeindex::type_id<AddComponent>().pretty_name();
-}
+{}
 
 void AddComponent::Execute()
 {
@@ -54,9 +50,7 @@ void AddComponent::Undo()
 
 ActiveEdit::ActiveEdit(GameObject *go, bool active)
 : gameObject(go), active(active)
-{
-    name = boost::typeindex::type_id<AddComponent>().pretty_name();
-}
+{}
 
 void ActiveEdit::Execute()
 {

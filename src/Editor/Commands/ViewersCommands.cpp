@@ -4,8 +4,6 @@
 
 SetCamera::SetCamera(GameObject *newCamera)
 {
-    name = boost::typeindex::type_id<SetCamera>().pretty_name();
-
     if (Camera::Main != nullptr)
         goOld = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner()));
     else

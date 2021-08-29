@@ -10,8 +10,6 @@ namespace fs = std::filesystem;
 
 DeleteGO::DeleteGO(ECS::EntityId entityId)
 {
-    name = boost::typeindex::type_id<DeleteGO>().pretty_name();
-
     gameObject = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(entityId));
     if (gameObject->GetEntityID() != ECS::INVALID_ENTITY_ID)
         parent = static_cast<GameObject*>(gameObject->GetParent());
@@ -107,8 +105,6 @@ void DeleteGO::Undo()
 
 AddChild::AddChild(ECS::EntityId childId, ECS::EntityId parentId)
 {
-    name = boost::typeindex::type_id<AddChild>().pretty_name();
-
     child = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(childId));
     parent = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(parentId));
     if (child->GetParentID() != ECS::INVALID_ENTITY_ID)
@@ -137,8 +133,6 @@ void AddChild::Undo()
 
 RemoveParent::RemoveParent(ECS::EntityId childId)
 {
-    name = boost::typeindex::type_id<RemoveParent>().pretty_name();
-
     child = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(childId));
     if (child->GetParentID() != ECS::INVALID_ENTITY_ID)
         prevParent = static_cast<GameObject*>(child->GetParent());
@@ -162,9 +156,7 @@ void RemoveParent::Undo()
 
 CustomCreate::CustomCreate(ECS::EntityId *resultId, const std::function<void(GameObject*)> &func)
     : resultId(resultId), func(func)
-{
-    name = boost::typeindex::type_id<CustomCreate>().pretty_name();
-}
+{}
 
 void CustomCreate::recMap(GameObject *go)
 {

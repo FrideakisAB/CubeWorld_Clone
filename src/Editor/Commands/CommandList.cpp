@@ -1,6 +1,8 @@
 #include "Editor/Commands/CommandList.h"
 
 #include "imgui.h"
+#include "ECS/ECS.h"
+#include "ECS/util/Timer.h"
 
 CommandList::CommandList()
 {
@@ -44,6 +46,9 @@ void CommandList::Undo()
 {
     if (position != cmdBuffer.end() && position != cmdBuffer.begin())
     {
+        if (isLastTimed)
+            finishTimed();
+
         (*position)->Undo();
         --position;
     }
@@ -74,6 +79,10 @@ void CommandList::InvalidateAll()
     recreateEntityMap.clear();
     lastId = 1;
 
+    timedId = 1;
+    accumulateTime = 0.0f;
+    isLastTimed = false;
+
     position = cmdBuffer.begin();
 }
 
@@ -85,4 +94,23 @@ bool CommandList::IsRedoActive() const noexcept
 bool CommandList::IsUndoActive() const noexcept
 {
     return position != cmdBuffer.end() && position != cmdBuffer.begin();
+}
+
+void CommandList::finishTimed()
+{
+    cmdBuffer.back()->Finish();
+}
+
+void CommandList::Update()
+{
+    if (isLastTimed)
+    {
+        if (accumulateTime > DelayToSave)
+        {
+            finishTimed();
+            isLastTimed = false;
+        }
+
+        accumulateTime += ECS::ECS_Engine->GetTimer()->GetNonScaleDeltaTime();
+    }
 }

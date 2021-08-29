@@ -11,8 +11,8 @@ namespace ECS::util {
 
     private:
         Elapsed elapsed;
-        f32 timeScale = 1.0f;
-        f32 dt;
+        f32 timeScale;
+        f32 dt, nonScaleDT;
         TimePoint last;
 
     public:
@@ -21,27 +21,15 @@ namespace ECS::util {
         void Tick() noexcept;
         void Reset() noexcept;
 
-        [[nodiscard]] inline TimeStamp GetTimeStamp() const noexcept
-        {
-            return TimeStamp(elapsed.count());
-        }
-
-        [[nodiscard]] inline f32 GetWorkTime() const noexcept
-        {
-            return elapsed.count();
-        }
+        [[nodiscard]] inline TimeStamp GetTimeStamp() const noexcept { return TimeStamp(elapsed.count()); }
+        [[nodiscard]] inline f32 GetWorkTime() const noexcept { return elapsed.count(); }
 
         void SetTimeScale(f32 ts) noexcept;
 
-        [[nodiscard]] inline f32 GetTimeScale() const noexcept
-        {
-            return timeScale;
-        }
+        [[nodiscard]] inline f32 GetTimeScale() const noexcept { return timeScale; }
 
-        [[nodiscard]] inline f32 GetDeltaTime() const noexcept
-        {
-            return dt;
-        }
+        [[nodiscard]] inline f32 GetDeltaTime() const noexcept { return dt; }
+        [[nodiscard]] inline f32 GetNonScaleDeltaTime() const noexcept { return nonScaleDT; }
     };
 }
 

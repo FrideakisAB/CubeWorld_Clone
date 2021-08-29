@@ -21,9 +21,7 @@ private:
 public:
     explicit DeleteComponent(GameObject *go)
         : gameObject(go)
-    {
-        name = boost::typeindex::type_id<DeleteComponent>().pretty_name();
-    }
+    {}
 
     ~DeleteComponent() final
     {
@@ -66,8 +64,6 @@ public:
     explicit ChangeState(GameObject *go)
         : gameObject(go)
     {
-        name = boost::typeindex::type_id<ChangeState>().pretty_name();
-
         cacheUndo = GameEditor->CacheSystem.CreateCache(8);
         std::string jsonStr = go->GetComponent<T>()->SerializeObj().dump(4);
         std::ofstream file = std::ofstream(fs::current_path().string() + cacheUndo.GetPath());
