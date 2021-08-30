@@ -2,8 +2,10 @@
 
 #include "Editor/Editor.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "Editor/ImGui/imgui_curve.h"
 #include "Components/ParticleSystem.h"
 #include "Editor/Commands/ViewersCommands.h"
+#include "Editor/ImGui/imgui_color_gradient.h"
 
 void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 {
@@ -176,6 +178,276 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
                 if (isModify)
                     ps.Emission.Bursts[modifyIndex] = modifyBurst;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Color over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.ColorOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.ColorOverLifetime.Active)
+                update = true;
+
+            if (ImGui::GradientButton("Color", &ps.ColorOverLifetime.Gradient, 12))
+                ImGui::OpenPopup("GradientEditor");
+
+            Gradient::MarkIterator changeItem;
+            ChangeType changeType;
+            glm::vec4 color;
+            f32 position;
+            if (ImGui::BeginPopup("GradientEditor"))
+            {
+                update = ImGui::GradientEditorNoChange(&ps.ColorOverLifetime.Gradient, changeItem, changeType, color, position);
+
+                ImGui::EndPopup();
+            }
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.ColorOverLifetime.Active = active;
+                ImGui::GradientChange(&ps.ColorOverLifetime.Gradient, changeItem, changeType, color, position);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Size over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.SizeOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.SizeOverLifetime.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Size", 16, 10, ps.SizeOverLifetime.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.SizeOverLifetime.Points, ps.SizeOverLifetime.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.SizeOverLifetime.Active = active;
+                std::copy(copyPoints, copyPoints + 10, ps.SizeOverLifetime.Points);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Speed over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.SpeedOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.SpeedOverLifetime.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Speed", 16, 10, ps.SpeedOverLifetime.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.SpeedOverLifetime.Points, ps.SpeedOverLifetime.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.SpeedOverLifetime.Active = active;
+                std::copy(copyPoints, copyPoints + 10, ps.SpeedOverLifetime.Points);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Rotation over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.RotationOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.RotationOverLifetime.Active)
+                update = true;
+
+            f32 speed = ps.RotationOverLifetime.Speed;
+            ImGui::InputFloat("Start rotation", &speed);
+            if (speed != ps.RotationOverLifetime.Speed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.RotationOverLifetime.Active = active;
+                ps.RotationOverLifetime.Speed = speed;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Force over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.ForceOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.ForceOverLifetime.Active)
+                update = true;
+
+            if (ImGui::CurveButton("X", 16, 10, ps.ForceOverLifetime.XPoints))
+                ImGui::OpenPopup("CurveEditorX");
+
+            glm::vec2 copyXPoints[10]{};
+            std::copy(ps.ForceOverLifetime.XPoints, ps.ForceOverLifetime.XPoints + 10, copyXPoints);
+            if (ImGui::BeginPopup("CurveEditorX"))
+            {
+                update = ImGui::Curve("CurveX", ImVec2(600, 200), 10, copyXPoints);
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::CurveButton("Y", 16, 10, ps.ForceOverLifetime.YPoints))
+                ImGui::OpenPopup("CurveEditorY");
+
+            glm::vec2 copyYPoints[10]{};
+            std::copy(ps.ForceOverLifetime.YPoints, ps.ForceOverLifetime.YPoints + 10, copyYPoints);
+            if (ImGui::BeginPopup("CurveEditorY"))
+            {
+                update = ImGui::Curve("CurveY", ImVec2(600, 200), 10, copyYPoints);
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::CurveButton("Z", 16, 10, ps.ForceOverLifetime.ZPoints))
+                ImGui::OpenPopup("CurveEditorZ");
+
+            glm::vec2 copyZPoints[10]{};
+            std::copy(ps.ForceOverLifetime.ZPoints, ps.ForceOverLifetime.ZPoints + 10, copyZPoints);
+            if (ImGui::BeginPopup("CurveEditorZ"))
+            {
+                update = ImGui::Curve("CurveZ", ImVec2(600, 200), 10, copyZPoints);
+
+                ImGui::EndPopup();
+            }
+
+            glm::vec3 baseForce = ps.ForceOverLifetime.BaseForce;
+            ImGui::InputFloat3("Base force", glm::value_ptr(baseForce));
+            if (baseForce != ps.ForceOverLifetime.BaseForce)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.ForceOverLifetime.Active = active;
+                std::copy(copyXPoints, copyXPoints + 10, ps.ForceOverLifetime.XPoints);
+                std::copy(copyYPoints, copyYPoints + 10, ps.ForceOverLifetime.YPoints);
+                std::copy(copyZPoints, copyZPoints + 10, ps.ForceOverLifetime.ZPoints);
+                ps.ForceOverLifetime.BaseForce = baseForce;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Bright over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.BrightOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.BrightOverLifetime.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Bright", 16, 10, ps.BrightOverLifetime.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.BrightOverLifetime.Points, ps.BrightOverLifetime.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            f32 bright = ps.BrightOverLifetime.BaseBright;
+            ImGui::InputFloat("Base bright", &bright);
+            if (bright != ps.BrightOverLifetime.BaseBright)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.BrightOverLifetime.Active = active;
+                std::copy(copyPoints, copyPoints + 10, ps.BrightOverLifetime.Points);
+                ps.BrightOverLifetime.BaseBright = bright;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Texture over lifetime"))
+        {
+            bool update = false;
+
+            bool active = ps.TextureOverLifetime.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.TextureOverLifetime.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Texture", 16, 10, ps.TextureOverLifetime.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.TextureOverLifetime.Points, ps.TextureOverLifetime.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            f32 baseTexture = ps.TextureOverLifetime.BaseTexture;
+            ImGui::InputFloat("Base texture", &baseTexture);
+            if (baseTexture != ps.TextureOverLifetime.BaseTexture)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.TextureOverLifetime.Active = active;
+                std::copy(copyPoints, copyPoints + 10, ps.TextureOverLifetime.Points);
+                ps.TextureOverLifetime.BaseTexture = baseTexture;
             }
 
             ImGui::TreePop();

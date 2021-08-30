@@ -5,10 +5,13 @@ void Gradient::computeColorAt(f32 position, glm::vec4 *color) const noexcept
     position = position < 0.0f? 0.0f : position > 1.0f? 1.0f : position;
 
     if (marks.empty())
-        *color = glm::vec4(0.0f,0.0f,0.0f,0.0f);
+    {
+        *color = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        return;
+    }
 
     Mark lower = marks.front();
-    Mark upper = marks.front();
+    Mark upper = marks.back();
 
     for(const auto &mark : marks)
     {
@@ -65,6 +68,10 @@ void Gradient::AddMark(f32 position, const glm::vec4 color)
 void Gradient::RemoveMark(MarkIterator element) noexcept
 {
     marks.erase(element);
+
+    DraggingIterator = marks.end();
+    SelectedIterator = marks.end();
+
     RefreshCache();
 }
 

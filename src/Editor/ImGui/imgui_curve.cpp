@@ -298,12 +298,12 @@ namespace Tween {
 
 namespace ImGui
 {
-    int Curve(const char *label, const ImVec2& size, const int maxpoints, glm::vec2 *points)
+    bool Curve(const char *label, const ImVec2& size, const int maxpoints, glm::vec2 *points)
     {
-        int modified = 0;
+        bool modified = false;
         int i;
-        if (maxpoints < 2 || points == 0)
-            return 0;
+        if (maxpoints < 2 || points == nullptr)
+            return false;
 
         if (points[0].x < 0)
         {
@@ -319,12 +319,12 @@ namespace ImGui
         const ImGuiStyle& style = g.Style;
         const ImGuiID id = window->GetID(label);
         if (window->SkipItems)
-            return 0;
+            return false;
 
         ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size);
         ItemSize(bb);
         if (!ItemAdd(bb, NULL))
-            return 0;
+            return false;
 
         const bool hovered = ItemHoverable(bb, id);
 
@@ -336,7 +336,7 @@ namespace ImGui
         {
             if (kill)
             {
-                modified = 1;
+                modified = true;
                 for (i = kill + 1; i < max; i++)
                 {
                     points[i - 1] = points[i];
@@ -356,7 +356,6 @@ namespace ImGui
         }
         while (kill);
 
-
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 
         float ht = bb.Max.y - bb.Min.y;
@@ -367,7 +366,7 @@ namespace ImGui
             SetHoveredID(id);
             if (g.IO.MouseDown[0])
             {
-                modified = 1;
+                modified = true;
                 ImVec2 pos2 = (g.IO.MousePos - bb.Min) / (bb.Max - bb.Min);
                 glm::vec2 pos = glm::vec2(pos2.x, pos2.y);
                 pos.y = 1 - pos.y;
@@ -481,6 +480,7 @@ namespace ImGui
             for( i = 0; i < max; ++i) { 
                 points[i].y = 1 - points[i].y;
             }
+            modified = true;
         }
         ImGui::SameLine();
 
@@ -540,7 +540,8 @@ namespace ImGui
                 for( i = 0; i < max; ++i) { 
                     points[i].x = i / float(max-1); 
                     points[i].y = float( Tween::ease( item - 1, points[i].x ) );
-                }               
+                }
+                modified = true;
             }
         }
 

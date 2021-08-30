@@ -35,6 +35,9 @@ public:
 
     json SerializeObj() override;
     void UnSerializeObj(const json &j) override;
+
+    MarkIterator DraggingIterator = marks.begin();
+    MarkIterator SelectedIterator = marks.begin();
 };
 
 #endif

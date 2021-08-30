@@ -197,9 +197,7 @@ namespace ImGui
         return clicked;
     }
     
-    bool GradientEditor(Gradient* gradient,
-                        Gradient::MarkIterator &draggingMark,
-                        Gradient::MarkIterator &selectedMark)
+    bool GradientEditor(Gradient* gradient)
     {
         if (!gradient)
             return false;
@@ -223,12 +221,12 @@ namespace ImGui
         }
         
         DrawGradientBar(gradient, bar_pos, maxWidth, GRADIENT_BAR_EDITOR_HEIGHT);
-        DrawGradientMarks(gradient, draggingMark, selectedMark, bar_pos, maxWidth, GRADIENT_BAR_EDITOR_HEIGHT);
+        DrawGradientMarks(gradient, gradient->DraggingIterator, gradient->SelectedIterator, bar_pos, maxWidth, GRADIENT_BAR_EDITOR_HEIGHT);
         
-        if (!ImGui::IsMouseDown(0) && draggingMark != gradient->GetMarks().end())
-            draggingMark = gradient->GetMarks().end();
+        if (!ImGui::IsMouseDown(0) && gradient->DraggingIterator != gradient->GetMarks().end())
+            gradient->DraggingIterator = gradient->GetMarks().end();
         
-        if (ImGui::IsMouseDragging(0) && draggingMark != gradient->GetMarks().end())
+        if (ImGui::IsMouseDragging(0) && gradient->DraggingIterator != gradient->GetMarks().end())
         {
             float increment = ImGui::GetIO().MouseDelta.x / maxWidth;
             bool insideZone = (ImGui::GetIO().MousePos.x > bar_pos.x) &&
@@ -236,8 +234,8 @@ namespace ImGui
             
             if (increment != 0.0f && insideZone)
             {
-                draggingMark->position += increment;
-                draggingMark->position = ImClamp(draggingMark->position, 0.0f, 1.0f);
+                gradient->DraggingIterator->position += increment;
+                gradient->DraggingIterator->position = ImClamp(gradient->DraggingIterator->position, 0.0f, 1.0f);
                 gradient->RefreshCache();
                 modified = true;
             }
@@ -246,27 +244,123 @@ namespace ImGui
             
             if (diffY >= GRADIENT_MARK_DELETE_DIFFY)
             {
-                gradient->RemoveMark(draggingMark);
-                draggingMark = gradient->GetMarks().end();
-                selectedMark = gradient->GetMarks().end();
+                gradient->RemoveMark(gradient->DraggingIterator);
+                gradient->DraggingIterator = gradient->GetMarks().end();
+                gradient->SelectedIterator = gradient->GetMarks().end();
                 modified = true;
             }
         }
         
-        if (selectedMark == gradient->GetMarks().end() && !gradient->GetMarks().empty())
-            selectedMark = gradient->GetMarks().begin();
+        if (gradient->SelectedIterator == gradient->GetMarks().end() && !gradient->GetMarks().empty())
+            gradient->SelectedIterator = gradient->GetMarks().begin();
         
-        if (selectedMark != gradient->GetMarks().end())
+        if (gradient->SelectedIterator != gradient->GetMarks().end() && ImGui::ColorPicker4("", &gradient->SelectedIterator->color[0]))
         {
-            bool colorModified = ImGui::ColorPicker4("", &selectedMark->color[0]);
-            
-            if (selectedMark != gradient->GetMarks().end() && colorModified)
-            {
-                modified = true;
-                gradient->RefreshCache();
-            }
+            modified = true;
+            gradient->RefreshCache();
         }
         
         return modified;
+    }
+
+    bool GradientEditorNoChange(Gradient *gradient, Gradient::MarkIterator &changeItem, ChangeType &changeType, glm::vec4 &color, f32 &position)
+    {
+        changeType = ChangeType::None;
+
+        if (!gradient)
+            return false;
+
+        bool modified = false;
+
+        ImVec2 bar_pos = ImGui::GetCursorScreenPos();
+        bar_pos.x += 10;
+        float maxWidth = ImGui::GetContentRegionAvailWidth() - 20;
+        float barBottom = bar_pos.y + GRADIENT_BAR_EDITOR_HEIGHT;
+
+        ImGui::InvisibleButton("gradient_editor_bar", ImVec2(maxWidth, GRADIENT_BAR_EDITOR_HEIGHT));
+
+        if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0))
+        {
+            modified = true;
+            position = (ImGui::GetIO().MousePos.x - bar_pos.x) / maxWidth;
+            color = gradient->GetColorAt(position);
+            changeType = ChangeType::Add;
+        }
+
+        DrawGradientBar(gradient, bar_pos, maxWidth, GRADIENT_BAR_EDITOR_HEIGHT);
+        DrawGradientMarks(gradient, gradient->DraggingIterator, gradient->SelectedIterator, bar_pos, maxWidth, GRADIENT_BAR_EDITOR_HEIGHT);
+
+        if (!ImGui::IsMouseDown(0) && gradient->DraggingIterator != gradient->GetMarks().end())
+            gradient->DraggingIterator = gradient->GetMarks().end();
+
+        if (ImGui::IsMouseDragging(0) && gradient->DraggingIterator != gradient->GetMarks().end())
+        {
+            float increment = ImGui::GetIO().MouseDelta.x / maxWidth;
+            bool insideZone = (ImGui::GetIO().MousePos.x > bar_pos.x) &&
+                              (ImGui::GetIO().MousePos.x < bar_pos.x + maxWidth);
+
+            if (increment != 0.0f && insideZone)
+            {
+                modified = true;
+                position = ImClamp(gradient->DraggingIterator->position + increment, 0.0f, 1.0f);
+                changeType = ChangeType::Position;
+                changeItem = gradient->DraggingIterator;
+            }
+
+            float diffY = ImGui::GetIO().MousePos.y - barBottom;
+
+            if (diffY >= GRADIENT_MARK_DELETE_DIFFY)
+            {
+                modified = true;
+                changeType = ChangeType::Delete;
+                changeItem = gradient->DraggingIterator;
+            }
+        }
+
+        if (gradient->SelectedIterator == gradient->GetMarks().end() && !gradient->GetMarks().empty())
+            gradient->SelectedIterator = gradient->GetMarks().begin();
+
+        if (gradient->SelectedIterator != gradient->GetMarks().end())
+        {
+            glm::vec4 copyColor = gradient->SelectedIterator->color;
+
+            if (ImGui::ColorPicker4("", &copyColor[0]))
+            {
+                modified = true;
+                color = copyColor;
+                changeType = ChangeType::Color;
+                changeItem = gradient->SelectedIterator;
+            }
+        }
+
+        return modified;
+    }
+
+    void GradientChange(Gradient *gradient, Gradient::MarkIterator &changeItem, ChangeType &changeType, glm::vec4 &color, f32 &position)
+    {
+        switch (changeType)
+        {
+        case ChangeType::Color:
+            changeItem->color = color;
+            gradient->RefreshCache();
+            break;
+
+        case ChangeType::Position:
+            changeItem->position = position;
+            gradient->RefreshCache();
+            break;
+
+        case ChangeType::Delete:
+            gradient->RemoveMark(changeItem);
+            gradient->DraggingIterator = gradient->GetMarks().end();
+            gradient->SelectedIterator = gradient->GetMarks().end();
+            gradient->RefreshCache();
+            break;
+
+        case ChangeType::Add:
+            gradient->AddMark(position, color);
+            gradient->RefreshCache();
+            break;
+        }
     }
 };

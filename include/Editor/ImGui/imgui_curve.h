@@ -11,7 +11,7 @@
 
 namespace ImGui
 {
-    int Curve(const char *label, const ImVec2& size, int maxpoints, glm::vec2 *points);
+    bool Curve(const char *label, const ImVec2& size, int maxpoints, glm::vec2 *points);
 	bool CurveButton(const char *label, unsigned int size, int maxpoints, glm::vec2 *points);
 };
 
