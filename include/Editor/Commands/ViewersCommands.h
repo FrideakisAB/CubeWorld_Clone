@@ -59,6 +59,7 @@ private:
     u64 id = 0;
     CacheEntry cacheRedo;
     CacheEntry cacheUndo;
+    bool finished = false;
 
 public:
     explicit ChangeState(GameObject *go)
@@ -84,16 +85,8 @@ public:
     void Execute() final
     {
         if(id == 0)
-        {
             id = validator.Map(gameObject);
-
-            cacheRedo = GameEditor->CacheSystem.CreateCache(8);
-            std::string jsonStr = gameObject->GetComponent<T>()->SerializeObj().dump(4);
-            std::ofstream file = std::ofstream(fs::current_path().string() + cacheRedo.GetPath());
-            file.write(jsonStr.c_str(), jsonStr.size());
-            file.close();
-        }
-        else
+        else if (finished)
         {
             json j = json_utils::TryParse(Utils::FileToString(std::ifstream(fs::current_path().string() + cacheRedo.GetPath())));
             validator.Get(id)->template GetComponent<T>()->UnSerializeObj(j);
@@ -104,6 +97,17 @@ public:
     {
         json j = json_utils::TryParse(Utils::FileToString(std::ifstream(fs::current_path().string() + cacheUndo.GetPath())));
         validator.Get(id)->template GetComponent<T>()->UnSerializeObj(j);
+    }
+
+    void Finish() final
+    {
+        cacheRedo = GameEditor->CacheSystem.CreateCache(8);
+        std::string jsonStr = gameObject->GetComponent<T>()->SerializeObj().dump(4);
+        std::ofstream file = std::ofstream(fs::current_path().string() + cacheRedo.GetPath());
+        file.write(jsonStr.c_str(), jsonStr.size());
+        file.close();
+
+        finished = true;
     }
 };
 

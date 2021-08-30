@@ -79,7 +79,7 @@ public:
         return timedId++;
     }
 
-    [[nodiscard]] bool IsTimedValid(u64 id) const noexcept { return currentTimedId != id && currentTimedId != 0; }
+    [[nodiscard]] bool IsTimedValid(u64 id) const noexcept { return currentTimedId == id && currentTimedId != 0 && isLastTimed; }
 
     void InvalidateAll();
 
@@ -92,7 +92,7 @@ public:
     void Update();
 
     static constexpr size_t StoryLength = 10000;
-    static constexpr f32 DelayToSave = 1.0f;
+    static constexpr f32 DelayToSave = 5.0f;
 };
 
 #endif

@@ -33,6 +33,7 @@ Editor::~Editor()
 
 void Editor::DrawWindows()
 {
+    CommandList.Update();
     sceneViewer.Draw();
     sceneEditor.Draw();
 }

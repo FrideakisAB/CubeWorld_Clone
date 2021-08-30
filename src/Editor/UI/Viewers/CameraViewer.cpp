@@ -47,7 +47,8 @@ void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
         if(update)
         {
-            GameEditor->CommandList.AddCommand<ChangeState<Camera>>(&go);
+            if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
+                lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<Camera>>(&go);
 
             if (camera.Proj == Projection::Perspective)
                 camera.Fov = fovOrRatio;
@@ -58,8 +59,6 @@ void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             camera.FarClip = farClip;
 
             camera.Proj = static_cast<Projection>((u8)item_current);
-
-            GameEditor->CommandList.Redo();
         }
     }
     if (!closed)

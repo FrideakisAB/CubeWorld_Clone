@@ -43,15 +43,14 @@ void LightViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
         if (update)
         {
-            GameEditor->CommandList.AddCommand<ChangeState<LightSource>>(&go);
+            if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
+                lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<LightSource>>(&go);
 
             light.Type = static_cast<LightType>((u8)item_current);
             light.Color = color;
             light.Radius = radius;
             light.Intensity = intensity;
             light.CutterOff = cutterOff;
-
-            GameEditor->CommandList.Redo();
         }
     }
     if (!closed)

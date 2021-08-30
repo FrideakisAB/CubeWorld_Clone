@@ -69,14 +69,13 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
         if (update)
         {
-            GameEditor->CommandList.AddCommand<ChangeState<Transform>>(&go);
+            if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
+                lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<Transform>>(&go);
 
             if (local)
                 transform.SetLocalPos(pos);
             else
                 transform.SetGlobalPos(pos);
-
-            GameEditor->CommandList.Redo();
         }
     }
     if (!closed)

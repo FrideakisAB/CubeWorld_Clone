@@ -37,7 +37,11 @@ void CommandList::Redo()
         return;
 
     if (position != cmdBuffer.end())
+    {
+        if (!isLastTimed)
+            finishTimed();
         (*position)->Execute();
+    }
     else
         position = --cmdBuffer.end();
 }
@@ -47,7 +51,10 @@ void CommandList::Undo()
     if (position != cmdBuffer.end() && position != cmdBuffer.begin())
     {
         if (isLastTimed)
+        {
             finishTimed();
+            isLastTimed = false;
+        }
 
         (*position)->Undo();
         --position;
