@@ -15,13 +15,19 @@ ParticleSystem::ParticleSystem()
     for(u32 i = 0; i < 10; ++i)
     {
         auto iFloat = static_cast<f32>(i) * 0.1f;
+        if (i == 9)
+            iFloat = 1.0f;
         SizeOverLifetime.Points[i] = glm::vec2(iFloat, 1.0f);
         SpeedOverLifetime.Points[i] = glm::vec2(iFloat, 1.0f);
 
         ForceOverLifetime.XPoints[i] = glm::vec2(iFloat, 0.0f);
         ForceOverLifetime.YPoints[i] = glm::vec2(iFloat, 0.0f);
         ForceOverLifetime.ZPoints[i] = glm::vec2(iFloat, 0.0f);
+        BrightOverLifetime.Points[i] = glm::vec2(iFloat, 0.0f);
+        TextureOverLifetime.Points[i] = glm::vec2(iFloat, 0.0f);
 
+        BrightBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
+        TextureBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
         SizeBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
     }
 

@@ -452,6 +452,270 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
             ImGui::TreePop();
         }
+
+        if (ImGui::TreeNode("Color by speed"))
+        {
+            bool update = false;
+
+            bool active = ps.ColorBySpeed.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.ColorBySpeed.Active)
+                update = true;
+
+            if (ImGui::GradientButton("Color", &ps.ColorBySpeed.Gradient, 12))
+                ImGui::OpenPopup("GradientEditor");
+
+            Gradient::MarkIterator changeItem;
+            ChangeType changeType;
+            glm::vec4 color;
+            f32 position;
+            if (ImGui::BeginPopup("GradientEditor"))
+            {
+                update = ImGui::GradientEditorNoChange(&ps.ColorBySpeed.Gradient, changeItem, changeType, color, position);
+
+                ImGui::EndPopup();
+            }
+
+            f32 minSpeed = ps.ColorBySpeed.MinSpeed;
+            ImGui::InputFloat("Minimum speed", &minSpeed);
+            if (minSpeed != ps.ColorBySpeed.MinSpeed)
+                update = true;
+
+            f32 maxSpeed = ps.ColorBySpeed.MaxSpeed;
+            ImGui::InputFloat("Maximum speed", &maxSpeed);
+            if (maxSpeed != ps.ColorBySpeed.MaxSpeed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.ColorBySpeed.Active = active;
+                ImGui::GradientChange(&ps.ColorBySpeed.Gradient, changeItem, changeType, color, position);
+                ps.ColorBySpeed.MinSpeed = minSpeed;
+                ps.ColorBySpeed.MaxSpeed = maxSpeed;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Rotation by speed"))
+        {
+            bool update = false;
+
+            bool active = ps.RotationBySpeed.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.RotationBySpeed.Active)
+                update = true;
+
+            f32 baseSpeed = ps.RotationBySpeed.BaseSpeed;
+            ImGui::InputFloat("Base speed", &baseSpeed);
+            if (baseSpeed != ps.RotationBySpeed.BaseSpeed)
+                update = true;
+
+            f32 minSpeed = ps.RotationBySpeed.MinSpeed;
+            ImGui::InputFloat("Minimum speed", &minSpeed);
+            if (minSpeed != ps.RotationBySpeed.MinSpeed)
+                update = true;
+
+            f32 maxSpeed = ps.RotationBySpeed.MaxSpeed;
+            ImGui::InputFloat("Maximum speed", &maxSpeed);
+            if (maxSpeed != ps.RotationBySpeed.MaxSpeed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.RotationBySpeed.Active = active;
+                ps.RotationBySpeed.BaseSpeed = baseSpeed;
+                ps.RotationBySpeed.MinSpeed = minSpeed;
+                ps.RotationBySpeed.MaxSpeed = maxSpeed;
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Size by speed"))
+        {
+            bool update = false;
+
+            bool active = ps.SizeBySpeed.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.SizeBySpeed.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Size", 16, 10, ps.SizeBySpeed.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.SizeBySpeed.Points, ps.SizeBySpeed.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            f32 baseSize = ps.SizeBySpeed.BaseSize;
+            ImGui::InputFloat("Base size", &baseSize);
+            if (baseSize != ps.SizeBySpeed.BaseSize)
+                update = true;
+
+            f32 minSpeed = ps.SizeBySpeed.MinSpeed;
+            ImGui::InputFloat("Minimum speed", &minSpeed);
+            if (minSpeed != ps.SizeBySpeed.MinSpeed)
+                update = true;
+
+            f32 maxSpeed = ps.SizeBySpeed.MaxSpeed;
+            ImGui::InputFloat("Maximum speed", &maxSpeed);
+            if (maxSpeed != ps.SizeBySpeed.MaxSpeed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.SizeBySpeed.Active = active;
+                ps.SizeBySpeed.BaseSize = baseSize;
+                ps.SizeBySpeed.MinSpeed = minSpeed;
+                ps.SizeBySpeed.MaxSpeed = maxSpeed;
+                std::copy(copyPoints, copyPoints + 10, ps.SizeBySpeed.Points);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Bright by speed"))
+        {
+            bool update = false;
+
+            bool active = ps.BrightBySpeed.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.BrightBySpeed.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Bright", 16, 10, ps.BrightBySpeed.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.BrightBySpeed.Points, ps.BrightBySpeed.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            f32 baseBright = ps.BrightBySpeed.BaseBright;
+            ImGui::InputFloat("Base bright", &baseBright);
+            if (baseBright != ps.BrightBySpeed.BaseBright)
+                update = true;
+
+            f32 minSpeed = ps.BrightBySpeed.MinSpeed;
+            ImGui::InputFloat("Minimum speed", &minSpeed);
+            if (minSpeed != ps.BrightBySpeed.MinSpeed)
+                update = true;
+
+            f32 maxSpeed = ps.BrightBySpeed.MaxSpeed;
+            ImGui::InputFloat("Maximum speed", &maxSpeed);
+            if (maxSpeed != ps.BrightBySpeed.MaxSpeed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.BrightBySpeed.Active = active;
+                ps.BrightBySpeed.BaseBright = baseBright;
+                ps.BrightBySpeed.MinSpeed = minSpeed;
+                ps.BrightBySpeed.MaxSpeed = maxSpeed;
+                std::copy(copyPoints, copyPoints + 10, ps.BrightBySpeed.Points);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Texture by speed"))
+        {
+            bool update = false;
+
+            bool active = ps.TextureBySpeed.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.TextureBySpeed.Active)
+                update = true;
+
+            if (ImGui::CurveButton("Texture", 16, 10, ps.TextureBySpeed.Points))
+                ImGui::OpenPopup("CurveEditor");
+
+            glm::vec2 copyPoints[10]{};
+            std::copy(ps.TextureBySpeed.Points, ps.TextureBySpeed.Points + 10, copyPoints);
+            if (ImGui::BeginPopup("CurveEditor"))
+            {
+                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+
+                ImGui::EndPopup();
+            }
+
+            f32 baseTexture = ps.TextureBySpeed.BaseTexture;
+            ImGui::InputFloat("Base texture", &baseTexture);
+            if (baseTexture != ps.TextureBySpeed.BaseTexture)
+                update = true;
+
+            f32 minSpeed = ps.TextureBySpeed.MinSpeed;
+            ImGui::InputFloat("Minimum speed", &minSpeed);
+            if (minSpeed != ps.TextureBySpeed.MinSpeed)
+                update = true;
+
+            f32 maxSpeed = ps.TextureBySpeed.MaxSpeed;
+            ImGui::InputFloat("Maximum speed", &maxSpeed);
+            if (maxSpeed != ps.TextureBySpeed.MaxSpeed)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.TextureBySpeed.Active = active;
+                ps.TextureBySpeed.BaseTexture = baseTexture;
+                ps.TextureBySpeed.MinSpeed = minSpeed;
+                ps.TextureBySpeed.MaxSpeed = maxSpeed;
+                std::copy(copyPoints, copyPoints + 10, ps.TextureBySpeed.Points);
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Particle texture"))
+        {
+            bool update = false;
+
+            bool active = ps.ParticleTexture.Active;
+            ImGui::Checkbox("Active", &active);
+            if (active != ps.ParticleTexture.Active)
+                update = true;
+
+            glm::uvec2 tiles = ps.ParticleTexture.Tiles;
+            ImGui::InputScalarN("Tiles", ImGuiDataType_U32, &tiles[0], 2, nullptr, nullptr, "%u");
+            if (tiles != ps.ParticleTexture.Tiles)
+                update = true;
+
+            if (update)
+            {
+                if (lastCommandIds[0] == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandIds[0]))
+                    lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
+
+                ps.ParticleTexture.Active = active;
+                ps.ParticleTexture.Tiles = tiles;
+            }
+
+            ImGui::TreePop();
+        }
     }
     if (!closed)
     {

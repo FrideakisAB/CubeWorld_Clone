@@ -14,13 +14,13 @@ private:
 
 public:
     MeshComponent() = default;
-    MeshComponent(const MeshComponent& meshComponent)
+    MeshComponent(const MeshComponent &meshComponent)
     {
         meshHandle = meshComponent.meshHandle;
     }
 
     inline Mesh& GetMesh() { return *mesh; }
-    inline AssetsHandle& GetAsset() { return meshHandle; }
+    inline AssetsHandle &GetAsset() { return meshHandle; }
 
     void SetMesh(Mesh *newMesh)
     {
