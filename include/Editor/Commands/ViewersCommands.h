@@ -72,7 +72,7 @@ public:
         file.close();
     }
 
-    ~ChangeState()
+    ~ChangeState() final
     {
         cacheRedo = GameEditor->CacheSystem.GetCache(cacheRedo.GetID());
         if(!cacheRedo.GetPath().empty())
@@ -101,13 +101,16 @@ public:
 
     void Finish() final
     {
-        cacheRedo = GameEditor->CacheSystem.CreateCache(8);
-        std::string jsonStr = gameObject->GetComponent<T>()->SerializeObj().dump(4);
-        std::ofstream file = std::ofstream(fs::current_path().string() + cacheRedo.GetPath());
-        file.write(jsonStr.c_str(), jsonStr.size());
-        file.close();
+        if (!finished)
+        {
+            cacheRedo = GameEditor->CacheSystem.CreateCache(8);
+            std::string jsonStr = gameObject->GetComponent<T>()->SerializeObj().dump(4);
+            std::ofstream file = std::ofstream(fs::current_path().string() + cacheRedo.GetPath());
+            file.write(jsonStr.c_str(), jsonStr.size());
+            file.close();
 
-        finished = true;
+            finished = true;
+        }
     }
 };
 

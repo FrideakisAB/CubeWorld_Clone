@@ -53,7 +53,7 @@ CacheEntry CacheSystem::CreateCache(u64 lifetime)
         currentId = ++currentFreeId;
 
     std::string pathCache = std::string("/Cache/") + "tmp" + std::to_string(currentId) + ".bin";
-    std::ofstream(fs::current_path().string() + pathCache).close();
+    std::ofstream(fs::current_path().string() + pathCache, std::ios_base::trunc).close();
 
     auto fTime = fs::last_write_time(fs::current_path().string() + pathCache);
     u64 timeSec = std::chrono::duration_cast<std::chrono::hours>(fTime.time_since_epoch()).count();
@@ -112,6 +112,8 @@ void CacheSystem::SafeClean()
     }
 
     registry["removed"] = {};
+    if (registry["Entries"].begin() == registry["Entries"].end())
+        currentFreeId = 0;
 }
 
 void CacheSystem::UnsafeClean()

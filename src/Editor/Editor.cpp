@@ -1,12 +1,11 @@
 #include "Editor/Editor.h"
 
-#include <GLFW/glfw3.h>
-#include "Components/Camera.h"
-#include "Components/Transform.h"
-#include "Components/LightSource.h"
+#include "Components/Components.h"
 #include "Editor/UI/Viewers/LightViewer.h"
 #include "Editor/UI/Viewers/CameraViewer.h"
+#include "Editor/UI/Viewers/ParticleViewer.h"
 #include "Editor/UI/Viewers/TransformViewer.h"
+#include <GLFW/glfw3.h>
 
 Editor *GameEditor = nullptr;
 
@@ -23,6 +22,7 @@ Editor::Editor()
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
     sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
+    sceneEditor.ViewersRegistry.RegisterViewer<ParticleViewer, ParticleSystem>();
 }
 
 Editor::~Editor()

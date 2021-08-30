@@ -49,8 +49,11 @@ struct Particle {
 
 class ParticleSystem final : public ECS::Component<ParticleSystem> {
 private:
+    bool fixStartPosition = false;
+    glm::vec3 prevPosition = glm::vec3(0.0f);
     u32 activeCount = 0;
     f32 accumulateTime = 0.0f;
+    f32 accumulateDistance = 0.0f;
     f32 activeTime = 0.0f;
     ParticleState state = ParticleState::NotRun;
 

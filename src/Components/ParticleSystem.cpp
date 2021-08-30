@@ -124,60 +124,35 @@ Particle ParticleSystem::genParticle(glm::mat4 transformMat, glm::quat transform
 
 void ParticleSystem::Update()
 {
-    float deltaTime = ECS::ECS_Engine->GetTimer()->GetDeltaTime();
+    f32 deltaTime = ECS::ECS_Engine->GetTimer()->GetDeltaTime();
     if (state == ParticleState::Run)
         activeTime += deltaTime;
 
     if (activeTime > StartDelay && state == ParticleState::Run && (activeTime < Duration || Loop))
     {
+        Position newPosition{};
         glm::mat4 transformMat{};
         glm::quat transformRotate{};
 
-        if (GlobalSpace)
+        if (GlobalSpace || Emission.TypeRate == EmissionType::OverDistance)
         {
-            auto *EM = ECS::ECS_Engine->GetEntityManager();
-
-            auto *entity = EM->GetEntity(GetOwner());
+            auto *entity = ECS::ECS_Engine->GetEntityManager()->GetEntity(GetOwner());
             auto *transform = entity->GetComponent<Transform>();
 
+            newPosition = transform->GetGlobalPos();
             transformMat = transform->GetMat();
-            transformRotate = transform->GetGlobalPos().rotate;
-        }
+            transformRotate = newPosition.rotate;
 
-        auto count = static_cast<u32>((deltaTime + accumulateTime) * (f32)Emission.Rate);
-        if (count != 0)
-        {
-
-            if (Loop && releasePosition > 0)
+            if (!fixStartPosition)
             {
-                for (u32 i = releasePosition; i > 0 && count > 0; --i)
-                {
-                    Particle part = genParticle(transformMat, transformRotate);
-                    particles[releasedParticles[i - 1]] = part;
-                    --count;
-                    --releasePosition;
-                }
+                prevPosition = newPosition.position;
+                fixStartPosition = true;
             }
-
-            //TODO: apply Loop in this behaviour
-            u32 launchCount = count;
-            if (launchCount + position > maxParticlesCount)
-                launchCount = maxParticlesCount - position;
-
-            for (u32 i = 0; i < launchCount; ++i)
-            {
-                Particle part = genParticle(transformMat, transformRotate);
-                particles[position++] = part;
-            }
-
-            accumulateTime = 0.0f;
         }
-        else
-            accumulateTime += deltaTime;
 
         for (auto &Burst : Emission.Bursts)
         {
-            if (Burst.Time <= deltaTime && !Burst.IsMake)
+            if (Burst.Time <= activeTime && !Burst.IsMake)
             {
                 u32 particleCount = Math::RangeRandom(Burst.MinCount, Burst.MaxCount);
                 if (particleCount + position > maxParticlesCount)
@@ -191,6 +166,73 @@ void ParticleSystem::Update()
 
                 Burst.IsMake = true;
             }
+        }
+
+        if (Emission.TypeRate == EmissionType::OverTime)
+        {
+            auto count = static_cast<u32>((deltaTime + accumulateTime) * (f32)Emission.Rate);
+            if (count != 0)
+            {
+                if (Loop && releasePosition > 0)
+                {
+                    for (u32 i = releasePosition; i > 0 && count > 0; --i)
+                    {
+                        Particle part = genParticle(transformMat, transformRotate);
+                        particles[releasedParticles[i - 1]] = part;
+                        --count;
+                        --releasePosition;
+                    }
+                }
+
+                //TODO: apply Loop in this behaviour
+                u32 launchCount = count;
+                if (launchCount + position > maxParticlesCount)
+                    launchCount = maxParticlesCount - position;
+
+                for (u32 i = 0; i < launchCount; ++i)
+                {
+                    Particle part = genParticle(transformMat, transformRotate);
+                    particles[position++] = part;
+                }
+
+                accumulateTime = 0.0f;
+            }
+            else
+                accumulateTime += deltaTime;
+        }
+        else if (Emission.TypeRate == EmissionType::OverDistance)
+        {
+            f32 distance = abs(glm::distance(prevPosition, newPosition.position));
+            prevPosition = newPosition.position;
+            auto count = static_cast<u32>((distance + accumulateDistance) * (f32)Emission.Rate);
+            if (count != 0)
+            {
+                if (Loop && releasePosition > 0)
+                {
+                    for (u32 i = releasePosition; i > 0 && count > 0; --i)
+                    {
+                        Particle part = genParticle(transformMat, transformRotate);
+                        particles[releasedParticles[i - 1]] = part;
+                        --count;
+                        --releasePosition;
+                    }
+                }
+
+                //TODO: apply Loop in this behaviour
+                u32 launchCount = count;
+                if (launchCount + position > maxParticlesCount)
+                    launchCount = maxParticlesCount - position;
+
+                for (u32 i = 0; i < launchCount; ++i)
+                {
+                    Particle part = genParticle(transformMat, transformRotate);
+                    particles[position++] = part;
+                }
+
+                accumulateDistance = 0.0f;
+            }
+            else
+                accumulateDistance += distance;
         }
 
         u32 updateCount = 0;
@@ -284,7 +326,10 @@ void ParticleSystem::Update()
 void ParticleSystem::Play() noexcept
 {
     if(state == ParticleState::NotRun)
+    {
         state = ParticleState::Run;
+        fixStartPosition = false;
+    }
 }
 
 void ParticleSystem::Stop() noexcept
@@ -296,12 +341,16 @@ void ParticleSystem::Stop() noexcept
 void ParticleSystem::Resume() noexcept
 {
     if(state == ParticleState::Stopped)
+    {
         state = ParticleState::Run;
+        fixStartPosition = false;
+    }
 }
 
 void ParticleSystem::Restart() noexcept
 {
     activeTime = 0;
+    fixStartPosition = false;
 
     if(PlayOnStart)
         state = ParticleState::Run;
@@ -329,7 +378,7 @@ void ParticleSystem::SetMaxParticles(u32 maxParticles)
 
 void SavePoint(json &j, const std::string &name, glm::vec2 *base, u32 count)
 {
-    for(u32 i = 0; i < count; ++i)
+    for (u32 i = 0; i < count; ++i)
         j[name][i] = {base[i].x, base[i].y};
 }
 
@@ -355,7 +404,7 @@ json ParticleSystem::SerializeObj()
     data["Rate"] = Emission.Rate;
     data["TypeRate"] = static_cast<u8>(Emission.TypeRate);
     data["burstsCount"] = Emission.Bursts.size();
-    for(u32 i = 0; i < Emission.Bursts.size(); ++i)
+    for (u32 i = 0; i < Emission.Bursts.size(); ++i)
         data["bursts"][i] = {Emission.Bursts[i].Time, Emission.Bursts[i].MinCount, Emission.Bursts[i].MaxCount, Emission.Bursts[i].IsMake};
 
     data["Shape"] = static_cast<u8>(Shape);
@@ -431,7 +480,6 @@ void LoadPoint(const json &j, const std::string &name, glm::vec2 *base, u32 coun
 void ParticleSystem::UnSerializeObj(const json &j)
 {
     Duration = j["Duration"];
-    maxParticlesCount = j["MaxParticles"];
     Loop = j["Loop"];
     GlobalSpace = j["GlobalSpace"];
     PlayOnStart = j["PlayOnStart"];
@@ -445,9 +493,10 @@ void ParticleSystem::UnSerializeObj(const json &j)
 
     Emission.Rate = j["Rate"];
     Emission.TypeRate = static_cast<EmissionType>(j["TypeRate"]);
+    Emission.Bursts.clear();
     size_t burstSize = j["burstsCount"];
     Emission.Bursts.reserve(burstSize);
-    for(u32 i = 0; i < burstSize; ++i)
+    for (u32 i = 0; i < burstSize; ++i)
         Emission.Bursts.push_back({j["bursts"][i][0], j["bursts"][i][1], j["bursts"][i][2], j["bursts"][i][3]});
 
     Shape = static_cast<Emitter>(j["Shape"]);
@@ -508,6 +557,5 @@ void ParticleSystem::UnSerializeObj(const json &j)
     ParticleTexture.Active = j["ParticleTexture_Active"];
     ParticleTexture.Tiles = glm::uvec2(j["ParticleTexture_Tiles"][0], j["ParticleTexture_Tiles"][1]);
 
-    delete[] particles;
-    particles = new Particle[maxParticlesCount];
+    SetMaxParticles(j["MaxParticles"]);
 }

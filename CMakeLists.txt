@@ -110,6 +110,7 @@ set(Editor_Source
 
 	src/Editor/UI/Viewers/LightViewer.cpp
 	src/Editor/UI/Viewers/CameraViewer.cpp
+	src/Editor/UI/Viewers/ParticleViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
 
 	src/Editor/ImGui/imgui_dock.cpp
