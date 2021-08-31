@@ -12,6 +12,9 @@ namespace fs = std::filesystem;
 using AssetsHandle = std::shared_ptr<IAsset>;
 
 class AssetsManager {
+public:
+    using AssetIterator = std::unordered_map<std::string, AssetsHandle>::const_iterator;
+
 private:
     std::unordered_map<std::string, AssetsHandle> assets;
     json staticResources, dynamicResources;
@@ -28,16 +31,21 @@ public:
     template<typename T>
     [[nodiscard]] T *GetAsset(const std::string &name)
     {
-        return GetAsset(name);
+        AssetsHandle handle = GetAsset(name);
+
+        if (handle)
+            return dynamic_cast<T*>(handle.get());
+        else
+            return nullptr;
     }
 
     template<typename T>
     AssetsHandle AddAsset(const std::string &name, T *asset)
     {
-        if (assets.find(name) != assets.end())
+        if (assets.find(name) == assets.end())
         {
             asset->name = name;
-            return assets[name] = asset;
+            return assets[name] = AssetsHandle(asset);
         }
 
         return {};
@@ -49,8 +57,8 @@ public:
 
     [[nodiscard]] inline AssetsFactory &GetAssetsFactory() noexcept { return assetsFactory; }
 
-    [[nodiscard]] auto begin() const noexcept;
-    [[nodiscard]] auto end() const noexcept;
+    [[nodiscard]] AssetIterator begin() const noexcept;
+    [[nodiscard]] AssetIterator end() const noexcept;
 };
 
 #endif

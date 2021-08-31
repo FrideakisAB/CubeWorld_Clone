@@ -1,6 +1,7 @@
 #include "Editor/Editor.h"
 
 #include "Components/Components.h"
+#include "Editor/UI/Viewers/MeshViewer.h"
 #include "Editor/UI/Viewers/LightViewer.h"
 #include "Editor/UI/Viewers/CameraViewer.h"
 #include "Editor/UI/Viewers/ParticleViewer.h"
@@ -21,6 +22,7 @@ Editor::Editor()
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
+    sceneEditor.ViewersRegistry.RegisterViewer<MeshViewer, MeshComponent>();
     sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
     sceneEditor.ViewersRegistry.RegisterViewer<ParticleViewer, ParticleSystem>();
 }

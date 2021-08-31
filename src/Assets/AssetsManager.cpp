@@ -14,7 +14,7 @@ AssetsManager::~AssetsManager()
         dynamicDBfile << dynamicResources.dump(4);
         dynamicDBfile.close();
     }
-    catch(...)
+    catch (...)
     {
         logger->Error("Dynamic resources not save! Error in AssetsManager");
     }
@@ -22,9 +22,9 @@ AssetsManager::~AssetsManager()
 
 AssetsHandle AssetsManager::GetAsset(const std::string &name)
 {
-    if(assets.find(name) != assets.end())
+    if (assets.find(name) != assets.end())
         return assets[name];
-    else if(staticResources.contains(name))
+    else if (staticResources.contains(name))
     {
         json assetData = json_utils::TryParse(Utils::FileToString(std::ifstream(staticResources[name][0].get<std::string>())));
 
@@ -46,7 +46,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
 
         return assets[name];
     }
-    else if(dynamicResources.contains(name))
+    else if (dynamicResources.contains(name))
     {
         json assetData = json_utils::TryParse(Utils::FileToString(std::ifstream(dynamicResources[name][0].get<std::string>())));
 
@@ -123,12 +123,12 @@ bool AssetsManager::DeleteAsset(const std::string &name)
     return false;
 }
 
-auto AssetsManager::begin() const noexcept
+AssetsManager::AssetIterator AssetsManager::begin() const noexcept
 {
     return assets.cbegin();
 }
 
-auto AssetsManager::end() const noexcept
+AssetsManager::AssetIterator AssetsManager::end() const noexcept
 {
     return assets.cend();
 }

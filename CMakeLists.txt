@@ -108,6 +108,7 @@ set(Editor_Source
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
 
+	src/Editor/UI/Viewers/MeshViewer.cpp
 	src/Editor/UI/Viewers/LightViewer.cpp
 	src/Editor/UI/Viewers/CameraViewer.cpp
 	src/Editor/UI/Viewers/ParticleViewer.cpp
@@ -115,6 +116,7 @@ set(Editor_Source
 
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
+	src/Editor/ImGui/imgui_custom.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
 	src/Editor/ImGui/imgui_impl_opengl3.cpp
 	src/Editor/ImGui/imgui_color_gradient.cpp

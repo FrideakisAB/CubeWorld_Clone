@@ -16,7 +16,11 @@ public:
     MeshComponent() = default;
     MeshComponent(const MeshComponent &meshComponent)
     {
-        meshHandle = meshComponent.meshHandle;
+        if (auto *meshPtr = dynamic_cast<Mesh*>(meshComponent.meshHandle.get()))
+        {
+            meshHandle = meshComponent.meshHandle;
+            mesh = meshPtr;
+        }
     }
 
     inline Mesh& GetMesh() { return *mesh; }
@@ -27,7 +31,7 @@ public:
         if (newMesh != nullptr)
         {
             meshHandle = AssetsHandle(newMesh);
-            mesh = newMesh;
+            mesh = dynamic_cast<Mesh*>(meshHandle.get());
         }
         else
         {
@@ -36,11 +40,11 @@ public:
         }
     }
 
-    void SetMesh(const AssetsHandle &newMesh)
+    void SetMesh(AssetsHandle newMesh)
     {
-        if(auto *meshPtr = dynamic_cast<Mesh*>(newMesh.get()))
+        if (auto *meshPtr = dynamic_cast<Mesh*>(newMesh.get()))
         {
-            meshHandle = newMesh;
+            meshHandle = std::move(newMesh);
             mesh = meshPtr;
         }
         else
@@ -77,7 +81,6 @@ public:
                 mesh = meshPtr;
             }
         }
-
     }
 };
 

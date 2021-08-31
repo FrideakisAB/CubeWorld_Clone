@@ -127,4 +127,17 @@ public:
     void Undo() final;
 };
 
+class SetMesh final : public ICommand {
+private:
+    GameObject* go;
+    u64 goId = 0;
+    std::string assetName, prevAssetName;
+
+public:
+    SetMesh(GameObject *gameObject, const std::string &name);
+
+    void Execute() final;
+    void Undo() final;
+};
+
 #endif

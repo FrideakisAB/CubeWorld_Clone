@@ -44,6 +44,10 @@ Engine::Engine()
     auto &EF = (*ECS::ECS_Engine->GetEntityFactory());
     EF.Register<GameObject>();
 
+    assetsManager->AddAsset("Cube", Utils::CreateCube());
+    assetsManager->AddAsset("Plane", Utils::CreatePlane());
+    assetsManager->AddAsset("Sphere", Utils::CreateSphere(32));
+
     // Test scene
     auto *camera = scene->Create("Camera");
     Camera::Main = camera->AddComponent<Camera>();
@@ -63,7 +67,7 @@ Engine::Engine()
     uniform.valueType = Utils::ShaderValue::Vector3;
     material->Uniforms["lightColor"] = uniform;
     materialComponent->SetMaterial(materialHandle);
-    mesh->SetMesh(Utils::CreateSphere(32));
+    mesh->SetMesh(assetsManager->GetAsset("Sphere"));
 
     auto *light = scene->Create("Spot light");
     pos = light->AddComponent<Transform>()->GetLocalPos();
@@ -76,13 +80,13 @@ Engine::Engine()
     lightSource->Radius = 50.0f;
     lightSource->CutterOff = 22.5f;
 
-    auto *cube = scene->Create("Cube");
-    pos = cube->AddComponent<Transform>()->GetLocalPos();
-    cube->AddComponent<ParticleSystem>();
-    materialComponent = cube->AddComponent<MaterialComponent>();
+    auto *particles = scene->Create("Particles");
+    pos = particles->AddComponent<Transform>()->GetLocalPos();
+    particles->AddComponent<ParticleSystem>();
+    materialComponent = particles->AddComponent<MaterialComponent>();
     pos.position.z = 18;
     pos.position.x = 5;
-    cube->GetComponent<Transform>()->SetLocalPos(pos);
+    particles->GetComponent<Transform>()->SetLocalPos(pos);
     materialHandle = std::make_shared<Material>();
     material = static_cast<Material*>(materialHandle.get());
     material->Shader = "ParticleCPU";
@@ -109,15 +113,15 @@ Engine::Engine()
     uniformPlane.valueType = Utils::ShaderValue::Float;
     material->Uniforms["main_specular"] = uniformPlane;
     materialComponent->SetMaterial(materialHandle);
-    mesh->SetMesh(Utils::CreatePlane());
+    mesh->SetMesh(assetsManager->GetAsset("Plane"));
 }
 
 Engine::~Engine()
 {
     delete scene;
+    delete assetsManager;
     ECS::Terminate();
     Memory::TerminateMemoryManager();
-    delete assetsManager;
     delete randomEngine;
 }
 
