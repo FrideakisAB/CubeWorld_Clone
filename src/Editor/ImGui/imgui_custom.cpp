@@ -12,13 +12,13 @@ std::array<ImU32, 4> statesColor = {
 };
 
 std::array<const char*, 4> statesString = {
-        "not have mesh",
-        "have local mesh",
-        "have asset mesh",
-        "invalid, asset is not mesh"
+        "not have asset",
+        "have local asset",
+        "have asset",
+        "invalid, asset is not valid type"
 };
 
-bool ImGui::TextHandleButton(const char *label, const char *context, CustomTextState state, unsigned int height)
+bool ImGui::TextHandleButton(const char *label, const char *context, const char *type, CustomTextState state, unsigned int height)
 {
     ImVec2 widget_pos = ImGui::GetCursorScreenPos();
 
@@ -27,7 +27,7 @@ bool ImGui::TextHandleButton(const char *label, const char *context, CustomTextS
     if (ImGui::IsItemHovered())
     {
         ImGui::BeginTooltip();
-        ImGui::Text("Mesh: %s, state: %s", context, statesString[static_cast<unsigned int>(state)]);
+        ImGui::Text("%s: %s, state: %s", type, context, statesString[static_cast<unsigned int>(state)]);
         ImGui::End();
     }
 

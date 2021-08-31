@@ -2,6 +2,7 @@
 
 #include "Components/Camera.h"
 #include "Components/MeshComponent.h"
+#include "Components/MaterialComponent.h"
 
 SetCamera::SetCamera(GameObject *newCamera)
 {
@@ -60,4 +61,59 @@ void SetMesh::Undo()
         validator.Get(goId)->GetComponent<MeshComponent>()->SetMesh(GameEngine->GetAssetsManager().GetAsset(prevAssetName));
     else
         validator.Get(goId)->GetComponent<MeshComponent>()->SetMesh(nullptr);
+}
+
+SetMaterial::SetMaterial(GameObject *gameObject, const std::string &name)
+        : go(gameObject), assetName(name)
+{
+    if (go->GetComponent<MaterialComponent>()->IsValid())
+    {
+        prevAssetName = go->GetComponent<MaterialComponent>()->GetMaterialHandle()->GetName();
+        if (prevAssetName.empty())
+        {
+            cache = GameEditor->CacheSystem.CreateCache(8);
+            std::ofstream file = std::ofstream(fs::current_path().string() + cache.GetPath());
+            std::string jsonStr = go->GetComponent<MaterialComponent>()->GetMaterial()->SerializeObj().dump(4);
+            file.write(jsonStr.c_str(), jsonStr.size());
+            file.close();
+        }
+    }
+}
+
+SetMaterial::~SetMaterial()
+{
+    cache = GameEditor->CacheSystem.GetCache(cache.GetID());
+    if (!cache.GetPath().empty())
+        GameEditor->CacheSystem.RemoveCache(cache);
+}
+
+void SetMaterial::Execute()
+{
+    if (goId == 0)
+        goId = validator.Map(go);
+
+    if (!assetName.empty())
+        validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial(GameEngine->GetAssetsManager().GetAsset(assetName));
+    else
+        validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial({});
+}
+
+void SetMaterial::Undo()
+{
+    if (!prevAssetName.empty())
+        validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial(GameEngine->GetAssetsManager().GetAsset(prevAssetName));
+    else
+    {
+        cache = GameEditor->CacheSystem.GetCache(cache.GetID());
+        if (!cache.GetPath().empty())
+        {
+            std::ifstream file = std::ifstream(fs::current_path().string() + cache.GetPath());
+            auto materialHandle = std::make_shared<Material>();
+            auto *material = static_cast<Material*>(materialHandle.get());
+            material->UnSerializeObj(json_utils::TryParse(Utils::FileToString(std::move(file))));
+            validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial(materialHandle);
+        }
+        else
+            validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial({});
+    }
 }

@@ -13,7 +13,7 @@ enum class CustomTextState : unsigned int {
 
 namespace ImGui
 {
-    bool TextHandleButton(const char *label, const char *context, CustomTextState state, unsigned int height);
+    bool TextHandleButton(const char *label, const char *context, const char *type, CustomTextState state, unsigned int height);
 };
 
 #endif

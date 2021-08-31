@@ -55,6 +55,11 @@ void MaterialComponent::SetMaterial(const AssetsHandle &materialHandle)
         this->materialHandle = materialHandle;
         material = matPtr;
     }
+    else
+    {
+        this->materialHandle = {};
+        material = nullptr;
+    }
 }
 
 json MaterialComponent::SerializeObj()

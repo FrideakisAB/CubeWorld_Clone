@@ -140,4 +140,19 @@ public:
     void Undo() final;
 };
 
+class SetMaterial final : public ICommand {
+private:
+    GameObject* go;
+    u64 goId = 0;
+    std::string assetName, prevAssetName;
+    CacheEntry cache;
+
+public:
+    SetMaterial(GameObject *gameObject, const std::string &name);
+    ~SetMaterial() final;
+
+    void Execute() final;
+    void Undo() final;
+};
+
 #endif
