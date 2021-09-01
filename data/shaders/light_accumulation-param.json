@@ -1,0 +1,13 @@
+{
+    "parameterCount": 2,
+    "parameters": [
+        {
+            "name": "color_diffuse",
+            "valueType": 5
+        },
+        {
+            "name": "main_specular",
+            "valueType": 2
+        }
+    ]
+}

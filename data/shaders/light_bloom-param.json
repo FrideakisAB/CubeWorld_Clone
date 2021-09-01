@@ -1,0 +1,9 @@
+{
+    "parameterCount": 1,
+    "parameters": [
+        {
+            "name": "lightColor",
+            "valueType": 5
+        }
+    ]
+}

@@ -155,4 +155,23 @@ public:
     void Undo() final;
 };
 
+class Material;
+
+class SetRawMaterial final : public ICommand {
+private:
+    GameObject* go;
+    u64 goId = 0;
+    std::string prevAssetName;
+    CacheEntry prevCache, newCache;
+    Material *material;
+    bool first = true;
+
+public:
+    SetRawMaterial(GameObject *gameObject, Material *material);
+    ~SetRawMaterial() final;
+
+    void Execute() final;
+    void Undo() final;
+};
+
 #endif

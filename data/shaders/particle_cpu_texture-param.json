@@ -1,0 +1,9 @@
+{
+    "parameterCount": 1,
+    "parameters": [
+        {
+            "name": "texture_diffuse",
+            "valueType": 11
+        }
+    ]
+}

@@ -47,8 +47,8 @@ layout(std430, binding = 3) readonly buffer SpotVisibleLightIndicesBuffer {
 uniform DirectionLight dirLight;
 
 uniform vec3 color_diffuse;
-uniform vec3 viewPos;
 uniform float main_specular;
+uniform vec3 viewPos;
 uniform float ambient = 0.08;
 uniform int numberOfTilesX;
 

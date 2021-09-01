@@ -24,7 +24,7 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         }
         else
         {
-            context = material.GetMaterialHandle()->GetName();
+            context = material.GetMaterial()->GetName();
             state = CustomTextState::Global;
             if (context.empty())
             {
@@ -89,10 +89,29 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             GameEditor->CommandList.Redo();
         }
 
+        bool makeCustom = false;
         if (state != CustomTextState::None && state != CustomTextState::NoGlobal)
         {
             ImGui::Text("To edit the material, you need a local copy");
-            ImGui::Button("Make as custom");
+            if (ImGui::Button("Make as custom"))
+                makeCustom = true;
+        }
+        else if (state == CustomTextState::None)
+            if (ImGui::Button("Make custom"))
+                makeCustom = true;
+
+        if (makeCustom)
+        {
+            if (state != CustomTextState::None)
+            {
+                GameEditor->CommandList.AddCommand<SetRawMaterial>(&go, static_cast<Material*>(material.GetMaterial()->Clone()));
+                GameEditor->CommandList.Redo();
+            }
+            else
+            {
+                GameEditor->CommandList.AddCommand<SetRawMaterial>(&go, new Material());
+                GameEditor->CommandList.Redo();
+            }
         }
 
         update = false;
