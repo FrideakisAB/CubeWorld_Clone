@@ -154,7 +154,7 @@ void RenderSystem::PreUpdate()
         {
             auto *materialComponent = entity->GetComponent<MaterialComponent>();
             auto *transform = entity->GetComponent<Transform>();
-            if (materialComponent != nullptr && materialComponent->IsActive() && transform != nullptr && transform->IsActive())
+            if (materialComponent != nullptr && materialComponent->IsActive() && materialComponent->IsValid() && transform != nullptr && transform->IsActive())
             {
                 //Remove it
                 ps.Update();

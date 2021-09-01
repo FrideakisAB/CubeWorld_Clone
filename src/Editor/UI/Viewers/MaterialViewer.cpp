@@ -1,6 +1,7 @@
 #include "Editor/UI/Viewers/MaterialViewer.h"
 
 #include "Editor/Editor.h"
+#include "Systems/RenderSystem.h"
 #include "Editor/ImGui/imgui_custom.h"
 #include "Components/MaterialComponent.h"
 #include "Editor/Commands/ViewersCommands.h"
@@ -86,6 +87,39 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         {
             GameEditor->CommandList.AddCommand<SetMaterial>(&go, asset);
             GameEditor->CommandList.Redo();
+        }
+
+        if (state != CustomTextState::None && state != CustomTextState::NoGlobal)
+        {
+            ImGui::Text("To edit the material, you need a local copy");
+            ImGui::Button("Make as custom");
+        }
+
+        update = false;
+        if (state != CustomTextState::None && state == CustomTextState::NoGlobal)
+        {
+            if (ImGui::TreeNode("Material editor"))
+            {
+                std::vector<const char*> shadersName;
+                int itemCurrent;
+                for (const auto &[name, shader] : GameEngine->GetRenderSystem().GetShaders())
+                {
+                    if (name == material.GetMaterial()->Shader)
+                        itemCurrent = shadersName.size();
+                    shadersName.push_back(name.c_str());
+                }
+
+                ImGui::Combo("Shader", &itemCurrent, &shadersName[0], shadersName.size());
+                if (material.GetMaterial()->Shader != shadersName[itemCurrent])
+                    update = true;
+
+                ImGui::TreePop();
+            }
+        }
+
+        if (update)
+        {
+            //TODO: material history
         }
     }
     if (!closed)

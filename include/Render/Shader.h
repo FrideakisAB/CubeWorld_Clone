@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include "Render/GLUtils.h"
 #include "Assets/ISerialize.h"
+#include "Utils/ShaderUtils.h"
 #include <glm/gtc/type_ptr.hpp>
 
 class Shader : public ISerialize {
@@ -13,6 +14,7 @@ private:
     u32 ID;
     u32 attachments[5]{};
     u32 attachmentCount = 0;
+    std::vector<Utils::ShaderParam> parameters;
 
     static bool checkCompileErrors(GLuint shader, const std::string &type);
 
@@ -118,7 +120,8 @@ public:
         checkCompileErrors(ID, "Program");
     }
 
-    json SerializeObj() override;
+    [[nodiscard]] const std::vector<Utils::ShaderParam> &GetParameters() const noexcept { return parameters; }
+
     void UnSerializeObj(const json &j) override;
 };
 

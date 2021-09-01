@@ -53,8 +53,7 @@ bool Shader::checkCompileErrors(GLuint shader, const std::string &type)
         if (!success)
         {
             glGetShaderInfoLog(shader, 1024, nullptr, infoLog);
-            logger->Error(std::string("Shader error: " + type));
-            logger->Error(infoLog);
+            logger->Error("Shader %s error: %s", type.c_str(), infoLog);
 
             return false;
         }
@@ -65,19 +64,13 @@ bool Shader::checkCompileErrors(GLuint shader, const std::string &type)
         if (!success)
         {
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-            logger->Error(std::string("Shader program linking error"));
-            logger->Error(infoLog);
+            logger->Error("Shader program linking error: %s", infoLog);
 
             return false;
         }
     }
 
     return true;
-}
-
-json Shader::SerializeObj()
-{
-    return {};
 }
 
 void Shader::UnSerializeObj(const json &j)
@@ -95,6 +88,21 @@ void Shader::UnSerializeObj(const json &j)
         AddShader(GL_TESS_CONTROL_SHADER, j["tessControl"].get<std::string>().c_str(), name + " tess control");
     if (j.contains("compute"))
         AddShader(GL_COMPUTE_SHADER, j["compute"].get<std::string>().c_str(), name + " compute");
+
+    size_t parameterCount = j["parameterCount"];
+
+    parameters.clear();
+    parameters.reserve(parameterCount);
+
+    for (size_t i = 0; i < parameterCount; ++i)
+    {
+        Utils::ShaderParam param;
+
+        param.name = j["parameters"][i]["name"];
+        param.valueType = static_cast<Utils::ShaderValue>(j["parameters"][i]["valueType"].get<u8>());
+
+        parameters.push_back(param);
+    }
 
     Build();
 }

@@ -9,7 +9,7 @@
 #include "Render/SSBO.h"
 #include "Render/Shader.h"
 #include "Render/GLUtils.h"
-#include "Utils/ShaderPackager.h"
+#include "Utils/ShaderUtils.h"
 #include "Components/MaterialComponent.h"
 
 class ForwardPlusPipeline;
@@ -73,6 +73,8 @@ public:
     {
         deletedHandles.emplace_back(deleter);
     }
+
+    [[nodiscard]] const std::unordered_map<std::string, Shader> &GetShaders() const noexcept { return shaders; }
 };
 
 #endif

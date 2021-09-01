@@ -2,5 +2,6 @@
     "fragment": "#version 440 core\n\nvoid main()\n{\n    // We are not drawing anything to the screen, so nothing to be done here\n}",
     "shaderName": "Depth",
     "tag": "SHADER",
-    "vertex": "#version 440 core\n\nlayout (location = 0) in vec3 position;\n\nuniform mat4 vp;\nuniform mat4 model;\n\nvoid main()\n{\n    gl_Position = vp * model * vec4(position, 1.0);\n}"
+    "vertex": "#version 440 core\n\nlayout (location = 0) in vec3 position;\n\nuniform mat4 vp;\nuniform mat4 model;\n\nvoid main()\n{\n    gl_Position = vp * model * vec4(position, 1.0);\n}",
+    "parameterCount": 0
 }

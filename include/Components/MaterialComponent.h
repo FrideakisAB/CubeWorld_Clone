@@ -7,7 +7,7 @@
 #include "Render/Shader.h"
 #include "Assets/AssetsManager.h"
 #include <boost/type_index.hpp>
-#include "Utils/ShaderPackager.h"
+#include "Utils/ShaderUtils.h"
 
 struct Material final : public IAsset {
     std::string Shader;
