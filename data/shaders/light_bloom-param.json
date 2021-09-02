@@ -2,7 +2,7 @@
     "parameterCount": 1,
     "parameters": [
         {
-            "name": "lightColor",
+            "name": "color_light",
             "valueType": 5
         }
     ]

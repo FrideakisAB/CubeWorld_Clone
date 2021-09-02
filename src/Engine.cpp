@@ -65,7 +65,7 @@ Engine::Engine()
     Utils::ShaderParamValue uniform;
     uniform.value = glm::vec3(1.0f, 1.0f, 1.0f);
     uniform.valueType = Utils::ShaderValue::Vector3;
-    material->Uniforms["lightColor"] = uniform;
+    material->Uniforms["color_light"] = uniform;
     materialComponent->SetMaterial(materialHandle);
     mesh->SetMesh(assetsManager->GetAsset("Sphere"));
 

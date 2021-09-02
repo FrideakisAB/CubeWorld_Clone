@@ -10,7 +10,7 @@ struct DirectionLight {
     vec4 direction;
 };
 
-uniform vec3 lightColor;
+uniform vec3 color_light;
 uniform vec3 viewPos;
 uniform float ambient = 0.08;
 uniform int numberOfTilesX;
@@ -21,7 +21,7 @@ layout (location = 1) out vec4 brightColor;
 
 void main()
 {
-	fragColor = vec4(lightColor, 1.0);
+	fragColor = vec4(color_light, 1.0);
     //float brightness = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
     // For a more noticeable effect
     brightColor = vec4(fragColor.rgb, 1.0);

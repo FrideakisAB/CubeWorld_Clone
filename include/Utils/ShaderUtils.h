@@ -21,11 +21,15 @@ namespace Utils {
         Mat4,
         Sampler1D,
         Sampler2D,
-        Sampler3D,
         SamplerCube
     };
 
-    constexpr bool IsSampler(ShaderValue value);
+    constexpr bool IsSampler(ShaderValue value)
+    {
+        return (value == Utils::ShaderValue::Sampler1D || value == Utils::ShaderValue::Sampler2D || value == Utils::ShaderValue::SamplerCube);
+    }
+
+    std::string ParseUniformName(std::string name);
 
     struct ShaderParam {
         std::string name;

@@ -128,7 +128,16 @@ namespace ns {
     }
 }
 
-constexpr bool Utils::IsSampler(Utils::ShaderValue value)
+std::string Utils::ParseUniformName(std::string name)
 {
-    return (value == Utils::ShaderValue::Sampler1D || value == Utils::ShaderValue::Sampler2D || value == Utils::ShaderValue::Sampler3D || value == Utils::ShaderValue::SamplerCube);
+    auto position = name.find('_');
+
+    while (position != std::string::npos)
+    {
+        name[position] = ' ';
+
+        position = name.find('_');
+    }
+
+    return name;
 }

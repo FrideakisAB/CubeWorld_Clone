@@ -71,7 +71,7 @@ set(Source
 	src/Utils/Curve.cpp
 	src/Utils/Gradient.cpp
 	src/Utils/Primitives.cpp
-    src/Utils/ShaderUtils.cpp
+	src/Utils/ShaderUtils.cpp
 
 	src/ECS/API.cpp
 	src/ECS/Engine.cpp
