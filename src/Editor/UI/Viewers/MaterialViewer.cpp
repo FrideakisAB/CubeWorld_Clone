@@ -33,55 +33,14 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             }
         }
 
-        if (ImGui::TextHandleButton("Material", context.c_str(), "Material", state, 16))
+        if (ImGui::TextHandleButton("Material", context, "Material", state, 16))
             ImGui::OpenPopup("AssetSelector");
 
         std::string asset;
-        if (ImGui::BeginPopup("AssetSelector"))
-        {
-            bool isHave = false;
-            for (const auto &[name, handle] : GameEngine->GetAssetsManager())
-            {
-                if (auto *materialPtr = dynamic_cast<Material*>(handle.get()))
-                {
-                    isHave = true;
-                    if (state != CustomTextState::Global && (state == CustomTextState::None || name != context))
-                        ImGui::Text(name.c_str());
-                    else
-                        ImGui::TextColored(ImVec4(255, 230, 5,255), name.c_str());
-
-                    if (ImGui::IsItemClicked())
-                    {
-                        asset = name;
-                        if (state == CustomTextState::None || name != context)
-                            update = true;
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImVec4(0,0,190,255), "(Material)");
-                }
-            }
-
-            if (state != CustomTextState::None)
-                ImGui::Text("None");
-            else
-                ImGui::TextColored(ImVec4(255, 230, 5,255), "None");
-
-            if (ImGui::IsItemClicked())
-            {
-                asset = "";
-                if (state != CustomTextState::None)
-                    update = true;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0,0,190,255), "(Void)");
-
-            if (!isHave)
-                ImGui::Text("Not have material assets");
-
-            ImGui::EndPopup();
-        }
+        auto isMaterialFunction = [](const AssetsHandle &handle) {
+            return dynamic_cast<Material*>(handle.get()) != nullptr;
+        };
+        update = ImGui::AssetSelectorPopup("AssetSelector", context, "Material", state, asset, isMaterialFunction);
 
         if (update)
         {
@@ -115,22 +74,98 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         }
 
         update = false;
+        std::string shaderStr;
+        std::string paramName;
+        std::string textureAsset;
+        Utils::ShaderParamValue paramValue;
         if (state != CustomTextState::None && state == CustomTextState::NoGlobal)
         {
             if (ImGui::TreeNode("Material editor"))
             {
                 std::vector<const char*> shadersName;
+                shadersName.reserve(GameEngine->GetRenderSystem().GetShaders().size());
                 int itemCurrent;
-                for (const auto &[name, shader] : GameEngine->GetRenderSystem().GetShaders())
+                for (const auto &value : GameEngine->GetRenderSystem().GetShaders())
                 {
-                    if (name == material.GetMaterial()->Shader)
+                    if (material.IsValid() && value.first == material.GetMaterial()->Shader)
                         itemCurrent = shadersName.size();
-                    shadersName.push_back(name.c_str());
+                    shadersName.push_back(value.first.c_str());
                 }
 
                 ImGui::Combo("Shader", &itemCurrent, &shadersName[0], shadersName.size());
                 if (material.GetMaterial()->Shader != shadersName[itemCurrent])
+                {
+                    shaderStr = shadersName[itemCurrent];
                     update = true;
+                }
+
+                const Shader &shader = GameEngine->GetRenderSystem().GetShaders().find(shadersName[itemCurrent])->second;
+                if (!shader.GetParameters().empty())
+                {
+                    for (const auto &parameter : shader.GetParameters())
+                    {
+                        switch (parameter.valueType)
+                        {
+                        case Utils::ShaderValue::Int:
+
+                            break;
+
+                        case Utils::ShaderValue::UnsignedInt:
+
+                            break;
+
+                        case Utils::ShaderValue::Float:
+
+                            break;
+
+                        case Utils::ShaderValue::Double:
+
+                            break;
+
+                        case Utils::ShaderValue::Vector2:
+
+                            break;
+
+                        case Utils::ShaderValue::Vector3:
+
+                            break;
+
+                        case Utils::ShaderValue::Vector4:
+
+                            break;
+
+                        case Utils::ShaderValue::Mat2:
+
+                            break;
+
+                        case Utils::ShaderValue::Mat3:
+
+                            break;
+
+                        case Utils::ShaderValue::Mat4:
+
+                            break;
+
+                        case Utils::ShaderValue::Sampler1D:
+
+                            break;
+
+                        case Utils::ShaderValue::Sampler2D:
+
+                            break;
+
+                        case Utils::ShaderValue::Sampler3D:
+
+                            break;
+
+                        case Utils::ShaderValue::SamplerCube:
+
+                            break;
+                        }
+                    }
+                }
+                else
+                    ImGui::Text("Warning! Shader not have parameters, maybe they are not used for objects");
 
                 ImGui::TreePop();
             }
@@ -138,7 +173,20 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 
         if (update)
         {
-            //TODO: material history
+            if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
+                lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<MaterialComponent>>(&go);
+
+            if (!shaderStr.empty())
+            {
+                material.GetMaterial()->Shader = shaderStr;
+                material.GetMaterial()->Uniforms.clear();
+                material.GetMaterial()->Samplers.clear();
+            }
+
+            if (!paramName.empty())
+            {
+                //TODO: set uniform
+            }
         }
     }
     if (!closed)

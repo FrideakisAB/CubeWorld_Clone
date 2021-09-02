@@ -13,15 +13,15 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
     {
         bool update = false;
 
-        const char *context;
+        std::string context;
         CustomTextState state;
 
         if (!mesh.IsValid())
         {
             if (mesh.GetAsset())
             {
-                context = mesh.GetAsset()->GetName().c_str();
-                if (mesh.GetAsset()->GetName().empty())
+                context = mesh.GetAsset()->GetName();
+                if (context.empty())
                     context = "(custom)";
                 state = CustomTextState::Invalid;
             }
@@ -33,9 +33,9 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         }
         else
         {
-            context = mesh.GetAsset()->GetName().c_str();
+            context = mesh.GetAsset()->GetName();
             state = CustomTextState::Global;
-            if (mesh.GetAsset()->GetName().empty())
+            if (context.empty())
             {
                 context = "(custom)";
                 state = CustomTextState::NoGlobal;
@@ -46,51 +46,10 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             ImGui::OpenPopup("AssetSelector");
 
         std::string asset;
-        if (ImGui::BeginPopup("AssetSelector"))
-        {
-            bool isHave = false;
-            for (const auto &[name, handle] : GameEngine->GetAssetsManager())
-            {
-                if (auto *meshPtr = dynamic_cast<Mesh*>(handle.get()))
-                {
-                    isHave = true;
-                    if (state != CustomTextState::Global && (state == CustomTextState::None || name != mesh.GetAsset()->GetName()))
-                        ImGui::Text(name.c_str());
-                    else
-                        ImGui::TextColored(ImVec4(255, 230, 5,255), name.c_str());
-
-                    if (ImGui::IsItemClicked())
-                    {
-                        asset = name;
-                        if (state == CustomTextState::None || name != mesh.GetAsset()->GetName())
-                            update = true;
-                        ImGui::CloseCurrentPopup();
-                    }
-                    ImGui::SameLine();
-                    ImGui::TextColored(ImVec4(0,0,190,255), "(Mesh)");
-                }
-            }
-
-            if (state != CustomTextState::None)
-                ImGui::Text("None");
-            else
-                ImGui::TextColored(ImVec4(255, 230, 5,255), "None");
-
-            if (ImGui::IsItemClicked())
-            {
-                asset = "";
-                if (state != CustomTextState::None)
-                    update = true;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0,0,190,255), "(Void)");
-
-            if (!isHave)
-                ImGui::Text("Not have mesh assets");
-
-            ImGui::EndPopup();
-        }
+        auto isMeshFunction = [](const AssetsHandle &handle) {
+            return dynamic_cast<Mesh*>(handle.get()) != nullptr;
+        };
+        update = ImGui::AssetSelectorPopup("AssetSelector", context, "Mesh", state, asset, isMeshFunction);
 
         if (update)
         {

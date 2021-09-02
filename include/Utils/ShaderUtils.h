@@ -25,6 +25,8 @@ namespace Utils {
         SamplerCube
     };
 
+    constexpr bool IsSampler(ShaderValue value);
+
     struct ShaderParam {
         std::string name;
         ShaderValue valueType;

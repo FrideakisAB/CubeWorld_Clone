@@ -127,3 +127,8 @@ namespace ns {
         }
     }
 }
+
+constexpr bool Utils::IsSampler(Utils::ShaderValue value)
+{
+    return (value == Utils::ShaderValue::Sampler1D || value == Utils::ShaderValue::Sampler2D || value == Utils::ShaderValue::Sampler3D || value == Utils::ShaderValue::SamplerCube);
+}
