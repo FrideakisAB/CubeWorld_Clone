@@ -108,6 +108,7 @@ set(Editor_Source
 	src/Editor/UI/IMenuEntry.cpp
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
+	src/Editor/UI/EditorViewer.cpp
 
 	src/Editor/UI/Viewers/MeshViewer.cpp
 	src/Editor/UI/Viewers/LightViewer.cpp

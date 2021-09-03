@@ -7,6 +7,7 @@
 #include "Editor/UI/LogViewer.h"
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
+#include "Editor/UI/EditorViewer.h"
 #include "Editor/Commands/CommandList.h"
 
 class Editor {
@@ -30,6 +31,7 @@ private:
     };
 
     LogViewer logViewer;
+    EditorViewer editorViewer;
     SceneViewer sceneViewer;
     SceneEditor sceneEditor;
     EditorMenu editorMenu;

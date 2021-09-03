@@ -95,8 +95,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     ImGui::InitDock();
 
-    //ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glEnable(GL_CULL_FACE);
@@ -138,13 +136,6 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
             accumulateTime = 0.0f;
         }
 
-        GameEngine->GetRenderSystem().Resize(0, 0, width, height);
-        GameEngine->GetRenderSystem().PreUpdate();
-        // Render only, remove it
-        GameEngine->Update();
-        GameEngine->GetRenderSystem().Update();
-
-        // Place before engine render
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Render ImGui stage");
         ImGui::Render();
         glViewport(0, 0, width, height);
@@ -152,11 +143,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         glPopDebugGroup();
 
         glfwSwapBuffers(glfwWindow);
-
-        GameEngine->GetRenderSystem().PostUpdate();
     }
 
-    //ImGui::PopStyleVar();
     ImGui::ShutdownDock();
 
     ImGui_ImplOpenGL3_Shutdown();

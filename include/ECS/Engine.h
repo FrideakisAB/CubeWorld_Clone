@@ -78,7 +78,7 @@ namespace ECS {
         }
 
         void Update();
-        void RemoveDestroyedEntities();
+        void UpdateWithoutSystems();
     };
 }
 

@@ -55,9 +55,11 @@ namespace ECS {
         eventHandler->DispatchEvents();
     }
 
-    void ECSEngine::RemoveDestroyedEntities()
+    void ECSEngine::UpdateWithoutSystems()
     {
         entityManager->RemoveDestroyedEntities();
+
+        engineTime->Tick();
     }
 
     void ECSEngine::UnsubscribeEvent(Event::Internal::IEventDelegate *eventDelegate)

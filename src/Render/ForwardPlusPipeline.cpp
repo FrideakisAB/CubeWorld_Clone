@@ -202,7 +202,7 @@ void ForwardPlusPipeline::Render()
     shadowsManager.ApplyLightSources(directionLight, *pointLightSources, *spotLightSources);
     shadowsManager.Render(cameraPosition, *shaders, *renderTasks);
 
-    glViewport(offsetX, offsetY, width, height);
+    glViewport(0, 0, width, height);
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Depth stage");
     Shader &depth = (*shaders)["Depth"];
@@ -357,6 +357,9 @@ void ForwardPlusPipeline::Render()
 
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "HDR stage");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glViewport(offsetX, offsetY, width, height);
+
     Shader &hdr = (*shaders)["HDR"];
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
     hdr.Use();

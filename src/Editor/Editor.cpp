@@ -21,6 +21,7 @@ Editor::Editor()
     windowsMenu.Windows["Scene viewer"] = &sceneViewer;
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
     windowsMenu.Windows["Log viewer"] = &logViewer;
+    windowsMenu.Windows["Editor viewer"] = &editorViewer;
 
     logViewer.StartCapture();
 
@@ -41,10 +42,12 @@ Editor::~Editor()
 
 void Editor::DrawWindows()
 {
+    ECS::ECS_Engine->UpdateWithoutSystems();
     CommandList.Update();
     sceneViewer.Draw();
     sceneEditor.Draw();
     logViewer.Draw();
+    editorViewer.Draw();
 }
 
 Editor::EditorMenu::EditorMenu()
