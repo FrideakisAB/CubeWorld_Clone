@@ -18,7 +18,7 @@ public:
 
 private:
     Severity severity = Severity::Default;
-    std::ofstream outf;
+    std::ofstream logFile;
     std::mutex lock;
 
     void Send(const std::string &name, const std::string &msg);

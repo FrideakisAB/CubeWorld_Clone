@@ -7,13 +7,13 @@ Log *logger = nullptr;
 
 Log::Log()
 {
-    outf.open("LatestLog.txt", std::ios::trunc);
+    logFile.open("LatestLog.txt", std::ios::trunc);
 }
 
 Log::~Log()
 {
-    if (outf.is_open())
-        outf.close();
+    if (logFile.is_open())
+        logFile.close();
 }
 
 void Log::Send(const std::string &name, const std::string &msg)
@@ -34,6 +34,6 @@ void Log::Send(const std::string &name, const std::string &msg)
 void Log::Write(const std::string &msg)
 {
     lock.lock();
-    outf << msg;
+    logFile << msg;
     lock.unlock();
 }

@@ -20,6 +20,9 @@ Editor::Editor()
 
     windowsMenu.Windows["Scene viewer"] = &sceneViewer;
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
+    windowsMenu.Windows["Log viewer"] = &logViewer;
+
+    logViewer.StartCapture();
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
@@ -31,6 +34,7 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+    logViewer.EndCapture();
     CommandList.InvalidateAll();
     CacheSystem.SafeClean();
 }
@@ -40,6 +44,7 @@ void Editor::DrawWindows()
     CommandList.Update();
     sceneViewer.Draw();
     sceneEditor.Draw();
+    logViewer.Draw();
 }
 
 Editor::EditorMenu::EditorMenu()

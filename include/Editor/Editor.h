@@ -4,6 +4,7 @@
 #include "ECS/ECS.h"
 #include "Editor/UI/MenuBar.h"
 #include "Editor/CacheSystem.h"
+#include "Editor/UI/LogViewer.h"
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
 #include "Editor/Commands/CommandList.h"
@@ -28,6 +29,7 @@ private:
         std::map<std::string, IEditorWindow*> Windows;
     };
 
+    LogViewer logViewer;
     SceneViewer sceneViewer;
     SceneEditor sceneEditor;
     EditorMenu editorMenu;
