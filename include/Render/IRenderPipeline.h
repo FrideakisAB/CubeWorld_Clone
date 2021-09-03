@@ -33,6 +33,11 @@ public:
         static_cast<Pipeline*>(this)->ApplyLightSources(pointLightSources, spotLightSources);
     }
 
+    void ApplyCamera(CameraInfo cameraInfo)
+    {
+        static_cast<Pipeline*>(this)->ApplyCamera(cameraInfo);
+    }
+
     void Resize(u16 offsetX, u16 offsetY, u16 width, u16 height)
     {
         static_cast<Pipeline*>(this)->Resize(offsetX, offsetY, width, height);

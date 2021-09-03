@@ -4,7 +4,7 @@
 #include "Render/ShadowsManager.h"
 #include "Render/IRenderPipeline.h"
 
-class ForwardPlusPipeline : public IRenderPipeline<ForwardPlusPipeline> {
+class ForwardPlusPipeline final : public IRenderPipeline<ForwardPlusPipeline> {
 private:
     u32 depthMapFBO, depthMap;
     u32 skyboxVAO, skyboxVBO;
@@ -31,6 +31,7 @@ private:
     SSBO<int> pointIndices;
     SSBO<int> spotIndices;
     u16 pointLightPos, spotLightPos;
+    CameraInfo cameraInfo;
 
     void setupMaterial(Shader &shader, Material *material, u8 lastTexture);
 
@@ -43,6 +44,7 @@ public:
     void ApplyShaders(std::unordered_map<std::string, Shader> &shaders);
     void ApplyLights(std::optional<DirectionLight> directionLight, SSBO<PointLight> &pointLights, u16 pointLightPos, SSBO<SpotLight> &spotLights, u16 spotLightPos);
     void ApplyLightSources(std::vector<Utils::PointLight> &pointLightSources, std::vector<Utils::SpotLight> &spotLightSources);
+    void ApplyCamera(CameraInfo cameraInfo);
 
     void Resize(u16 offsetX, u16 offsetY, u16 width, u16 height);
     void Render();

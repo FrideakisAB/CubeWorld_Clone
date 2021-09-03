@@ -162,6 +162,11 @@ void ForwardPlusPipeline::ApplyLightSources(std::vector<Utils::PointLight> &poin
     this->spotLightSources = &spotLightSources;
 }
 
+void ForwardPlusPipeline::ApplyCamera(CameraInfo cameraInfo)
+{
+    this->cameraInfo = cameraInfo;
+}
+
 void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height)
 {
     glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -195,12 +200,11 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
 
 void ForwardPlusPipeline::Render()
 {
-    glm::vec3 cameraPosition = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
-    glm::mat4 mainVP = Camera::Main->GetVPMatrix(width, height);
+    glm::mat4 mainVP = cameraInfo.projection * cameraInfo.view;
 
     // Shadows stage
     shadowsManager.ApplyLightSources(directionLight, *pointLightSources, *spotLightSources);
-    shadowsManager.Render(cameraPosition, *shaders, *renderTasks);
+    shadowsManager.Render(cameraInfo.position, *shaders, *renderTasks);
 
     glViewport(0, 0, width, height);
 
@@ -231,8 +235,8 @@ void ForwardPlusPipeline::Render()
     pointLightCulling.Use();
     pointLightCulling.SetIVec2("screenSize", glm::ivec2(width, height));
     pointLightCulling.SetInt("lightCount", pointLightPos);
-    pointLightCulling.SetMat4("projection", Camera::Main->GetProjMatrix(width, height));
-    pointLightCulling.SetMat4("view", Camera::Main->GetViewMatrix());
+    pointLightCulling.SetMat4("projection", cameraInfo.projection);
+    pointLightCulling.SetMat4("view", cameraInfo.view);
 
     glActiveTexture(GL_TEXTURE4);
     pointLightCulling.SetInt("depthMap", 4);
@@ -247,8 +251,8 @@ void ForwardPlusPipeline::Render()
     spotLightCulling.Use();
     pointLightCulling.SetIVec2("screenSize", glm::ivec2(width, height));
     pointLightCulling.SetInt("lightCount", spotLightPos);
-    spotLightCulling.SetMat4("projection", Camera::Main->GetProjMatrix(width, height));
-    spotLightCulling.SetMat4("view", Camera::Main->GetViewMatrix());
+    spotLightCulling.SetMat4("projection", cameraInfo.projection);
+    spotLightCulling.SetMat4("view", cameraInfo.view);
 
     glActiveTexture(GL_TEXTURE4);
     spotLightCulling.SetInt("depthMap", 4);
@@ -287,7 +291,7 @@ void ForwardPlusPipeline::Render()
 
         shader.SetMat4("vp", mainVP);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
-        shader.SetVec3("viewPos", cameraPosition);
+        shader.SetVec3("viewPos", cameraInfo.position);
 
         if (directionLight)
         {
@@ -319,19 +323,19 @@ void ForwardPlusPipeline::Render()
     }
     glPopDebugGroup();
 
-    if (Camera::Main->IsValidSkybox() && Camera::Main->GetSkybox().GetDrawData().TextureType == TexType::TextureCube)
+    if (cameraInfo.skyboxHandle != 0)
     {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Render skybox stage");
         glDepthFunc(GL_LEQUAL);
         Shader &skyboxShader = (*shaders)["Skybox"];
         skyboxShader.Use();
         skyboxShader.SetInt("skybox", 2);
-        glm::mat4 view = glm::mat4(glm::mat3(Camera::Main->GetViewMatrix()));
-        skyboxShader.SetMat4("vp", Camera::Main->GetProjMatrix(width, height) * view);
+        glm::mat4 view = glm::mat4(glm::mat3(cameraInfo.view));
+        skyboxShader.SetMat4("vp", cameraInfo.projection * view);
 
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, Camera::Main->GetSkybox().GetDrawData().Handle);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cameraInfo.skyboxHandle);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
         glPopDebugGroup();
@@ -340,18 +344,18 @@ void ForwardPlusPipeline::Render()
     glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, "Bloom blur stage");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glActiveTexture(GL_TEXTURE0);
-    bool horizontal = true, first_iteration = true;
+    bool horizontal = true, firstIteration = true;
     Shader &blur = (*shaders)["Blur"];
     blur.Use();
     for (u32 i = 0; i < blurAmount; ++i)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, pingPongFBO[horizontal]);
         blur.SetInt("horizontal", horizontal);
-        glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingPongBuffers[!horizontal]);
+        glBindTexture(GL_TEXTURE_2D, firstIteration ? colorBuffers[1] : pingPongBuffers[!horizontal]);
         Utils::DrawQuad();
         horizontal = !horizontal;
-        if (first_iteration)
-            first_iteration = false;
+        if (firstIteration)
+            firstIteration = false;
     }
     glPopDebugGroup();
 

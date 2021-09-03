@@ -12,7 +12,7 @@ public:
         f32 nearClip = 0.1f;
         f32 farClip = 100.0f;
         glm::vec3 position = glm::vec3(0.0f);
-        glm::quat rotation = glm::quat();
+        glm::quat orientation = glm::quat();
         Projection projection = Projection::Perspective;
     };
 

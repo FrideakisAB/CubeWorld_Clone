@@ -14,6 +14,13 @@
 
 class ForwardPlusPipeline;
 
+struct CameraInfo {
+    glm::mat4 view;
+    glm::mat4 projection;
+    glm::vec3 position;
+    u32 skyboxHandle;
+};
+
 class RenderSystem : public ECS::System<RenderSystem> {
 public:
     struct MaterialSet {
@@ -52,6 +59,8 @@ private:
     u16 pointLightPos = 0;
     u16 spotLightCount = 0;
     u16 spotLightPos = 0;
+    bool isHaveCamera = false;
+    CameraInfo cameraInfo{};
 
     u16 offsetX = 0, offsetY = 0;
     u16 width = 0, height = 0;
@@ -73,6 +82,8 @@ public:
     {
         deletedHandles.emplace_back(deleter);
     }
+
+    void SetCustomCameraInfo(CameraInfo cameraInfo);
 
     [[nodiscard]] const std::unordered_map<std::string, Shader> &GetShaders() const noexcept { return shaders; }
 };

@@ -179,11 +179,31 @@ void RenderSystem::PreUpdate()
             }
         }
     }
+
+    if (!isHaveCamera && Camera::Main != nullptr)
+    {
+        isHaveCamera = true;
+        cameraInfo.projection = Camera::Main->GetProjMatrix(width, height);
+        cameraInfo.view = Camera::Main->GetViewMatrix();
+        cameraInfo.position = ECS::ECS_Engine->GetEntityManager()->GetEntity(Camera::Main->GetOwner())->GetComponent<Transform>()->GetGlobalPos().position;
+
+        if (Camera::Main->IsValidSkybox())
+        {
+            Camera::Main->GetSkybox().RenderUpdate();
+
+            if (Camera::Main->GetSkybox().GetDrawData().TextureType == TexType::TextureCube)
+                cameraInfo.skyboxHandle = Camera::Main->GetSkybox().GetDrawData().Handle;
+        }
+
+        renderPipeline->ApplyCamera(cameraInfo);
+    }
+    else if (isHaveCamera)
+        renderPipeline->ApplyCamera(cameraInfo);
 }
 
 void RenderSystem::Update()
 {
-    if (Camera::Main != nullptr)
+    if (isHaveCamera)
     {
         renderPipeline->ApplyLights(directionLight, pointLights, pointLightPos, spotLights, spotLightPos);
         renderPipeline->ApplyMaterials(materialTranslation);
@@ -208,6 +228,8 @@ void RenderSystem::PostUpdate()
     pointLightSources.clear();
     spotLightSources.clear();
     directionLight = std::nullopt;
+    cameraInfo = {};
+    isHaveCamera = false;
 }
 
 void RenderSystem::importMaterial(Material *material)
@@ -251,4 +273,10 @@ void RenderSystem::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height) noexc
         this->height = height;
         sizeUpdate = true;
     }
+}
+
+void RenderSystem::SetCustomCameraInfo(CameraInfo cameraInfo)
+{
+    isHaveCamera = true;
+    this->cameraInfo = cameraInfo;
 }
