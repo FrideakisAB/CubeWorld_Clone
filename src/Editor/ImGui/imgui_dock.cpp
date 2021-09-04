@@ -954,11 +954,7 @@ struct DockContext
 			SetNextWindowPos(dock.pos);
 			SetNextWindowSize(dock.size);
 			SetNextWindowBgAlpha(-1.0f);
-			bool ret = Begin(label,
-				opened,
-				/*dock.size,
-				-1.0f,*/
-				ImGuiWindowFlags_NoCollapse /*| ImGuiWindowFlags_ShowBorders*/ | extra_flags); // ImGuiWindowFlags_ShowBorders not used in new version of ImGui
+			bool ret = Begin(label, opened, ImGuiWindowFlags_NoCollapse | extra_flags);
 			m_end_action = EndAction_End;
 			dock.pos = GetWindowPos();
 			dock.size = GetWindowSize();

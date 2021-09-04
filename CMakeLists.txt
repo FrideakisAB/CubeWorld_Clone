@@ -56,6 +56,7 @@ set(Source
 	src/Components/MaterialComponent.cpp
 
 	src/Systems/RenderSystem.cpp
+	src/Systems/ParticleWorker.cpp
 
 	src/Render/Mesh.cpp
 	src/Render/Render.cpp

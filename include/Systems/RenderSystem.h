@@ -21,7 +21,7 @@ struct CameraInfo {
     u32 skyboxHandle;
 };
 
-class RenderSystem : public ECS::System<RenderSystem> {
+class RenderSystem final : public ECS::System<RenderSystem> {
 public:
     struct MaterialSet {
         std::map<std::string, Utils::ShaderParamValue> Uniforms;
@@ -70,11 +70,11 @@ private:
 
 public:
     RenderSystem();
-    ~RenderSystem() override;
+    ~RenderSystem() final;
 
-    void PreUpdate() override;
-    void Update() override;
-    void PostUpdate() override;
+    void PreUpdate() final;
+    void Update() final;
+    void PostUpdate() final;
 
     void Resize(u16 offsetX, u16 offsetY, u16 width, u16 height) noexcept;
 

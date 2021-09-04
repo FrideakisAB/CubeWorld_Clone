@@ -4,6 +4,7 @@
 #include "Components/Camera.h"
 #include "Systems/RenderSystem.h"
 #include "Editor/UI/IEditorWindow.h"
+#include "Components/ParticleSystem.h"
 
 enum class GizmoOperation : u8 {
     Translation = 0,
@@ -16,6 +17,8 @@ enum class GizmoMode : u8 {
     Global
 };
 
+class GameObject;
+
 class EditorViewer final : public IEditorWindow {
 private:
     bool isFirstClick = true;
@@ -27,10 +30,15 @@ private:
 
     u64 lastCommandId = 0;
 
+    bool isParticleUpdate = false;
+    ECS::EntityId particleEntityId = ECS::INVALID_ENTITY_ID;
+
     void moveCamera(glm::vec4 windowPosition) noexcept;
     void dragCamera(glm::vec4 windowPosition) noexcept;
 
     void showGizmo(const CameraInfo &cameraInfo, glm::vec4 windowPosition);
+    void showParticleControls(glm::vec4 windowPosition);
+    void clearParticleState();
 
 public:
     struct EditorCamera {

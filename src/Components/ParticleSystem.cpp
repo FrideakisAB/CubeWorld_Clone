@@ -331,7 +331,7 @@ void ParticleSystem::Update()
 
 void ParticleSystem::Play() noexcept
 {
-    if(state == ParticleState::NotRun)
+    if (state == ParticleState::NotRun)
     {
         state = ParticleState::Run;
         fixStartPosition = false;
@@ -340,13 +340,13 @@ void ParticleSystem::Play() noexcept
 
 void ParticleSystem::Stop() noexcept
 {
-    if(state == ParticleState::Run)
+    if (state == ParticleState::Run)
         state = ParticleState::Stopped;
 }
 
 void ParticleSystem::Resume() noexcept
 {
-    if(state == ParticleState::Stopped)
+    if (state == ParticleState::Stopped)
     {
         state = ParticleState::Run;
         fixStartPosition = false;
@@ -358,7 +358,7 @@ void ParticleSystem::Restart() noexcept
     activeTime = 0;
     fixStartPosition = false;
 
-    if(PlayOnStart)
+    if (PlayOnStart)
         state = ParticleState::Run;
     else
         state = ParticleState::NotRun;
@@ -366,8 +366,10 @@ void ParticleSystem::Restart() noexcept
     position = 0;
     releasePosition = 0;
 
-    for(auto& Burst : Emission.Bursts)
+    for (auto &Burst : Emission.Bursts)
         Burst.IsMake = false;
+
+    render.UpdateData(maxParticlesCount, particles, position);
 }
 
 void ParticleSystem::SetMaxParticles(u32 maxParticles)

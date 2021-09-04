@@ -36,8 +36,10 @@ void EditorViewer::Draw()
             int width, height;
             glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
 
-            moveCamera(glm::vec4(position.x, position.y, sizeAvail.x, sizeAvail.y));
-            dragCamera(glm::vec4(position.x, position.y, sizeAvail.x, sizeAvail.y));
+            glm::vec4 windowPosition = glm::vec4(position.x + 5.0f, position.y + 5.0f, sizeAvail.x + 10.0f, sizeAvail.y + 10.0f);
+
+            moveCamera(windowPosition);
+            dragCamera(windowPosition);
 
             CameraInfo cameraInfo{};
 
@@ -53,10 +55,11 @@ void EditorViewer::Draw()
             else
                 cameraInfo.projection = glm::ortho(0.0f, Camera.ratio * aspect, 0.0f, Camera.ratio * aspect, Camera.nearClip, Camera.farClip);
 
-            showGizmo(cameraInfo, glm::vec4(position.x, position.y, sizeAvail.x, sizeAvail.y));
+            showGizmo(cameraInfo, windowPosition);
+            showParticleControls(windowPosition);
 
             GameEngine->GetRenderSystem().SetCustomCameraInfo(cameraInfo);
-            GameEngine->GetRenderSystem().Resize(position.x, height - position.y - sizeAvail.y, sizeAvail.x, sizeAvail.y);
+            GameEngine->GetRenderSystem().Resize(windowPosition.x, height - windowPosition.y - windowPosition.w, windowPosition.z, windowPosition.w);
             GameEngine->GetRenderSystem().PreUpdate();
             GameEngine->GetRenderSystem().Update();
             GameEngine->GetRenderSystem().PostUpdate();
@@ -67,6 +70,7 @@ void EditorViewer::Draw()
             glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
             glViewport(0, 0, width, height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            clearParticleState();
         }
     }
     else
@@ -75,6 +79,7 @@ void EditorViewer::Draw()
         glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        clearParticleState();
     }
     ImGui::EndDock();
 }
@@ -217,5 +222,71 @@ void EditorViewer::showGizmo(const CameraInfo &cameraInfo, glm::vec4 windowPosit
                     transform->SetGlobalPos(pos);
             }
         }
+    }
+}
+
+void EditorViewer::showParticleControls(glm::vec4 windowPosition)
+{
+    if (GameEditor->Selected != ECS::INVALID_ENTITY_ID)
+    {
+        auto *go = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
+        if (auto *ps = go->GetComponent<ParticleSystem>(); ps != nullptr)
+        {
+            isParticleUpdate = true;
+            particleEntityId = go->GetEntityID();
+
+            ps->Update();
+
+            const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                                                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+            const f32 PAD = 10.0f;
+            ImVec2 windowPos, windowPivot;
+            windowPos.x = windowPosition.x + windowPosition.z - PAD;
+            windowPos.y = windowPosition.y + windowPosition.w - PAD;
+            windowPivot.x = 1.0f;
+            windowPivot.y = 1.0f;
+
+            ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
+            ImGui::SetNextWindowBgAlpha(0.35f);
+            ImGui::SetNextWindowFocus();
+            ImGui::Begin("Particle system control", nullptr, windowFlags);
+            ImGui::Text("Active particles: %u", ps->GetActiveParticlesCount());
+
+            if (ImGui::Button("Play"))
+                ps->Play();
+
+            ImGui::SameLine();
+            if (ImGui::Button("Stop"))
+                ps->Stop();
+
+            ImGui::SameLine();
+            if (ImGui::Button("Resume"))
+                ps->Resume();
+
+            ImGui::SameLine();
+            if (ImGui::Button("Restart"))
+                ps->Restart();
+
+            ImGui::End();
+
+            return;
+        }
+    }
+
+    clearParticleState();
+}
+
+void EditorViewer::clearParticleState()
+{
+    if (isParticleUpdate)
+    {
+        auto *particleEntity = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(particleEntityId));
+        if (particleEntity != nullptr)
+        {
+            auto *ps = particleEntity->GetComponent<ParticleSystem>();
+            if (ps != nullptr)
+                ps->Restart();
+        }
+        isParticleUpdate = false;
     }
 }

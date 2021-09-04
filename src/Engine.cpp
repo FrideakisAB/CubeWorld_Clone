@@ -7,6 +7,7 @@
 #include "Memory/MemoryManager.h"
 #include "Assets/AssetsManager.h"
 #include "Systems/RenderSystem.h"
+#include "Systems/ParticleWorker.h"
 
 #include "GameScene.h"
 #include "GameObject.h"
@@ -27,6 +28,7 @@ Engine::Engine()
     auto &EM = *ECS::ECS_Engine->GetEntityManager();
     auto &SM = *ECS::ECS_Engine->GetSystemManager();
     renderSystem = SM.AddSystem<RenderSystem>();
+    SM.AddSystem<ParticleWorker>();
     SM.DisableSystem<RenderSystem>();
 
     auto &assetsFactory = assetsManager->GetAssetsFactory();
