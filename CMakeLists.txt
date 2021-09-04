@@ -117,6 +117,7 @@ set(Editor_Source
 	src/Editor/UI/Viewers/ParticleViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
 
+	src/Editor/ImGui/ImGuizmo.cpp
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
 	src/Editor/ImGui/imgui_custom.cpp

@@ -40,6 +40,8 @@ public:
     [[nodiscard]] Position GetGlobalPos() const;
     void SetGlobalPos(Position p);
 
+    [[nodiscard]] bool IsLocalPosition() const noexcept { return localFlag; }
+
     [[nodiscard]] inline glm::mat4 &GetMat() noexcept { return transformMat; }
     [[nodiscard]] inline glm::vec3 Right() const noexcept { return right; }
     [[nodiscard]] inline glm::vec3 Up() const noexcept { return up; }

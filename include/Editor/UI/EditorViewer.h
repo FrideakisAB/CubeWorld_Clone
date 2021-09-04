@@ -2,7 +2,19 @@
 #define EDITORVIEWER_H
 
 #include "Components/Camera.h"
+#include "Systems/RenderSystem.h"
 #include "Editor/UI/IEditorWindow.h"
+
+enum class GizmoOperation : u8 {
+    Translation = 0,
+    Rotate,
+    Scale
+};
+
+enum class GizmoMode : u8 {
+    Local = 0,
+    Global
+};
 
 class EditorViewer final : public IEditorWindow {
 private:
@@ -10,8 +22,15 @@ private:
     f64 lastMouseX{}, lastMouseY{};
     glm::vec3 cameraAngle{};
 
-    void MoveCamera() noexcept;
-    void DragCamera() noexcept;
+    GizmoOperation activeOperation = GizmoOperation::Translation;
+    GizmoMode activeMode = GizmoMode::Local;
+
+    u64 lastCommandId = 0;
+
+    void moveCamera(glm::vec4 windowPosition) noexcept;
+    void dragCamera(glm::vec4 windowPosition) noexcept;
+
+    void showGizmo(const CameraInfo &cameraInfo, glm::vec4 windowPosition);
 
 public:
     struct EditorCamera {
