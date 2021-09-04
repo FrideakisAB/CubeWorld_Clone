@@ -41,16 +41,18 @@ ForwardPlusPipeline::ForwardPlusPipeline()
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    GLfloat borderColorHDR[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     glGenFramebuffers(1, &hdrFBO);
     glGenTextures(2, colorBuffers);
     for (u32 colorBuffer : colorBuffers)
     {
         glBindTexture(GL_TEXTURE_2D, colorBuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 1024, 768, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1024, 768, 0, GL_RGBA, GL_FLOAT, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColorHDR);
     }
 
     glGenRenderbuffers(1, &rboDepth);
@@ -174,7 +176,7 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     for (u32 colorBuffer : colorBuffers)
     {
         glBindTexture(GL_TEXTURE_2D, colorBuffer);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
     }
     for (u32 pingPongBuffer : pingPongBuffers)
     {
@@ -194,6 +196,7 @@ void ForwardPlusPipeline::Resize(u16 offsetX, u16 offsetY, u16 width, u16 height
     this->width = width;
     this->height = height;
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(offsetX, offsetY, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
@@ -290,6 +293,8 @@ void ForwardPlusPipeline::Render()
         shader.SetFloat("wh", (f32)width / (f32)height);
 
         shader.SetMat4("vp", mainVP);
+        shader.SetInt("pointLightCount", pointLightPos);
+        shader.SetInt("spotLightCount", spotLightPos);
         shader.SetInt("numberOfTilesX", (width + width % 16) / 16);
         shader.SetVec3("viewPos", cameraInfo.position);
 

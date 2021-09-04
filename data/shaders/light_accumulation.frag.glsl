@@ -51,6 +51,8 @@ uniform float main_specular;
 uniform vec3 viewPos;
 uniform float ambient = 0.08;
 uniform int numberOfTilesX;
+uniform int pointLightCount;
+uniform int spotLightCount;
 
 layout (location = 0) out vec4 fragColor;
 layout (location = 1) out vec4 brightColor;
@@ -90,9 +92,11 @@ void main()
 		color.rgb += irradiance;
     }
 
+    uint pointLightWork = 0;
 	uint offset = index * 1024;
-	for (uint i = 0; i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; ++i)
+	for (uint i = 0; pointLightWork < pointLightCount && i < 1024 && visibleLightIndicesBuffer.data[offset + i].index != -1; ++i)
     {
+        ++pointLightWork;
 		uint lightIndex = visibleLightIndicesBuffer.data[offset + i].index;
 		PointLight light = lightBuffer.data[lightIndex];
 
@@ -115,11 +119,12 @@ void main()
 		color.rgb += irradiance;
 	}
     
-	for (uint i = 0; i < 1024 && spotVisibleLightIndicesBuffer.data[offset + i].index != -1; ++i)
+    uint spotLightWork = 0;
+	for (uint i = 0; spotLightWork < spotLightCount && i < 1024 && spotVisibleLightIndicesBuffer.data[offset + i].index != -1; ++i)
     {
+        ++spotLightWork;
 		uint lightIndex = spotVisibleLightIndicesBuffer.data[offset + i].index;
 		SpotLight light = spotLightBuffer.data[lightIndex];
-
 
 		vec3 lightColor = light.colorAndRadius.xyz;
 		float lightRadius = light.colorAndRadius.w;
@@ -132,7 +137,7 @@ void main()
         float theta = dot(lightDirection, normalize(-light.directionAndCutterAngle.xyz));
         if(theta <= light.directionAndCutterAngle.w)
             continue;
-            
+
 		vec3 halfway = normalize(lightDirection + viewDirection);
 
 		float diffuse = max(dot(lightDirection, normal), 0.0);
@@ -155,9 +160,9 @@ void main()
 	
 	fragColor = color;
     
-    float brightness = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > 1.0)
-        brightColor = vec4(fragColor.rgb, 1.0);
+        brightColor = vec4(color.rgb, 1.0);
     else
         brightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
