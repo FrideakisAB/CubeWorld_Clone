@@ -5,6 +5,7 @@
 #include "Editor/UI/MenuBar.h"
 #include "Editor/CacheSystem.h"
 #include "Editor/UI/LogViewer.h"
+#include "Editor/UI/GameWindow.h"
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
 #include "Editor/UI/EditorViewer.h"
@@ -37,6 +38,7 @@ private:
     EditorMenu editorMenu;
     FileMenu fileMenu;
     WindowsMenu windowsMenu;
+    GameWindow *gameWindow;
 
 public:
     Editor();
@@ -44,6 +46,7 @@ public:
 
     void DrawWindows();
 
+    bool IsActiveSimulate = false;
     ECS::EntityId Selected = ECS::INVALID_ENTITY_ID;
     CommandList CommandList;
     CacheSystem CacheSystem;

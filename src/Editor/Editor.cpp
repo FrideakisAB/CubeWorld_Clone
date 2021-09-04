@@ -13,6 +13,8 @@ Editor *GameEditor = nullptr;
 
 Editor::Editor()
 {
+    gameWindow = new GameWindow();
+
     Menu.RegisterEntry(&fileMenu);
     Menu.RegisterEntry(&editorMenu);
     Menu.RegisterEntry(sceneViewer.GetMenuEntry());
@@ -22,6 +24,7 @@ Editor::Editor()
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
     windowsMenu.Windows["Log viewer"] = &logViewer;
     windowsMenu.Windows["Editor viewer"] = &editorViewer;
+    windowsMenu.Windows["Game window"] = gameWindow;
 
     logViewer.StartCapture();
 
@@ -35,6 +38,7 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+    delete gameWindow;
     logViewer.EndCapture();
     CommandList.InvalidateAll();
     CacheSystem.SafeClean();
@@ -42,12 +46,14 @@ Editor::~Editor()
 
 void Editor::DrawWindows()
 {
-    ECS::ECS_Engine->UpdateWithoutSystems();
+    if (!IsActiveSimulate)
+        ECS::ECS_Engine->UpdateWithoutSystems();
     CommandList.Update();
     sceneViewer.Draw();
     sceneEditor.Draw();
     logViewer.Draw();
     editorViewer.Draw();
+    gameWindow->Draw();
 }
 
 Editor::EditorMenu::EditorMenu()

@@ -1187,6 +1187,11 @@ namespace IMGUIZMO_NAMESPACE
       }
       ImDrawList* drawList = gContext.mDrawList;
 
+       const ImVec2 origin = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
+
+       if (!IsInContextRect(origin))
+           return;
+
       // colors
       ImU32 colors[7];
       ComputeColors(colors, type, ROTATE);
@@ -1289,6 +1294,11 @@ namespace IMGUIZMO_NAMESPACE
         return;
       }
 
+       const ImVec2 origin = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
+
+       if (!IsInContextRect(origin))
+           return;
+
       // colors
       ImU32 colors[7];
       ComputeColors(colors, type, SCALE);
@@ -1375,6 +1385,11 @@ namespace IMGUIZMO_NAMESPACE
       {
          return;
       }
+
+       const ImVec2 origin = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
+
+       if (!IsInContextRect(origin))
+           return;
 
       // colors
       ImU32 colors[7];
@@ -1467,6 +1482,9 @@ namespace IMGUIZMO_NAMESPACE
       ComputeColors(colors, type, TRANSLATE);
 
       const ImVec2 origin = worldToPos(gContext.mModel.v.position, gContext.mViewProjection);
+
+      if (!IsInContextRect(origin))
+          return;
 
       // draw
       bool belowAxisLimit = false;

@@ -89,6 +89,9 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         accumulateTime += ECS::ECS_Engine->GetTimer()->GetDeltaTime();
 
         if (accumulateTime >= 0.75f)

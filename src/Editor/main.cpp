@@ -117,6 +117,9 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
         int width, height;
         glfwGetFramebufferSize(glfwWindow, &width, &height);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         float offsetMBar = g->NextWindowData.MenuBarOffsetMinVal.y + g->FontBaseSize + g->Style.FramePadding.y + 2.0f;
         GameEditor->Menu.Draw();
         ImGui::SetNextWindowPos(ImVec2(0, offsetMBar));

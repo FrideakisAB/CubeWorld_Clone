@@ -19,7 +19,7 @@ void EditorViewer::Draw()
         ImVec2 sizeAvail = ImGui::GetContentRegionAvail();
         ImVec2 position = ImGui::GetWindowPos();
 
-        if (sizeAvail.x != 0 && sizeAvail.y != 0)
+        if (sizeAvail.x >= 100.0f && sizeAvail.y >= 100.0f)
         {
             ImGui::SetNextItemWidth(110.0f);
             const char* operationsString[] = { "Transform", "Rotate", "Scale" };
@@ -65,22 +65,10 @@ void EditorViewer::Draw()
             GameEngine->GetRenderSystem().PostUpdate();
         }
         else
-        {
-            int width, height;
-            glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
-            glViewport(0, 0, width, height);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             clearParticleState();
-        }
     }
     else
-    {
-        int width, height;
-        glfwGetFramebufferSize(glfwGetCurrentContext(), &width, &height);
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         clearParticleState();
-    }
     ImGui::EndDock();
 }
 
@@ -232,10 +220,13 @@ void EditorViewer::showParticleControls(glm::vec4 windowPosition)
         auto *go = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
         if (auto *ps = go->GetComponent<ParticleSystem>(); ps != nullptr)
         {
-            isParticleUpdate = true;
-            particleEntityId = go->GetEntityID();
+            if (!GameEditor->IsActiveSimulate)
+            {
+                isParticleUpdate = true;
+                particleEntityId = go->GetEntityID();
 
-            ps->Update();
+                ps->Update();
+            }
 
             const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                                                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -248,8 +239,14 @@ void EditorViewer::showParticleControls(glm::vec4 windowPosition)
 
             ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
             ImGui::SetNextWindowBgAlpha(0.35f);
-            ImGui::SetNextWindowFocus();
+
+            f64 x, y;
+            glfwGetCursorPos(glfwGetCurrentContext(), &x, &y);
+            if (x >= windowPosition.x + windowPosition.z / 3 && x <= windowPosition.z + windowPosition.x &&
+                y >= windowPosition.y + windowPosition.w * 2 / 3 && y <= windowPosition.w + windowPosition.y)
+                ImGui::SetNextWindowFocus();
             ImGui::Begin("Particle system control", nullptr, windowFlags);
+            ImGui::TextColored(ImVec4(1.0f, 0.72f, 0.02f, 1.0f), "Particle system control");
             ImGui::Text("Active particles: %u", ps->GetActiveParticlesCount());
 
             if (ImGui::Button("Play"))

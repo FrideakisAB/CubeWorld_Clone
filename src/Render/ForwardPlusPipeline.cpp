@@ -370,7 +370,7 @@ void ForwardPlusPipeline::Render()
     glViewport(offsetX, offsetY, width, height);
 
     Shader &hdr = (*shaders)["HDR"];
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
+    glClear(GL_DEPTH_BUFFER_BIT); // Weirdly, moving this call drops performance into the floor
     hdr.Use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);

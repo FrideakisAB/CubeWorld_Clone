@@ -177,8 +177,8 @@ namespace ECS {
         for (size_t i = 0; i < childCount; ++i)
         {
             IEntity *child = EM.GetEntity(EF.Create(j["child"][i]["base"]["ESID"]));
-            child->UnSerializeObj(j["child"][i]);
             AddChild(child);
+            child->UnSerializeObj(j["child"][i]);
         }
     }
 }

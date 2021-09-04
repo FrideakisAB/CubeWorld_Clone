@@ -114,6 +114,13 @@ json GameScene::SerializeObj()
 
 void GameScene::UnSerializeObj(const json &j)
 {
+    auto It = gameObjects.begin();
+    while(It != gameObjects.end())
+    {
+        Delete(It->second);
+        It = gameObjects.begin();
+    }
+
     for (size_t i = 0; i < j["count"]; ++i)
     {
         GameObject *go = Create("");

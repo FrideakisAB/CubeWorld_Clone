@@ -13,9 +13,9 @@ Position Transform::GetLocalPos() const
     else
     {
         ECS::EntityId parent = ECS::ECS_Engine->GetEntityManager()->GetEntity(owner)->GetParentID();
-        if (auto trans = ECS::ECS_Engine->GetComponentManager()->GetComponent<Transform>(parent); trans != nullptr)
+        if (auto *transform = ECS::ECS_Engine->GetComponentManager()->GetComponent<Transform>(parent); transform != nullptr)
         {
-            glm::mat4 mat = glm::inverse(trans->transformMat) * transformMat;
+            glm::mat4 mat = glm::inverse(transform->transformMat) * transformMat;
 
             Position pos;
             glm::vec3 skew;
@@ -61,32 +61,35 @@ void Transform::SetGlobalPos(Position p)
 void Transform::UpdateTree()
 {
     if (localFlag)
+    {
+        fixParentChange();
         recalculate();
+    }
 }
 
 void Transform::recalculate()
 {
     auto *CM = ECS::ECS_Engine->GetComponentManager();
 
-    glm::mat4 par = glm::mat4(1.0f);
+    glm::mat4 parentMat = glm::mat4(1.0f);
 
     ECS::IEntity *entity = ECS::ECS_Engine->GetEntityManager()->GetEntity(owner);
     if (localFlag)
     {
         ECS::EntityId parent = entity->GetParentID();
-        if (auto trans = CM->GetComponent<Transform>(parent); trans != nullptr)
-            par = trans->transformMat;
+        if (auto *transform = CM->GetComponent<Transform>(parent); transform != nullptr)
+            parentMat = transform->transformMat;
     }
 
-    par = glm::translate(par, position.position);
-    par = par * glm::mat4_cast(position.rotate);
-    par = glm::scale(par, position.scale);
+    parentMat = glm::translate(parentMat, position.position);
+    parentMat = parentMat * glm::mat4_cast(position.rotate);
+    parentMat = glm::scale(parentMat, position.scale);
 
     forward = position.rotate * WorldFront;
     up = position.rotate * WorldUp;
     right = position.rotate * WorldRight;
 
-    transformMat = par;
+    transformMat = parentMat;
 
     for(std::size_t i = 0; i < entity->GetChildCount(); ++i)
     {
@@ -117,4 +120,22 @@ void Transform::UnSerializeObj(const json &j)
     localFlag = j["localFlag"];
 
     recalculate();
+}
+
+void Transform::fixParentChange()
+{
+    ECS::EntityId parent = ECS::ECS_Engine->GetEntityManager()->GetEntity(owner)->GetParentID();
+    if (auto *transform = ECS::ECS_Engine->GetComponentManager()->GetComponent<Transform>(parent); transform != nullptr)
+    {
+        glm::mat4 mat = glm::inverse(transform->transformMat) * transformMat;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(mat, position.scale, position.rotate, position.position, skew, perspective);
+    }
+    else
+    {
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(transformMat, position.scale, position.rotate, position.position, skew, perspective);
+    }
 }

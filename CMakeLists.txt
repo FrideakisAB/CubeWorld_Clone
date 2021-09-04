@@ -107,6 +107,7 @@ set(Editor_Source
 	src/Editor/UI/MenuBar.cpp
 	src/Editor/UI/LogViewer.cpp
 	src/Editor/UI/IMenuEntry.cpp
+	src/Editor/UI/GameWindow.cpp
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
 	src/Editor/UI/EditorViewer.cpp

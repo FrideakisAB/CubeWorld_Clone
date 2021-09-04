@@ -20,6 +20,7 @@ private:
     bool        localFlag = true;
 
     void recalculate();
+    void fixParentChange();
 
 protected:
     void UpdateTree() final;

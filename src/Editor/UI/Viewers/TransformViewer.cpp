@@ -12,70 +12,42 @@ void TransformViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
     bool closed = true;
     if (ImGui::CollapsingHeader("Transform", &closed))
     {
-        bool local;
         bool update = false;
 
-        Position pos;
+        bool isLocal = transform.IsLocalPosition();
+        ImGui::Checkbox("Local", &isLocal);
+        if (isLocal != transform.IsLocalPosition())
+            update = true;
 
-        if (ImGui::TreeNode("Local position"))
-        {
-            local = true;
-            pos = transform.GetLocalPos();
+        Position position;
+        if (isLocal)
+            position = transform.GetLocalPos();
+        else
+            position = transform.GetGlobalPos();
 
-            glm::vec3 secRotate = glm::eulerAngles(pos.rotate);
-            glm::vec3 secChange = glm::degrees(secRotate);
+        glm::vec3 currentRotate = glm::eulerAngles(position.rotate);
+        glm::vec3 changeRotate = glm::degrees(currentRotate);
 
-            if (ImGui::InputFloat3("Position", glm::value_ptr(pos.position)))
-                update = true;
-            if (ImGui::InputFloat3("Rotation (YPR)", glm::value_ptr(secChange)))
-                update = true;
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(pos.scale)))
-                update = true;
+        if (ImGui::InputFloat3("Position", glm::value_ptr(position.position)))
+            update = true;
+        if (ImGui::InputFloat3("Rotation (YPR)", glm::value_ptr(changeRotate)))
+            update = true;
+        if (ImGui::InputFloat3("Scale", glm::value_ptr(position.scale)))
+            update = true;
 
-            glm::vec3 postRotate = glm::radians(secChange);
-            if (!Mathf::Approximately(postRotate, secRotate))
-            {
-                auto fg = glm::quat(postRotate);
-                pos.rotate = fg;
-            }
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Global position"))
-        {
-            local = false;
-            pos = transform.GetGlobalPos();
-
-            glm::vec3 secRotate = glm::eulerAngles(pos.rotate);
-            glm::vec3 secChange = glm::degrees(secRotate);
-
-            if (ImGui::InputFloat3("Position", glm::value_ptr(pos.position)))
-                update = true;
-            if (ImGui::InputFloat3("Rotation (YPR)", glm::value_ptr(secChange)))
-                update = true;
-            if (ImGui::InputFloat3("Scale", glm::value_ptr(pos.scale)))
-                update = true;
-
-            glm::vec3 postRotate = glm::radians(secChange);
-            if (!Mathf::Approximately(postRotate, secRotate))
-            {
-                auto fg = glm::quat(postRotate);
-                pos.rotate = fg;
-            }
-
-            ImGui::TreePop();
-        }
+        glm::vec3 postRotate = glm::radians(changeRotate);
+        if (!Mathf::Approximately(postRotate, currentRotate))
+            position.rotate = glm::quat(postRotate);
 
         if (update)
         {
             if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
                 lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<Transform>>(&go);
 
-            if (local)
-                transform.SetLocalPos(pos);
+            if (isLocal)
+                transform.SetLocalPos(position);
             else
-                transform.SetGlobalPos(pos);
+                transform.SetGlobalPos(position);
         }
     }
     if (!closed)
