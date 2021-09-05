@@ -26,8 +26,6 @@ Editor::Editor()
     windowsMenu.Windows["Editor viewer"] = &editorViewer;
     windowsMenu.Windows["Game window"] = gameWindow;
 
-    logViewer.StartCapture();
-
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
     sceneEditor.ViewersRegistry.RegisterViewer<MeshViewer, MeshComponent>();
@@ -39,7 +37,6 @@ Editor::Editor()
 Editor::~Editor()
 {
     delete gameWindow;
-    logViewer.EndCapture();
     CommandList.InvalidateAll();
     CacheSystem.SafeClean();
 }
@@ -53,7 +50,9 @@ void Editor::DrawWindows()
     sceneEditor.Draw();
     logViewer.Draw();
     editorViewer.Draw();
+    logViewer.StartCapture();
     gameWindow->Draw();
+    logViewer.EndCapture();
 }
 
 Editor::EditorMenu::EditorMenu()
@@ -62,9 +61,9 @@ Editor::EditorMenu::EditorMenu()
 
 void Editor::EditorMenu::Draw()
 {
-    if(RegisterItem("Redo", "Ctrl+Y", false, GameEditor->CommandList.IsRedoActive()))
+    if (RegisterItem("Redo", "Ctrl+Y", false, GameEditor->CommandList.IsRedoActive()))
         GameEditor->CommandList.Redo();
-    if(RegisterItem("Undo", "Ctrl+Z", false, GameEditor->CommandList.IsUndoActive()))
+    if (RegisterItem("Undo", "Ctrl+Z", false, GameEditor->CommandList.IsUndoActive()))
         GameEditor->CommandList.Undo();
 }
 
@@ -74,12 +73,12 @@ Editor::FileMenu::FileMenu()
 
 void Editor::FileMenu::Draw()
 {
-    if(RegisterItem("Exit"))
+    if (RegisterItem("Exit"))
         glfwSetWindowShouldClose(glfwGetCurrentContext(), true);
 }
 
 Editor::WindowsMenu::WindowsMenu()
-: IMenuEntry("Windows")
+    : IMenuEntry("Windows")
 {}
 
 void Editor::WindowsMenu::Draw()

@@ -9,6 +9,7 @@
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
 #include "Editor/UI/EditorViewer.h"
+#include "Editor/Render/EditorRender.h"
 #include "Editor/Commands/CommandList.h"
 
 class Editor {
@@ -39,12 +40,15 @@ private:
     FileMenu fileMenu;
     WindowsMenu windowsMenu;
     GameWindow *gameWindow;
+    EditorRender render;
 
 public:
     Editor();
     ~Editor();
 
     void DrawWindows();
+
+    [[nodiscard]] EditorRender &GetRender() noexcept { return render; }
 
     bool IsActiveSimulate = false;
     ECS::EntityId Selected = ECS::INVALID_ENTITY_ID;

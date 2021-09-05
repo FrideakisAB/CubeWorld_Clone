@@ -108,7 +108,7 @@ Mesh::Mesh(const Mesh &mesh)
 Mesh::Mesh(Mesh &&mesh) noexcept
     : IAsset(true), DrawObject(std::move(mesh))
 {
-    if(this == &mesh)
+    if (this == &mesh)
         return;
 
     std::swap(vertices, mesh.vertices);
@@ -128,7 +128,7 @@ Mesh::~Mesh()
     delete[] vertices;
     delete[] indices;
 
-    auto deleter = [=](){
+    auto deleter = [=]() {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
@@ -138,7 +138,7 @@ Mesh::~Mesh()
 
 Mesh &Mesh::operator=(const Mesh &mesh)
 {
-    if(this == &mesh)
+    if (this == &mesh)
         return *this;
 
     delete[] vertices;
@@ -156,7 +156,7 @@ Mesh &Mesh::operator=(const Mesh &mesh)
 
 Mesh &Mesh::operator=(Mesh &&mesh) noexcept
 {
-    if(this == &mesh)
+    if (this == &mesh)
         return *this;
 
     std::swap(vertices, mesh.vertices);
@@ -194,20 +194,20 @@ void Mesh::CalculateNormals()
 {
     std::unordered_map<u32, glm::vec3> trNormals;
     std::vector<u32> nCount;
-    for(u32 i = 0; i < vertCount; ++i)
+    for (u32 i = 0; i < vertCount; ++i)
     {
         nCount.push_back(0);
-        for(u32 j = 0; j < indCount; j += 3)
-            if(indices[j] == i || indices[j + 1] == i || indices[j + 2] == i)
+        for (u32 j = 0; j < indCount; j += 3)
+            if (indices[j] == i || indices[j + 1] == i || indices[j + 2] == i)
             {
-                if(trNormals.find(j / 3) == trNormals.end())
+                if (trNormals.find(j / 3) == trNormals.end())
                 {
                     glm::vec3 norm;
 
                     glm::vec3 v1 = vertices[indices[j]].Position - vertices[indices[j + 1]].Position;
                     glm::vec3 v2 = vertices[indices[j + 1]].Position - vertices[indices[j + 2]].Position;
 
-                    float wrki = sqrt(sqr(v1.y*v2.z - v1.z * v2.y) + sqr(v1.z * v2.x - v1.x * v2.z) + sqr(v1.x * v2.y - v1.y * v2.x));
+                    f32 wrki = sqrt(sqr(v1.y*v2.z - v1.z * v2.y) + sqr(v1.z * v2.x - v1.x * v2.z) + sqr(v1.x * v2.y - v1.y * v2.x));
                     norm.x = (v1.y * v2.z - v1.z * v2.y) / wrki;
                     norm.y = (v1.z * v2.x - v1.x * v2.z) / wrki;
                     norm.z = (v1.x * v2.y - v1.y * v2.x) / wrki;
@@ -220,10 +220,10 @@ void Mesh::CalculateNormals()
             }
     }
 
-    for(u32 i = 0; i < vertCount; ++i)
-        if(nCount[i] != 0)
+    for (u32 i = 0; i < vertCount; ++i)
+        if (nCount[i] != 0)
         {
-            vertices[i].Normal /= (float)nCount[i];
+            vertices[i].Normal /= (f32)nCount[i];
             vertices[i].Normal = glm::normalize(vertices[i].Normal);
         }
 }

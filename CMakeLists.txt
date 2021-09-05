@@ -104,6 +104,9 @@ set(Editor_Source
 	src/Editor/Editor.cpp
 	src/Editor/CacheSystem.cpp
 
+	src/Editor/Render/LinesMesh.cpp
+	src/Editor/Render/EditorRender.cpp
+
 	src/Editor/UI/MenuBar.cpp
 	src/Editor/UI/LogViewer.cpp
 	src/Editor/UI/IMenuEntry.cpp

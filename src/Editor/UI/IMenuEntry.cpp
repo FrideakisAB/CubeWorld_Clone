@@ -9,7 +9,7 @@ bool IMenuEntry::RegisterItem(const std::string &name, const std::string &shortC
 
 bool IMenuEntry::RegisterItemSelectable(const std::string &name, const std::string &shortCuts, bool *selected, bool enabled)
 {
-    return ImGui::MenuItem(name.c_str(), shortCuts.c_str(), &selected, enabled);
+    return ImGui::MenuItem(name.c_str(), shortCuts.c_str(), selected, enabled);
 }
 
 bool IMenuEntry::RegisterSubMenu(const std::string &name, bool enabled)

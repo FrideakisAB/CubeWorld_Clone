@@ -6,11 +6,16 @@
 #include <GLFW/glfw3.h>
 #include "Editor/Editor.h"
 #include "ECS/util/Timer.h"
-#include "Components/Transform.h"
 #include "Editor/ImGui/ImGuizmo.h"
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include "Editor/Commands/ViewersCommands.h"
+#include "Components/Components.h"
+
+EditorViewer::EditorViewer()
+{
+    cameraMesh.ReserveVertex(12);
+}
 
 void EditorViewer::Draw()
 {
@@ -41,28 +46,21 @@ void EditorViewer::Draw()
             moveCamera(windowPosition);
             dragCamera(windowPosition);
 
-            CameraInfo cameraInfo{};
+            lastAspect = sizeAvail.x / sizeAvail.y;
 
-            glm::vec3 up = Camera.orientation * Transform::WorldUp;
-            glm::vec3 forward = Camera.orientation * Transform::WorldFront;
-            cameraInfo.view = glm::lookAt(Camera.position, Camera.position + forward, up);
-            cameraInfo.position = Camera.position;
-
-            f32 aspect = sizeAvail.x / sizeAvail.y;
-
-            if (Camera.projection == Projection::Perspective)
-                cameraInfo.projection = glm::perspective(glm::radians(Camera.fov), aspect, Camera.nearClip, Camera.farClip);
-            else
-                cameraInfo.projection = glm::ortho(0.0f, Camera.ratio * aspect, 0.0f, Camera.ratio * aspect, Camera.nearClip, Camera.farClip);
+            CameraInfo cameraInfo = GetCameraInfo();
 
             showGizmo(cameraInfo, windowPosition);
             showParticleControls(windowPosition);
+            editorDrawSelected(windowPosition.z, windowPosition.w);
 
             GameEngine->GetRenderSystem().SetCustomCameraInfo(cameraInfo);
             GameEngine->GetRenderSystem().Resize(windowPosition.x, height - windowPosition.y - windowPosition.w, windowPosition.z, windowPosition.w);
             GameEngine->GetRenderSystem().PreUpdate();
             GameEngine->GetRenderSystem().Update();
             GameEngine->GetRenderSystem().PostUpdate();
+
+            GameEditor->GetRender().Draw(cameraInfo);
         }
         else
             clearParticleState();
@@ -82,16 +80,16 @@ void EditorViewer::moveCamera(glm::vec4 windowPosition) noexcept
     {
         f32 dt = ECS::ECS_Engine->GetTimer()->GetNonScaleDeltaTime();
         if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_W))
-            Camera.position += Camera.orientation * Transform::WorldFront * CameraSpeed * dt;
+            EditorCamera.position += EditorCamera.orientation * Transform::WorldFront * CameraSpeed * dt;
 
         if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_S))
-            Camera.position -= Camera.orientation * Transform::WorldFront * CameraSpeed * dt;
+            EditorCamera.position -= EditorCamera.orientation * Transform::WorldFront * CameraSpeed * dt;
 
         if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_A))
-            Camera.position += Camera.orientation * Transform::WorldRight * CameraSpeed * dt;
+            EditorCamera.position += EditorCamera.orientation * Transform::WorldRight * CameraSpeed * dt;
 
         if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_D))
-            Camera.position -= Camera.orientation * Transform::WorldRight * CameraSpeed * dt;
+            EditorCamera.position -= EditorCamera.orientation * Transform::WorldRight * CameraSpeed * dt;
     }
 }
 
@@ -130,7 +128,7 @@ void EditorViewer::dragCamera(glm::vec4 windowPosition) noexcept
                 cameraAngle.y -= dY * CameraSense * dt;
             }
 
-            Camera.orientation = glm::quat_cast(glm::yawPitchRoll(glm::radians(cameraAngle.x), glm::radians(cameraAngle.y), glm::radians(cameraAngle.z)));
+            EditorCamera.orientation = glm::quat_cast(glm::yawPitchRoll(glm::radians(cameraAngle.x), glm::radians(cameraAngle.y), glm::radians(cameraAngle.z)));
 
             isFirstClick = false;
         }
@@ -176,7 +174,7 @@ void EditorViewer::showGizmo(const CameraInfo &cameraInfo, glm::vec4 windowPosit
                 break;
             }
 
-            ImGuizmo::SetOrthographic(Camera.projection == Projection::Orthographic);
+            ImGuizmo::SetOrthographic(EditorCamera.projection == Projection::Orthographic);
             ImGuizmo::BeginFrame();
             glm::mat4 model = transform->GetMat();
             ImGuizmo::SetRect(windowPosition.x, windowPosition.y, windowPosition.z, windowPosition.w);
@@ -285,5 +283,76 @@ void EditorViewer::clearParticleState()
                 ps->Restart();
         }
         isParticleUpdate = false;
+    }
+}
+
+CameraInfo EditorViewer::GetCameraInfo() const noexcept
+{
+    CameraInfo cameraInfo{};
+
+    glm::vec3 up = EditorCamera.orientation * Transform::WorldUp;
+    glm::vec3 forward = EditorCamera.orientation * Transform::WorldFront;
+    cameraInfo.view = glm::lookAt(EditorCamera.position, EditorCamera.position + forward, up);
+    cameraInfo.position = EditorCamera.position;
+
+    if (EditorCamera.projection == Projection::Perspective)
+        cameraInfo.projection = glm::perspective(glm::radians(EditorCamera.fov), lastAspect, EditorCamera.nearClip, EditorCamera.farClip);
+    else
+        cameraInfo.projection = glm::ortho(0.0f, EditorCamera.ratio * lastAspect, 0.0f, EditorCamera.ratio * lastAspect, EditorCamera.nearClip, EditorCamera.farClip);
+
+    return cameraInfo;
+}
+
+void EditorViewer::editorDrawSelected(u32 width, u32 height)
+{
+    if (GameEditor->Selected != ECS::INVALID_ENTITY_ID)
+    {
+        auto *entity = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
+        if (auto *camera = entity->GetComponent<Camera>(); camera != nullptr)
+        {
+            cameraMesh.ResetPrimitives();
+            glm::mat4 inv = glm::inverse(camera->GetVPMatrix(width, height));
+
+            static const glm::vec4 faces[8] = {
+                    // near face
+                    {1, 1, -1, 1.f},
+                    {-1, 1, -1, 1.f},
+                    {1, -1, -1, 1.f},
+                    {-1, -1, -1, 1.f},
+
+                    // far face
+                    {1, 1, 1, 1.f},
+                    {-1, 1, 1 , 1.f},
+                    {1, -1, 1 , 1.f},
+                    {-1, -1,1, 1.f},
+            };
+
+            glm::vec3 verts[8];
+            for (u32 i = 0; i < 8; ++i)
+            {
+                glm::vec4 formedFace = inv * faces[i];
+                verts[i].x = formedFace.x / formedFace.w;
+                verts[i].y = formedFace.y / formedFace.w;
+                verts[i].z = formedFace.z / formedFace.w;
+            }
+
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[1].x, verts[1].y, verts[1].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[2].x, verts[2].y, verts[2].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[1].x, verts[1].y, verts[1].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[2].x, verts[2].y, verts[2].z}, {1.0f, 0.0f, 0.0f}});
+
+            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
+
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[4].x, verts[4].y, verts[4].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[1].x, verts[1].y, verts[1].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[7].x, verts[7].y, verts[7].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[2].x, verts[2].y, verts[2].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.Apply();
+
+            GameEditor->GetRender().AddDrawLines(&cameraMesh);
+        }
     }
 }
