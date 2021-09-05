@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "Engine.h"
 #include "Platform.h"
+#include <functional>
 #include <glm/glm.hpp>
 #include "Assets/AssetsManager.h"
 
@@ -17,7 +18,7 @@ enum class CustomTextState : u8 {
 
 namespace ImGui
 {
-    bool TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height);
+    bool TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height, std::function<void()> func=[](){});
     template<typename CMP>
     bool AssetSelectorPopup(const std::string &id, const std::string &name, const std::string &type, CustomTextState state, std::string &select, CMP cmp)
     {

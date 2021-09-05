@@ -113,6 +113,7 @@ set(Editor_Source
 	src/Editor/UI/GameWindow.cpp
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
+	src/Editor/UI/AssetsViewer.cpp
 	src/Editor/UI/EditorViewer.cpp
 
 	src/Editor/UI/Viewers/MeshViewer.cpp

@@ -42,14 +42,30 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             }
         }
 
-        if (ImGui::TextHandleButton("Mesh", context, "Mesh", state, 16))
+        std::string asset;
+
+        auto dragCollector = [&](){
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+            {
+                std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                if (GameEngine->GetAssetsManager().GetAsset<Mesh>(str.data()) != nullptr)
+                {
+                    update = true;
+                    asset = str;
+                }
+                ImGui::EndDragDropTarget();
+            }
+        };
+
+        if (ImGui::TextHandleButton("Mesh", context, "Mesh", state, 16, dragCollector))
             ImGui::OpenPopup("AssetSelector");
 
-        std::string asset;
         auto isMeshFunction = [](const AssetsHandle &handle) {
             return dynamic_cast<Mesh*>(handle.get()) != nullptr;
         };
-        update = ImGui::AssetSelectorPopup("AssetSelector", context, "Mesh", state, asset, isMeshFunction);
+
+        if (ImGui::AssetSelectorPopup("AssetSelector", context, "Mesh", state, asset, isMeshFunction))
+            update = true;
 
         if (update)
         {

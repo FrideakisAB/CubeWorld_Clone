@@ -22,7 +22,7 @@ class GameObject;
 
 class EditorViewer final : public IEditorWindow {
 private:
-    LinesMesh cameraMesh;
+    LinesMesh cameraMesh, particleMesh, lightMesh;
 
     bool isFirstClick = true;
     f64 lastMouseX{}, lastMouseY{};

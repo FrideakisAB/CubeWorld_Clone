@@ -8,6 +8,7 @@
 #include "Editor/UI/GameWindow.h"
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
+#include "Editor/UI/AssetsViewer.h"
 #include "Editor/UI/EditorViewer.h"
 #include "Editor/Render/EditorRender.h"
 #include "Editor/Commands/CommandList.h"
@@ -33,6 +34,7 @@ private:
     };
 
     LogViewer logViewer;
+    AssetsViewer assetsViewer;
     EditorViewer editorViewer;
     SceneViewer sceneViewer;
     SceneEditor sceneEditor;

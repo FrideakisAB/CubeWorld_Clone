@@ -15,6 +15,8 @@
 EditorViewer::EditorViewer()
 {
     cameraMesh.ReserveVertex(12);
+    particleMesh.ReserveVertex(96);
+    lightMesh.ReserveVertex(192);
 }
 
 void EditorViewer::Draw()
@@ -310,6 +312,8 @@ void EditorViewer::editorDrawSelected(u32 width, u32 height)
         auto *entity = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
         if (auto *camera = entity->GetComponent<Camera>(); camera != nullptr)
         {
+            glm::vec3 cameraColor = glm::vec3(1.0f, 0.0f, 0.0f);
+
             cameraMesh.ResetPrimitives();
             glm::mat4 inv = glm::inverse(camera->GetVPMatrix(width, height));
 
@@ -336,23 +340,112 @@ void EditorViewer::editorDrawSelected(u32 width, u32 height)
                 verts[i].z = formedFace.z / formedFace.w;
             }
 
-            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[1].x, verts[1].y, verts[1].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[2].x, verts[2].y, verts[2].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[1].x, verts[1].y, verts[1].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[2].x, verts[2].y, verts[2].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[1].x, verts[1].y, verts[1].z}, cameraColor});
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[2].x, verts[2].y, verts[2].z}, cameraColor});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[1].x, verts[1].y, verts[1].z}, cameraColor});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[2].x, verts[2].y, verts[2].z}, cameraColor});
 
-            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[5].x, verts[5].y, verts[5].z}, cameraColor});
+            cameraMesh.AddLine({{verts[4].x, verts[4].y, verts[4].z}, {verts[6].x, verts[6].y, verts[6].z}, cameraColor});
+            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[5].x, verts[5].y, verts[5].z}, cameraColor});
+            cameraMesh.AddLine({{verts[7].x, verts[7].y, verts[7].z}, {verts[6].x, verts[6].y, verts[6].z}, cameraColor});
 
-            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[4].x, verts[4].y, verts[4].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[1].x, verts[1].y, verts[1].z}, {verts[5].x, verts[5].y, verts[5].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[7].x, verts[7].y, verts[7].z}, {1.0f, 0.0f, 0.0f}});
-            cameraMesh.AddLine({{verts[2].x, verts[2].y, verts[2].z}, {verts[6].x, verts[6].y, verts[6].z}, {1.0f, 0.0f, 0.0f}});
+            cameraMesh.AddLine({{verts[0].x, verts[0].y, verts[0].z}, {verts[4].x, verts[4].y, verts[4].z}, cameraColor});
+            cameraMesh.AddLine({{verts[1].x, verts[1].y, verts[1].z}, {verts[5].x, verts[5].y, verts[5].z}, cameraColor});
+            cameraMesh.AddLine({{verts[3].x, verts[3].y, verts[3].z}, {verts[7].x, verts[7].y, verts[7].z}, cameraColor});
+            cameraMesh.AddLine({{verts[2].x, verts[2].y, verts[2].z}, {verts[6].x, verts[6].y, verts[6].z}, cameraColor});
             cameraMesh.Apply();
 
             GameEditor->GetRender().AddDrawLines(&cameraMesh);
+        }
+
+        if (auto *transform = entity->GetComponent<Transform>(); transform != nullptr)
+        {
+            if (auto *ps = entity->GetComponent<ParticleSystem>(); ps != nullptr)
+            {
+                glm::vec3 particleColor = glm::vec3(0.0f, 1.0f, 0.0f);
+
+                particleMesh.ResetPrimitives();
+                glm::mat4 trans;
+                switch (ps->Shape)
+                {
+                case Emitter::Plane:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    particleMesh.AddPlane(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, particleColor, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    break;
+
+                case Emitter::Circle:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    particleMesh.AddCircle(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, particleColor, 32, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    break;
+
+                case Emitter::Sphere:
+                    particleMesh.AddSphere(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, particleColor, 32);
+                    break;
+
+                case Emitter::Hemisphere:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    particleMesh.AddCircle(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, particleColor, 32, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                    particleMesh.AddArc(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 180.0f, particleColor, 16);
+                    particleMesh.AddArc(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 180.0f, particleColor, 16, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    break;
+
+                case Emitter::Cone:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    particleMesh.AddCircle(glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, particleColor, 32, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    particleMesh.AddCircle(glm::vec3(0.0f, 1.0f, 0.0f), 1.5f, particleColor, 32, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    particleMesh.AddLine({glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.5f, 1.0f, 0.0f), particleColor});
+                    particleMesh.AddLine({glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(-1.5f, 1.0f, 0.0f), particleColor});
+                    particleMesh.AddLine({glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 1.5f), particleColor});
+                    particleMesh.AddLine({glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, -1.5f), particleColor});
+                    break;
+                }
+                particleMesh.Apply();
+
+                GameEditor->GetRender().AddDrawLines(&particleMesh, transform->GetMat());
+            }
+
+            if (auto *light = entity->GetComponent<LightSource>(); light != nullptr)
+            {
+                glm::vec3 lightColor = glm::vec3(0.96, 0.86, 0);
+
+                lightMesh.ResetPrimitives();
+                glm::mat4 trans;
+                f32 radius;
+                switch(light->Type)
+                {
+                case LightType::Directional:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    lightMesh.AddLine({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -2.0f, 0.0f), lightColor});
+                    lightMesh.AddCircle(glm::vec3(0.0f, 0.0f, 0.0f), 1.5f, lightColor, 48, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    break;
+
+                case LightType::Spot:
+                    trans = glm::mat4(1.0f);
+                    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                    radius = glm::tan(glm::radians(light->CutterOff)) * light->Radius;
+                    lightMesh.AddLine({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(radius, -light->Radius, 0.0f), lightColor});
+                    lightMesh.AddLine({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-radius, -light->Radius, 0.0f), lightColor});
+                    lightMesh.AddLine({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -light->Radius, radius), lightColor});
+                    lightMesh.AddLine({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -light->Radius, -radius), lightColor});
+                    lightMesh.AddCircle(glm::vec3(0.0f, -light->Radius, 0.0f), radius, lightColor, 48, glm::mat3(glm::vec3(trans[0]), glm::vec3(trans[1]), glm::vec3(trans[2])));
+                    break;
+
+                case LightType::Point:
+                    lightMesh.AddSphere(glm::vec3(0.0f, 0.0f, 0.0f), light->Radius, lightColor, 64);
+                    break;
+                }
+                lightMesh.Apply();
+
+                GameEditor->GetRender().AddDrawLines(&lightMesh, transform->GetMat());
+            }
         }
     }
 }

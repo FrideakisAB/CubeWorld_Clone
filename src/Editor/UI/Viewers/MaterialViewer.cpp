@@ -34,14 +34,28 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             }
         }
 
-        if (ImGui::TextHandleButton("Material", context, "Material", state, 16))
+        std::string asset;
+        auto dragCollector = [&](){
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+            {
+                std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                if (GameEngine->GetAssetsManager().GetAsset<Material>(str.data()) != nullptr)
+                {
+                    update = true;
+                    asset = str;
+                }
+                ImGui::EndDragDropTarget();
+            }
+        };
+
+        if (ImGui::TextHandleButton("Material", context, "Material", state, 16, dragCollector))
             ImGui::OpenPopup("AssetSelector");
 
-        std::string asset;
         auto isMaterialFunction = [](const AssetsHandle &handle) {
             return dynamic_cast<Material*>(handle.get()) != nullptr;
         };
-        update = ImGui::AssetSelectorPopup("AssetSelector", context, "Material", state, asset, isMaterialFunction);
+        if (ImGui::AssetSelectorPopup("AssetSelector", context, "Material", state, asset, isMaterialFunction))
+            update = true;
 
         if (update)
         {

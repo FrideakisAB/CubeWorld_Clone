@@ -24,6 +24,7 @@ Editor::Editor()
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
     windowsMenu.Windows["Log viewer"] = &logViewer;
     windowsMenu.Windows["Editor viewer"] = &editorViewer;
+    windowsMenu.Windows["Assets viewer"] = &assetsViewer;
     windowsMenu.Windows["Game window"] = gameWindow;
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
@@ -46,6 +47,7 @@ void Editor::DrawWindows()
     if (!IsActiveSimulate)
         ECS::ECS_Engine->UpdateWithoutSystems();
     CommandList.Update();
+    assetsViewer.Draw();
     sceneViewer.Draw();
     sceneEditor.Draw();
     logViewer.Draw();
