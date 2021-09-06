@@ -34,6 +34,7 @@ Engine::Engine()
     auto &assetsFactory = assetsManager->GetAssetsFactory();
     assetsFactory.Register<Mesh>();
     assetsFactory.Register<Texture>();
+    assetsFactory.Register<Material>();
 
     auto &CF = (*ECS::ECS_Engine->GetComponentFactory());
     CF.Register<Camera>();

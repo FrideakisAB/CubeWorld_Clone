@@ -8,6 +8,8 @@
 #include <boost/type_index.hpp>
 
 class AssetsFactory {
+    friend class AssetsViewer;
+
     class IAssetSet {
     public:
         virtual IAsset *Add() = 0;
@@ -23,7 +25,7 @@ class AssetsFactory {
         }
     };
 
-    using AstSetRegistry = std::unordered_map<std::string, IAssetSet *>;
+    using AstSetRegistry = std::unordered_map<std::string, std::pair<IAssetSet*, size_t>>;
 
 private:
     AstSetRegistry astSetRegistry;
@@ -33,8 +35,8 @@ public:
     {
         for (auto ar : astSetRegistry)
         {
-            delete ar.second;
-            ar.second = nullptr;
+            delete ar.second.first;
+            ar.second.first = nullptr;
         }
 
         astSetRegistry.clear();
@@ -46,14 +48,17 @@ public:
         std::string ASID = boost::typeindex::type_id<T>().pretty_name();
 
         if (astSetRegistry.find(ASID) == astSetRegistry.end())
-            astSetRegistry[ASID] = new AssetSet<T>();
+        {
+            astSetRegistry[ASID].first = new AssetSet<T>();
+            astSetRegistry[ASID].second = boost::typeindex::type_id<T>().hash_code();
+        }
 
         return ASID;
     }
 
     IAsset *Create(const std::string &name)
     {
-        return astSetRegistry[name]->Add();
+        return astSetRegistry[name].first->Add();
     }
 };
 
