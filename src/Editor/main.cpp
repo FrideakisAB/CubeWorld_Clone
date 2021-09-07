@@ -6,11 +6,11 @@
 #include <GLFW/glfw3.h>
 #include "Systems/RenderSystem.h"
 #include "ECS/util/Timer.h"
-
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "Editor/ImGui/imgui_impl_glfw.h"
 #include "Editor/ImGui/imgui_impl_opengl3.h"
+#include "Editor/ImGui/ImFileDialog.h"
 
 #include "Editor/ImGui/imgui_dock.h"
 #include "Editor/UI/SceneViewer.h"
@@ -94,6 +94,26 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
     ImGui_ImplOpenGL3_Init("#version 410");
 
     ImGui::InitDock();
+
+    ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+        GLuint tex;
+
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return (void*)tex;
+    };
+    ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
+        GLuint texID = (GLuint)tex;
+        glDeleteTextures(1, &texID);
+    };
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);

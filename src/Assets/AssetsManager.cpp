@@ -132,3 +132,12 @@ AssetsManager::AssetIterator AssetsManager::end() const noexcept
 {
     return assets.cend();
 }
+
+void AssetsManager::AddAsset(const std::string &name, const AssetsHandle &asset)
+{
+    if (assets.find(name) == assets.end())
+    {
+        asset->name = name;
+        assets[name] = asset;
+    }
+}

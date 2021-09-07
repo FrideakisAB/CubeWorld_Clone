@@ -2,8 +2,8 @@
 
 #include "Editor/Editor.h"
 #include "Components/Camera.h"
+#include "Editor/ImGui/imgui_custom.h"
 #include "Editor/Commands/ViewersCommands.h"
-
 
 void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 {
@@ -45,6 +45,62 @@ void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         if (item_current != static_cast<u8>(camera.Proj))
             update = true;
 
+        std::string context;
+        CustomTextState state;
+
+        if (!camera.IsValidSkybox())
+        {
+            if (camera.GetAsset())
+            {
+                context = camera.GetAsset()->GetName();
+                if (context.empty())
+                    context = "(custom)";
+                state = CustomTextState::Invalid;
+            }
+            else
+            {
+                context = "(no select)";
+                state = CustomTextState::None;
+            }
+        }
+        else
+        {
+            context = camera.GetAsset()->GetName();
+            state = CustomTextState::Global;
+            if (context.empty())
+            {
+                context = "(custom)";
+                state = CustomTextState::NoGlobal;
+            }
+        }
+
+        std::string asset;
+        auto dragCollector = [&](){
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+            {
+                std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                if (auto *tex = GameEngine->GetAssetsManager().GetAsset<Texture>(str.data()); tex != nullptr)
+                {
+                    if (tex->GetType() == TexType::TextureCube)
+                    {
+                        update = true;
+                        asset = str;
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+        };
+
+        if (ImGui::TextHandleButton("Skybox", context, "Mesh", state, 16, dragCollector))
+            ImGui::OpenPopup("SkyboxSelector");
+
+        auto isSamplerCubeFunction = [](const AssetsHandle &handle) {
+            auto *tex = dynamic_cast<Texture*>(handle.get());
+            return tex != nullptr && tex->GetType() == TexType::TextureCube;
+        };
+        if (ImGui::AssetSelectorPopup("SkyboxSelector", context, "Mesh", state, asset, isSamplerCubeFunction))
+            update = true;
+
         if(update)
         {
             if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
@@ -59,6 +115,9 @@ void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             camera.FarClip = farClip;
 
             camera.Proj = static_cast<Projection>((u8)item_current);
+
+            if (!asset.empty())
+                camera.SetSkybox(GameEngine->GetAssetsManager().GetAsset(asset));
         }
     }
     if (!closed)

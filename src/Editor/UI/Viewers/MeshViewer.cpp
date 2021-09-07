@@ -43,7 +43,6 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         }
 
         std::string asset;
-
         auto dragCollector = [&](){
             if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
             {
@@ -58,13 +57,13 @@ void MeshViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         };
 
         if (ImGui::TextHandleButton("Mesh", context, "Mesh", state, 16, dragCollector))
-            ImGui::OpenPopup("AssetSelector");
+            ImGui::OpenPopup("MeshSelector");
 
         auto isMeshFunction = [](const AssetsHandle &handle) {
             return dynamic_cast<Mesh*>(handle.get()) != nullptr;
         };
 
-        if (ImGui::AssetSelectorPopup("AssetSelector", context, "Mesh", state, asset, isMeshFunction))
+        if (ImGui::AssetSelectorPopup("MeshSelector", context, "Mesh", state, asset, isMeshFunction))
             update = true;
 
         if (update)

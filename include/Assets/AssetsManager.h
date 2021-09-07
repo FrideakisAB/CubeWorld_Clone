@@ -51,6 +51,8 @@ public:
         return {};
     }
 
+    void AddAsset(const std::string &name, const AssetsHandle &asset);
+
     bool SaveAsset(const std::string &name, const fs::path &path);
     bool RemoveAsset(const std::string &name);
     bool DeleteAsset(const std::string &name);

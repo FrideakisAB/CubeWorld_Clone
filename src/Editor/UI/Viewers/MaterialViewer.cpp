@@ -49,12 +49,12 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
         };
 
         if (ImGui::TextHandleButton("Material", context, "Material", state, 16, dragCollector))
-            ImGui::OpenPopup("AssetSelector");
+            ImGui::OpenPopup("MaterialSelector");
 
         auto isMaterialFunction = [](const AssetsHandle &handle) {
             return dynamic_cast<Material*>(handle.get()) != nullptr;
         };
-        if (ImGui::AssetSelectorPopup("AssetSelector", context, "Material", state, asset, isMaterialFunction))
+        if (ImGui::AssetSelectorPopup("MaterialSelector", context, "Material", state, asset, isMaterialFunction))
             update = true;
 
         if (update)
@@ -306,7 +306,25 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 texState = texContext.empty()? CustomTextState::NoGlobal : CustomTextState::Global;
                             }
 
-                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "Sampler1D", texState, 16))
+                            auto dragCollectorSampler = [&](){
+                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+                                {
+                                    std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                                    if (auto *tex = GameEngine->GetAssetsManager().GetAsset<Texture>(str.data()); tex != nullptr)
+                                    {
+                                        if (tex->GetType() == TexType::Texture1D)
+                                        {
+                                            update = true;
+                                            textureAsset = str;
+                                            paramValue.valueType = Utils::ShaderValue::Sampler1D;
+                                            paramName = parameter.name;
+                                        }
+                                    }
+                                    ImGui::EndDragDropTarget();
+                                }
+                            };
+
+                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "Sampler1D", texState, 16, dragCollectorSampler))
                                 ImGui::OpenPopup("Sampler1DSelector");
 
                             auto isSampler1DFunction = [](const AssetsHandle &handle) {
@@ -314,7 +332,11 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 return tex != nullptr && tex->GetType() == TexType::Texture1D;
                             };
                             if (ImGui::AssetSelectorPopup("Sampler1DSelector", texContext, "Sampler1D", texState, textureAsset, isSampler1DFunction))
+                            {
                                 update = true;
+                                paramValue.valueType = Utils::ShaderValue::Sampler1D;
+                                paramName = parameter.name;
+                            }
                         }
                             break;
 
@@ -331,7 +353,25 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 texState = texContext.empty()? CustomTextState::NoGlobal : CustomTextState::Global;
                             }
 
-                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "Sampler2D", texState, 16))
+                            auto dragCollectorSampler = [&](){
+                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+                                {
+                                    std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                                    if (auto *tex = GameEngine->GetAssetsManager().GetAsset<Texture>(str.data()); tex != nullptr)
+                                    {
+                                        if (tex->GetType() == TexType::Texture2D)
+                                        {
+                                            update = true;
+                                            textureAsset = str;
+                                            paramValue.valueType = Utils::ShaderValue::Sampler2D;
+                                            paramName = parameter.name;
+                                        }
+                                    }
+                                    ImGui::EndDragDropTarget();
+                                }
+                            };
+
+                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "Sampler2D", texState, 16, dragCollectorSampler))
                                 ImGui::OpenPopup("Sampler2DSelector");
 
                             auto isSampler2DFunction = [](const AssetsHandle &handle) {
@@ -339,7 +379,11 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 return tex != nullptr && tex->GetType() == TexType::Texture2D;
                             };
                             if (ImGui::AssetSelectorPopup("Sampler2DSelector", texContext, "Sampler2D", texState, textureAsset, isSampler2DFunction))
-                            update = true;
+                            {
+                                update = true;
+                                paramValue.valueType = Utils::ShaderValue::Sampler2D;
+                                paramName = parameter.name;
+                            }
                         }
                             break;
 
@@ -356,7 +400,25 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 texState = texContext.empty()? CustomTextState::NoGlobal : CustomTextState::Global;
                             }
 
-                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "SamplerCube", texState, 16))
+                            auto dragCollectorSampler = [&](){
+                                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+                                {
+                                    std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                                    if (auto *tex = GameEngine->GetAssetsManager().GetAsset<Texture>(str.data()); tex != nullptr)
+                                    {
+                                        if (tex->GetType() == TexType::TextureCube)
+                                        {
+                                            update = true;
+                                            textureAsset = str;
+                                            paramValue.valueType = Utils::ShaderValue::SamplerCube;
+                                            paramName = parameter.name;
+                                        }
+                                    }
+                                    ImGui::EndDragDropTarget();
+                                }
+                            };
+
+                            if (ImGui::TextHandleButton(Utils::ParseUniformName(parameter.name).c_str(), texContext, "SamplerCube", texState, 16, dragCollectorSampler))
                                 ImGui::OpenPopup("SamplerCubeSelector");
 
                             auto isSamplerCubeFunction = [](const AssetsHandle &handle) {
@@ -364,7 +426,11 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                                 return tex != nullptr && tex->GetType() == TexType::TextureCube;
                             };
                             if (ImGui::AssetSelectorPopup("SamplerCubeSelector", texContext, "SamplerCube", texState, textureAsset, isSamplerCubeFunction))
-                            update = true;
+                            {
+                                update = true;
+                                paramValue.valueType = Utils::ShaderValue::SamplerCube;
+                                paramName = parameter.name;
+                            }
                         }
                             break;
                         }

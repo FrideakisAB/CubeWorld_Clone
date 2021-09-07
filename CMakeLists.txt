@@ -127,9 +127,12 @@ set(Editor_Source
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
 	src/Editor/ImGui/imgui_custom.cpp
+	src/Editor/ImGui/ImFileDialog.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
 	src/Editor/ImGui/imgui_impl_opengl3.cpp
 	src/Editor/ImGui/imgui_color_gradient.cpp
+
+	src/Editor/Resources/TextureImporter.cpp
 
 	src/Editor/Commands/CommandList.cpp
 	src/Editor/Commands/EntityValidator.cpp

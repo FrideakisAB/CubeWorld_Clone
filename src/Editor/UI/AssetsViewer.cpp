@@ -1,7 +1,28 @@
 #include "Editor/UI/AssetsViewer.h"
 
 #include "Engine.h"
+#include <stb_image.h>
+#include <assimp/Importer.hpp>
 #include "Assets/AssetsManager.h"
+#include "Editor/ImGui/ImFileDialog.h"
+
+const std::string AssetsViewer::imageFilter = "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga;*.gif){.png,.jpg,.jpeg,.bmp,.tga,.gif},";
+
+AssetsViewer::AssetsViewer()
+{
+    Assimp::Importer importer;
+    modelFilter += "Model file (";
+    std::string tempExt;
+    importer.GetExtensionList(tempExt);
+    logger->Debug(tempExt);
+    modelFilter += tempExt;
+    modelFilter += "){";
+    std::replace(tempExt.begin(), tempExt.end(), ';', ',');
+    tempExt.erase(std::remove(tempExt.begin(), tempExt.end(), '*'), tempExt.end());
+    logger->Debug(tempExt);
+    modelFilter += tempExt;
+    modelFilter += "},";
+}
 
 void AssetsViewer::Draw()
 {
@@ -17,7 +38,7 @@ void AssetsViewer::Draw()
     if (ImGui::BeginDock("Assets viewer", &Active))
     {
         if (ImGui::Button("Import asset"))
-            ImGui::OpenPopup("ImportPopup");
+            ImGui::OpenPopup("Import asset window");
 
         ImGui::SameLine();
         ImGui::SetNextItemWidth(150.0f);
@@ -48,22 +69,55 @@ void AssetsViewer::Draw()
         }
         ImGui::EndChild();
 
-        ImVec2 center = ImGui::GetIO().DisplaySize;
-        center.x /= 2.0f;
-        center.y /= 2.0f;
-        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-        if (ImGui::BeginPopupModal("ImportPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
-        {
-            ImGui::Text("Import asset window");
-            ImGui::Separator();
-
-            if (ImGui::Button("Import", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-            ImGui::SetItemDefaultFocus();
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-            ImGui::EndPopup();
-        }
+        importAssetModal();
     }
     ImGui::EndDock();
+}
+
+void AssetsViewer::importAssetModal()
+{
+    ImVec2 center = ImGui::GetIO().DisplaySize;
+    center.x /= 2.0f;
+    center.y /= 2.0f;
+
+    bool isOpenTexturePopup = false;
+    ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
+    if (ImGui::BeginPopupModal("Import asset window", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    {
+        if (ImGui::Button("Import by file", ImVec2(150, 0)))
+            ifd::FileDialog::Instance().Open("AssetOpenDialog", "Open a asset", imageFilter + modelFilter + ".*");
+
+        if (ifd::FileDialog::Instance().IsDone("AssetOpenDialog"))
+        {
+            if (ifd::FileDialog::Instance().HasResult())
+            {
+                fs::path res = ifd::FileDialog::Instance().GetResult();
+                Assimp::Importer importer;
+                int x, y, comp;
+                if (stbi_info(res.string().c_str(), &x, &y, &comp))
+                {
+                    ImGui::CloseCurrentPopup();
+                    textureImporter.SetCurrentData(res.string(), x, y, comp);
+                    isOpenTexturePopup = true;
+                }
+                else if (importer.IsExtensionSupported(res.extension().string()))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            ifd::FileDialog::Instance().Close();
+        }
+
+        ImGui::Separator();
+
+        ImGui::SetItemDefaultFocus();
+        if (ImGui::Button("Cancel", ImVec2(150, 0)))
+            ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+    }
+
+    if (isOpenTexturePopup)
+        ImGui::OpenPopup("Import texture window");
+
+    textureImporter.ModalWindow("Import texture window");
 }
