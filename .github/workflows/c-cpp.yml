@@ -21,6 +21,6 @@ jobs:
         cd ${{ github.workspace }}
         mkdir build
         cd build
-        cmake --config Release --target CubeWorld_Editor -S ..
+        cmake -DCMAKE_BUILD_TYPE=Release -S ..
     - name: Build
       run: cd build && cmake --build .
