@@ -21,6 +21,6 @@ jobs:
         cd ${{ github.workspace }}
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -S ..
+        cmake -DCMAKE_BUILD_TYPE=Debug -S ..
     - name: Build
       run: cd build && cmake --build .
