@@ -21,6 +21,7 @@ jobs:
         cd ${{ github.workspace }}
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -S ..
+        conan remote add -i 0 conancenter https://center.conan.io
+        cmake --build .. --config Release --target CubeWorld_Editor
     - name: Build
       run: cd build && cmake --build .
