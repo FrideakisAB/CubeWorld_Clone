@@ -153,7 +153,7 @@ target_link_libraries(tests
 	CONAN_PKG::glew
 	CONAN_PKG::glfw
 	CONAN_PKG::assimp
-	CONAN_PKG::Catch2
+	CONAN_PKG::catch2
 	CONAN_PKG::nlohmann_json
 )
 
