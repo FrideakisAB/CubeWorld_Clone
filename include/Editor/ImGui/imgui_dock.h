@@ -22,8 +22,8 @@ namespace ImGui {
     IMGUI_API void EndDockspace();
     IMGUI_API void ShutdownDock();
     IMGUI_API void SetNextDock( const char* dock_panel , ImGuiDockSlot slot );
-    IMGUI_API bool BeginDock(const char* label, bool* opened = NULL, ImGuiWindowFlags extra_flags = 0);
+    IMGUI_API bool BeginDock(const char* label, bool* opened = NULL, ImGuiWindowFlags extraFlags = 0);
     IMGUI_API void EndDock();
-    IMGUI_API void DockDebugWindow(const char* dock_panel);
+    IMGUI_API void DockDebugWindow(const char* dockPanel);
     IMGUI_API void InitDock();
 };

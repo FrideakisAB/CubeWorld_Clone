@@ -298,11 +298,10 @@ namespace Tween {
 
 namespace ImGui
 {
-    bool Curve(const char *label, const ImVec2& size, const int maxpoints, glm::vec2 *points)
+    bool Curve(const char *label, const ImVec2& size, u32 maxPoints, glm::vec2 *points)
     {
         bool modified = false;
-        int i;
-        if (maxpoints < 2 || points == nullptr)
+        if (maxPoints < 2 || points == nullptr)
             return false;
 
         if (points[0].x < 0)
@@ -329,7 +328,8 @@ namespace ImGui
         const bool hovered = ItemHoverable(bb, id);
 
         int max = 0;
-        while (max < maxpoints && points[max].x >= 0) max++;
+        while (max < maxPoints && points[max].x >= 0)
+            ++max;
 
         int kill = 0;
         do
@@ -337,21 +337,19 @@ namespace ImGui
             if (kill)
             {
                 modified = true;
-                for (i = kill + 1; i < max; i++)
+                for (u32 i = kill + 1; i < max; ++i)
                 {
                     points[i - 1] = points[i];
                 }
-                max--;
+                --max;
                 points[max].x = -1;
                 kill = 0;
             }
 
-            for (i = 1; i < max - 1; i++)
+            for (u32 i = 1; i < max - 1; ++i)
             {
                 if (abs(points[i].x - points[i - 1].x) < 1 / 128.0)
-                {
                     kill = i;
-                }
             }
         }
         while (kill);
@@ -368,47 +366,50 @@ namespace ImGui
             {
                 modified = true;
                 ImVec2 pos2 = (g.IO.MousePos - bb.Min) / (bb.Max - bb.Min);
-                glm::vec2 pos = glm::vec2(pos2.x, pos2.y);
-                pos.y = 1 - pos.y;
+                glm::vec2 pos = glm::vec2(pos2.x, 1 - pos2.y);
 
                 int left = 0;
-                while (left < max && points[left].x < pos.x) left++;
-                if (left) left--;
+                while (left < max && points[left].x < pos.x)
+                    ++left;
+
+                if (left)
+                    --left;
 
                 glm::vec2 p = points[left] - pos;
                 float p1d = sqrt(p.x*p.x + p.y*p.y);
                 p = points[left+1] - pos;
                 float p2d = sqrt(p.x*p.x + p.y*p.y);
+
                 int sel = -1;
-                if (p1d < (1 / 16.0)) sel = left;
-                if (p2d < (1 / 16.0)) sel = left + 1;
+                if (p1d < (1 / 16.0))
+                    sel = left;
+                if (p2d < (1 / 16.0))
+                    sel = left + 1;
 
                 if (sel != -1)
-                {
                     points[sel] = pos;
-                }
-                else
+                else if (max < maxPoints - 1)
                 {
-                    if (max < maxpoints)
-                    {
-                        max++;
-                        for (i = max; i > left; i--)
-                        {
-                            points[i] = points[i - 1];
-                        }
-                        points[left + 1] = pos;
-                    }
-                    if (max < maxpoints)
-                        points[max].x = -1;
+                    ++max;
+                    for (u32 i = max; i > left && i > 1; --i)
+                        points[i] = points[i - 1];
+                    points[left + 1] = pos;
+                    points[max].x = -1;
                 }
 
                 // snap first/last to min/max
-                if( points[0].x < points[max - 1].x ) {
-                    points[0].x= 0;
-                    points[max - 1].x = 1;
-                } else {
-                    points[0].x= 1;
-                    points[max - 1].x = 0;
+                if (max <= maxPoints)
+                {
+                    if (points[0].x < points[max - 1].x)
+                    {
+                        points[0].x = 0;
+                        points[max - 1].x = 1;
+                    }
+                    else
+                    {
+                        points[0].x = 1;
+                        points[max - 1].x = 0;
+                    }
                 }
             }
         }
@@ -429,7 +430,7 @@ namespace ImGui
             ImVec2(bb.Max.x, bb.Min.y + ht / 4 * 3),
             GetColorU32(ImGuiCol_TextDisabled));
 
-        for (i = 0; i < 9; i++)
+        for (int i = 0; i < 9; ++i)
         {
             window->DrawList->AddLine(
                 ImVec2(bb.Min.x + (wd / 10) * (i + 1), bb.Min.y),
@@ -439,18 +440,19 @@ namespace ImGui
 
         // smooth curve
         enum { smoothness = 256 }; // the higher the smoother
-        for( i = 0; i <= (smoothness-1); ++i ) {
+        for (int i = 0; i <= (smoothness-1); ++i)
+        {
             float px = (i+0) / float(smoothness);
             float qx = (i+1) / float(smoothness);
-            float py = 1 - Curve::CurveValueSmooth(px, maxpoints, points);
-            float qy = 1 - Curve::CurveValueSmooth(qx, maxpoints, points);
+            float py = 1 - Curve::CurveValueSmooth(px, maxPoints, points);
+            float qy = 1 - Curve::CurveValueSmooth(qx, maxPoints, points);
             ImVec2 p( px * (bb.Max.x - bb.Min.x) + bb.Min.x, py * (bb.Max.y - bb.Min.y) + bb.Min.y);
             ImVec2 q( qx * (bb.Max.x - bb.Min.x) + bb.Min.x, qy * (bb.Max.y - bb.Min.y) + bb.Min.y);
             window->DrawList->AddLine(p, q, GetColorU32(ImGuiCol_PlotLines));
         } 
 
         // lines
-        for (i = 1; i < max; i++)
+        for (u32 i = 1; i < max; ++i)
         {
             ImVec2 a = ImVec2(points[i - 1].x, points[i - 1].y);
             ImVec2 b = ImVec2(points[i].x, points[i].y);
@@ -464,7 +466,7 @@ namespace ImGui
         if (hovered)
         {
             // control points
-            for (i = 0; i < max; i++)
+            for (u32 i = 0; i < max; ++i)
             {
                 ImVec2 p = ImVec2(points[i].x, points[i].y);
                 p.y = 1 - p.y;
@@ -476,10 +478,10 @@ namespace ImGui
         }
 
         // buttons; @todo: mirror, smooth, tessellate
-        if( ImGui::Button("Flip") ) {
-            for( i = 0; i < max; ++i) { 
+        if (ImGui::Button("Flip"))
+        {
+            for (u32 i = 0; i < max; ++i)
                 points[i].y = 1 - points[i].y;
-            }
             modified = true;
         }
         ImGui::SameLine();
@@ -531,15 +533,17 @@ namespace ImGui
             "Swing"
         };
         static int item = 0;
-        if( modified ) {
+        if (modified)
             item = 0;
-        }
-        if( ImGui::Combo("Ease type", &item, items, IM_ARRAYSIZE(items)) ) {
-            max = maxpoints;
-            if( item > 0 ) {
-                for( i = 0; i < max; ++i) { 
-                    points[i].x = i / float(max-1); 
-                    points[i].y = float( Tween::ease( item - 1, points[i].x ) );
+        if(ImGui::Combo("Ease type", &item, items, IM_ARRAYSIZE(items)))
+        {
+            max = maxPoints;
+            if (item > 0)
+            {
+                for (u32 i = 0; i < max; ++i)
+                {
+                    points[i].x = i / float(max - 1);
+                    points[i].y = float(Tween::ease(item - 1, points[i].x));
                 }
                 modified = true;
             }
@@ -548,23 +552,23 @@ namespace ImGui
         char buf[128];
         const char *str = label;
 
-        if( hovered ) {
+        if (hovered)
+        {
             ImVec2 pos = (g.IO.MousePos - bb.Min) / (bb.Max - bb.Min);
             pos.y = 1 - pos.y;              
 
-            sprintf(buf, "%s (%f,%f)", label, pos.x, pos.y );
+            sprintf(buf, "%s (%f,%f; free points: %u)", label, pos.x, pos.y, maxPoints - max - 1);
             str = buf;
         }
 
-        RenderTextClipped(ImVec2(bb.Min.x, bb.Min.y + style.FramePadding.y), bb.Max, str, NULL, NULL, ImVec2(0.5f,0));
+        RenderTextClipped(ImVec2(bb.Min.x, bb.Min.y + style.FramePadding.y), bb.Max, str, nullptr, nullptr, ImVec2(0.5f,0));
 
         return modified;
     }
 	
-	bool CurveButton(const char *label, unsigned int height, int maxpoints, glm::vec2* points)
+	bool CurveButton(const char *label, u32 height, u32 maxPoints, glm::vec2* points)
 	{
-        int i;
-        if (maxpoints < 2 || points == nullptr)
+        if (maxPoints < 2 || points == nullptr)
             return false;
 
         if (points[0].x < 0)
@@ -592,11 +596,12 @@ namespace ImGui
             return false;
 
         const bool hovered = ItemHoverable(bb, id);
-		if(hovered && g.IO.MouseDown[0])
+		if (hovered && g.IO.MouseDown[0])
 			clicked = true;
 
-        int max = 0;
-        while (max < maxpoints && points[max].x >= 0) max++;
+        u32 max = 0;
+        while (max < maxPoints && points[max].x >= 0)
+            ++max;
 
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
 
@@ -605,19 +610,20 @@ namespace ImGui
 		
         // smooth curve
         enum { smoothness = 256 }; // the higher the smoother
-        for(i = 0; i <= (smoothness - 1); ++i) {
+        for (u32 i = 0; i <= (smoothness - 1); ++i)
+        {
             float px = (i+0) / float(smoothness);
             float qx = (i+1) / float(smoothness);
-            float py = 1 - Curve::CurveValueSmooth(px, maxpoints, points);
-            float qy = 1 - Curve::CurveValueSmooth(qx, maxpoints, points);
-            ImVec2 p( px * (bb.Max.x - bb.Min.x) + bb.Min.x, py * (bb.Max.y - bb.Min.y) + bb.Min.y);
-            ImVec2 q( qx * (bb.Max.x - bb.Min.x) + bb.Min.x, qy * (bb.Max.y - bb.Min.y) + bb.Min.y);
+            float py = 1 - Curve::CurveValueSmooth(px, maxPoints, points);
+            float qy = 1 - Curve::CurveValueSmooth(qx, maxPoints, points);
+            ImVec2 p(px * (bb.Max.x - bb.Min.x) + bb.Min.x, py * (bb.Max.y - bb.Min.y) + bb.Min.y);
+            ImVec2 q(qx * (bb.Max.x - bb.Min.x) + bb.Min.x, qy * (bb.Max.y - bb.Min.y) + bb.Min.y);
             window->DrawList->AddLine(p, q, GetColorU32(ImGuiCol_PlotLines));
-        } 
+        }
 		
 		ImGui::SameLine();
 		ImGui::Text(label);
 
         return clicked;
 	}
-};
+}

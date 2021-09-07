@@ -234,7 +234,8 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             std::copy(ps.SizeOverLifetime.Points, ps.SizeOverLifetime.Points + 10, copyPoints);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                if (ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints))
+                    update = true;
 
                 ImGui::EndPopup();
             }

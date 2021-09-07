@@ -44,14 +44,14 @@ void Curve::Spline(const float *key, int num, int dim, float t, float *v)
     }
 }
 
-f32 Curve::CurveValue(f32 position, u8 maxPoints, const glm::vec2 *points)
+f32 Curve::CurveValue(f32 position, u32 maxPoints, const glm::vec2 *points)
 {
     if(maxPoints >= 2 && points != nullptr)
     {
         if (position < 0)
             return points[0].y;
 
-        u8 left = 0;
+        u32 left = 0;
         while(left < maxPoints && points[left].x < position && points[left].x != -1)
             left++;
 
@@ -69,7 +69,7 @@ f32 Curve::CurveValue(f32 position, u8 maxPoints, const glm::vec2 *points)
     return 0;
 }
 
-f32 Curve::CurveValueSmooth(f32 position, i32 maxPoints, const glm::vec2 *points)
+f32 Curve::CurveValueSmooth(f32 position, u32 maxPoints, const glm::vec2 *points)
 {
     if (maxPoints >= 2 && points != nullptr)
     {
@@ -79,13 +79,13 @@ f32 Curve::CurveValueSmooth(f32 position, i32 maxPoints, const glm::vec2 *points
         auto *input = new f32[maxPoints * 2];
         float output[4];
 
-        for (i32 i = 0; i < maxPoints; ++i)
+        for (u32 i = 0; i < maxPoints; ++i)
         {
             input[i * 2 + 0] = points[i].x;
             input[i * 2 + 1] = points[i].y;
         }
 
-        Curve::Spline(input, maxPoints, 1, position, output);
+        Curve::Spline(input, static_cast<int>(maxPoints), 1, position, output);
 
         delete[] input;
         return output[0];

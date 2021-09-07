@@ -2,6 +2,7 @@
 #define IMGUI_CURVE_H
 
 #include "imgui.h"
+#include "Platform.h"
 #include <glm/glm.hpp>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -11,8 +12,8 @@
 
 namespace ImGui
 {
-    bool Curve(const char *label, const ImVec2& size, int maxpoints, glm::vec2 *points);
-	bool CurveButton(const char *label, unsigned int size, int maxpoints, glm::vec2 *points);
+    bool Curve(const char *label, const ImVec2& size, u32 maxPoints, glm::vec2 *points);
+	bool CurveButton(const char *label, u32 size, u32 maxPoints, glm::vec2 *points);
 };
 
 namespace Tween {
