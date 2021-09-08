@@ -12,6 +12,7 @@
 #include "Editor/UI/EditorViewer.h"
 #include "Editor/Render/EditorRender.h"
 #include "Editor/Commands/CommandList.h"
+#include "Editor/Resources/AssetsWriter.h"
 
 class Editor {
 private:
@@ -43,6 +44,7 @@ private:
     WindowsMenu windowsMenu;
     GameWindow *gameWindow;
     EditorRender render;
+    AssetsWriter assetsWriter;
 
 public:
     Editor();
@@ -51,6 +53,7 @@ public:
     void DrawWindows();
 
     [[nodiscard]] EditorRender &GetRender() noexcept { return render; }
+    [[nodiscard]] AssetsWriter &GetAssetsWriter() noexcept { return assetsWriter; }
 
     bool IsActiveSimulate = false;
     ECS::EntityId Selected = ECS::INVALID_ENTITY_ID;

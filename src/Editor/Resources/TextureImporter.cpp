@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "Engine.h"
 #include "stb_image.h"
+#include "Editor/Editor.h"
 #include "Render/Texture.h"
 #include "Assets/AssetsManager.h"
 #include "Editor/ImGui/ImFileDialog.h"
@@ -183,6 +184,7 @@ void TextureImporter::ModalWindow(const std::string &name)
             texturePtr->SetWrapS(wrapS);
             texturePtr->SetWrapT(wrapT);
             texturePtr->SetWrapR(wrapR);
+            texturePtr->SetMipmap(mipmaps);
             switch (components)
             {
             case 1:
@@ -214,6 +216,19 @@ void TextureImporter::ModalWindow(const std::string &name)
                 texturePtr->SetSrc(src);
             }
             texturePtr->Apply();
+            texturePtr->RenderUpdate();
+            auto deleter = [](const AssetsHandle &handle){
+                auto *texture = static_cast<Texture*>(handle.get());
+                for (u32 i = 0; i < 6; ++i)
+                {
+                    if (texture->GetSrcCubeTexture(i) != nullptr)
+                    {
+                        stbi_image_free(texture->GetSrcCubeTexture(i));
+                        texture->SetSrcCubeTexture(nullptr, i);
+                    }
+                }
+            };
+            GameEditor->GetAssetsWriter().AddAsset(texture, deleter);
 
             GameEngine->GetAssetsManager().AddAsset(assetName, texture);
             ImGui::CloseCurrentPopup();

@@ -1,6 +1,7 @@
 #include "Render/Texture.h"
 
 #include "Render/GLUtils.h"
+#include "stb_image_write.h"
 
 Texture::Texture(const Texture &texture)
     : IAsset(true), SamplerObject(texture)
@@ -200,6 +201,8 @@ json Texture::SerializeObj()
 {
     json data;
 
+    data["nameType"] = boost::typeindex::type_id<Texture>().pretty_name();
+
     data["whd"] = {whd.x, whd.y, whd.z};
 
     data["wrapS"] = static_cast<u8>(wrapS);
@@ -229,7 +232,7 @@ void Texture::UnSerializeObj(const json &j)
 
     mipmaps = j["mipmaps"];
 
-    applyRequire = true;
+    Apply();
 }
 
 Texture &Texture::operator=(const Texture &texture)
@@ -268,8 +271,6 @@ void Texture::SerializeBin(std::ofstream &file)
 {
     if (file.is_open())
     {
-        file << static_cast<u8>(tt);
-
         u8 pixelSize;
         switch(type)
         {
@@ -324,11 +325,8 @@ void Texture::UnSerializeBin(std::ifstream &file)
 {
     if (file.is_open())
     {
-        u8 texType; file >> texType;
-        tt = static_cast<TexType>(texType);
-
         u8 pixelSize;
-        switch(type)
+        switch (type)
         {
         case TexDataType::R: [[fallthrough]];
         case TexDataType::Depth:

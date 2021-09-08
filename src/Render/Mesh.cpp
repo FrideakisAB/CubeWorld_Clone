@@ -260,6 +260,8 @@ json Mesh::SerializeObj()
 {
     json data;
 
+    data["nameType"] = boost::typeindex::type_id<Mesh>().pretty_name();
+
     if (vertices != nullptr && indices != nullptr)
     {
         data["vertCount"] = vertCount;

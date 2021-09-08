@@ -75,7 +75,7 @@ public:
         return boost::typeindex::type_id<Texture>().hash_code();
     }
 
-    [[nodiscard]] IAsset* Clone() const final;
+    [[nodiscard]] IAsset *Clone() const final;
 
     [[nodiscard]] json SerializeObj() final;
     void UnSerializeObj(const json& j) final;

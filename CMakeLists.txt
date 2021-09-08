@@ -132,6 +132,7 @@ set(Editor_Source
 	src/Editor/ImGui/imgui_impl_opengl3.cpp
 	src/Editor/ImGui/imgui_color_gradient.cpp
 
+	src/Editor/Resources/AssetsWriter.cpp
 	src/Editor/Resources/TextureImporter.cpp
 
 	src/Editor/Commands/CommandList.cpp

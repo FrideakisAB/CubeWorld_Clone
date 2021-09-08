@@ -174,8 +174,8 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     ImGui::ShutdownDock();
 
-    delete GameEngine;
     delete GameEditor;
+    delete GameEngine;
     glfwTerminate();
     delete logger;
 

@@ -12,6 +12,8 @@ json Material::SerializeObj()
 {
     json data;
 
+    data["nameType"] = boost::typeindex::type_id<Material>().pretty_name();
+
     data["shader_name"] = Shader;
     data["uniforms_map"] = {};
     data["samplers_map"] = {};

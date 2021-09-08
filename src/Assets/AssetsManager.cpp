@@ -29,7 +29,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
         json assetData = json_utils::TryParse(Utils::FileToString(std::ifstream(staticResources[name][0].get<std::string>())));
 
         auto *asset = assetsFactory.Create(assetData["nameType"].get<std::string>());
-        asset->UnSerializeObj(assetData["data"]);
+        asset->UnSerializeObj(assetData);
         if (asset->IsBinaryNeeded() && !staticResources[name][1].get<std::string>().empty())
         {
             std::ifstream file = std::ifstream(staticResources[name][1].get<std::string>());
@@ -50,8 +50,8 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
     {
         json assetData = json_utils::TryParse(Utils::FileToString(std::ifstream(dynamicResources[name][0].get<std::string>())));
 
-        auto* asset = assetsFactory.Create(assetData["nameType"].get<std::string>());
-        asset->UnSerializeObj(assetData["data"]);
+        auto *asset = assetsFactory.Create(assetData["nameType"].get<std::string>());
+        asset->UnSerializeObj(assetData);
         if (asset->IsBinaryNeeded() && !dynamicResources[name][1].get<std::string>().empty())
         {
             std::ifstream file = std::ifstream(dynamicResources[name][1].get<std::string>());
