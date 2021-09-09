@@ -51,7 +51,7 @@ void Mesh::SubmitData(DrawData &drawData)
             apply = false;
         }
 
-        if (isStatic)
+        if (IsStatic)
         {
             delete[] vertices;
             delete[] indices;
@@ -75,7 +75,6 @@ Mesh::Mesh()
 {
     needCreateVertices = true;
     needCreateIndices = true;
-    isStatic = false;
     apply = false;
 }
 
@@ -84,7 +83,6 @@ Mesh::Mesh(Mesh::Vertex *vertices, u32 vertCount, u32 *indices, u32 indCount, Dr
 {
     needCreateVertices = true;
     needCreateIndices = true;
-    isStatic = false;
     apply = false;
 }
 
@@ -93,7 +91,6 @@ Mesh::Mesh(const Mesh &mesh)
 {
     needCreateVertices = true;
     needCreateIndices = true;
-    isStatic = false;
     apply = false;
 
     vertCount = mesh.vertCount;
@@ -119,7 +116,7 @@ Mesh::Mesh(Mesh &&mesh) noexcept
 
     needCreateVertices = mesh.needCreateVertices;
     needCreateIndices = mesh.needCreateIndices;
-    isStatic = mesh.isStatic;
+    IsStatic = mesh.IsStatic;
     apply = mesh.apply;
 }
 
@@ -272,7 +269,7 @@ json Mesh::SerializeObj()
         data["vertCount"] = 0;
         data["indCount"] = 0;
     }
-    data["isStatic"] = (bool)isStatic;
+    data["isStatic"] = IsStatic;
 
     return data;
 }
@@ -281,7 +278,7 @@ void Mesh::UnSerializeObj(const json &j)
 {
     vertCount = j["vertCount"];
     indCount = j["indCount"];
-    isStatic = j["isStatic"].get<bool>();
+    IsStatic = j["isStatic"].get<bool>();
 }
 
 void Mesh::SerializeBin(std::ofstream &file)
@@ -308,11 +305,6 @@ void Mesh::UnSerializeBin(std::ifstream &file)
 void Mesh::Apply() noexcept
 {
     apply = true;
-}
-
-void Mesh::SetStatic(bool active) noexcept
-{
-    isStatic = active;
 }
 
 void Mesh::Recreate() noexcept

@@ -32,7 +32,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
         asset->UnSerializeObj(assetData);
         if (asset->IsBinaryNeeded() && !staticResources[name][1].get<std::string>().empty())
         {
-            std::ifstream file = std::ifstream(staticResources[name][1].get<std::string>());
+            std::ifstream file = std::ifstream(staticResources[name][1].get<std::string>(), std::ios::binary);
             if (file.is_open())
             {
                 asset->UnSerializeBin(file);
@@ -54,7 +54,7 @@ AssetsHandle AssetsManager::GetAsset(const std::string &name)
         asset->UnSerializeObj(assetData);
         if (asset->IsBinaryNeeded() && !dynamicResources[name][1].get<std::string>().empty())
         {
-            std::ifstream file = std::ifstream(dynamicResources[name][1].get<std::string>());
+            std::ifstream file = std::ifstream(dynamicResources[name][1].get<std::string>(), std::ios::binary);
             if (file.is_open())
             {
                 asset->UnSerializeBin(file);
@@ -76,7 +76,7 @@ bool AssetsManager::SaveAsset(const std::string &name, const fs::path &path)
     if (auto It = assets.find(name); It != assets.end() && It->second->IsDynamic())
     {
         dynamicResources[name] = {path.string(), ""};
-        std::ofstream file = std::ofstream(path.string(), std::ios_base::trunc);
+        std::ofstream file = std::ofstream(path.string(), std::ios::trunc);
         if (file.is_open())
         {
             file << It->second->SerializeObj().dump(4);
@@ -84,7 +84,8 @@ bool AssetsManager::SaveAsset(const std::string &name, const fs::path &path)
 
             if (It->second->IsBinaryNeeded())
             {
-                file.open(path.string() + ".bin", std::ios_base::trunc);
+                dynamicResources[name][1] = path.string() + ".bin";
+                file.open(dynamicResources[name][1].get<std::string>(), std::ios::trunc | std::ios::binary);
                 if (file.is_open())
                 {
                     It->second->SerializeBin(file);

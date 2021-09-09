@@ -1,7 +1,6 @@
 #include "Render/Texture.h"
 
 #include "Render/GLUtils.h"
-#include "stb_image_write.h"
 
 Texture::Texture(const Texture &texture)
     : IAsset(true), SamplerObject(texture)
@@ -14,6 +13,7 @@ Texture::Texture(const Texture &texture)
     tt = texture.tt;
     type = texture.type;
     mipmaps = texture.mipmaps;
+    IsStatic = texture.IsStatic;
 }
 
 Texture::Texture(Texture &&texture) noexcept
@@ -28,6 +28,7 @@ Texture::Texture(Texture &&texture) noexcept
     type = texture.type;
     mipmaps = texture.mipmaps;
     applyRequire = texture.applyRequire;
+    IsStatic = texture.IsStatic;
 
     for (u8 i = 0; i < 6; ++i)
         std::swap(src[i], texture.src[i]);
@@ -178,6 +179,15 @@ void Texture::SubmitData(SamplerData &samplerData)
             break;
         }
 
+        if (IsStatic)
+        {
+            for (auto &source : src)
+            {
+                delete[] source;
+                source = nullptr;
+            }
+        }
+
         samplerData.Handle = texture;
         samplerData.TextureDataType = type;
         samplerData.TextureType = tt;
@@ -214,6 +224,7 @@ json Texture::SerializeObj()
     data["type"] = static_cast<u8>(type);
 
     data["mipmaps"] = mipmaps;
+    data["isStatic"] = IsStatic;
 
     return data;
 }
@@ -231,6 +242,7 @@ void Texture::UnSerializeObj(const json &j)
     type = static_cast<TexDataType>(j["type"].get<u8>());
 
     mipmaps = j["mipmaps"];
+    IsStatic = j["isStatic"];
 
     Apply();
 }
@@ -245,6 +257,7 @@ Texture &Texture::operator=(const Texture &texture)
     tt = texture.tt;
     type = texture.type;
     mipmaps = texture.mipmaps;
+    IsStatic = texture.IsStatic;
 
     return *this;
 }
@@ -260,6 +273,7 @@ Texture &Texture::operator=(Texture &&texture) noexcept
     type = texture.type;
     mipmaps = texture.mipmaps;
     applyRequire = texture.applyRequire;
+    IsStatic = texture.IsStatic;
 
     for (u8 i = 0; i < 6; ++i)
         std::swap(src[i], texture.src[i]);
@@ -271,7 +285,7 @@ void Texture::SerializeBin(std::ofstream &file)
 {
     if (file.is_open())
     {
-        u8 pixelSize;
+        u32 pixelSize;
         switch(type)
         {
         case TexDataType::R: [[fallthrough]];
@@ -296,6 +310,11 @@ void Texture::SerializeBin(std::ofstream &file)
             pixelSize = 4;
             break;
 
+        case TexDataType::RGB16: [[fallthrough]];
+        case TexDataType::RGB16F:
+            pixelSize = 6;
+            break;
+
         case TexDataType::RGF: [[fallthrough]];
         case TexDataType::RGBA16F: [[fallthrough]];
         case TexDataType::RGBA16:
@@ -309,14 +328,10 @@ void Texture::SerializeBin(std::ofstream &file)
         case TexDataType::RGBAF:
             pixelSize = 16;
             break;
-        case TexDataType::RGB16: [[fallthrough]];
-        case TexDataType::RGB16F:
-            pixelSize = 6;
-            break;
         }
 
         for (auto &i : src)
-            if(i != nullptr)
+            if (i != nullptr)
                 file.write(reinterpret_cast<char*>(i), whd.x * whd.y * pixelSize);
     }
 }
@@ -325,7 +340,7 @@ void Texture::UnSerializeBin(std::ifstream &file)
 {
     if (file.is_open())
     {
-        u8 pixelSize;
+        u32 pixelSize;
         switch (type)
         {
         case TexDataType::R: [[fallthrough]];
@@ -350,6 +365,11 @@ void Texture::UnSerializeBin(std::ifstream &file)
             pixelSize = 4;
             break;
 
+        case TexDataType::RGB16: [[fallthrough]];
+        case TexDataType::RGB16F:
+            pixelSize = 6;
+            break;
+
         case TexDataType::RGF: [[fallthrough]];
         case TexDataType::RGBA16F: [[fallthrough]];
         case TexDataType::RGBA16:
@@ -362,10 +382,6 @@ void Texture::UnSerializeBin(std::ifstream &file)
 
         case TexDataType::RGBAF:
             pixelSize = 16;
-            break;
-        case TexDataType::RGB16: [[fallthrough]];
-        case TexDataType::RGB16F:
-            pixelSize = 6;
             break;
         }
 

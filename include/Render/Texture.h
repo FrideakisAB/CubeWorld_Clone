@@ -82,6 +82,8 @@ public:
 
     void SerializeBin(std::ofstream &file) final;
     void UnSerializeBin(std::ifstream &file) final;
+
+    bool IsStatic = false;
 };
 
 #endif

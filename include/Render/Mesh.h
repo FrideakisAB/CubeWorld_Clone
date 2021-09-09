@@ -28,9 +28,8 @@ private:
     u32 VAO = 0, VBO = 0, EBO = 0;
     u8 needCreateVertices : 1;
     u8 needCreateIndices : 1;
-    u8 isStatic : 1;
     u8 apply : 1;
-    u8 reserved : 4;
+    u8 reserved : 5;
 
     void createMesh();
 
@@ -52,9 +51,6 @@ public:
     void SetVertices(Vertex *vertices, u32 vertCount) noexcept;
     void SetIndices(u32 *indices, u32 indCount) noexcept;
 
-    [[nodiscard]] bool IsStatic() const noexcept { return isStatic; }
-    void SetStatic(bool active) noexcept;
-
     void CalculateNormals();
 
     [[nodiscard]] size_t GetTypeID() const noexcept final
@@ -74,6 +70,7 @@ public:
     void UnSerializeBin(std::ifstream &file) final;
 
     DrawType MeshDrawType = DrawType::Static;
+    bool IsStatic = false;
 };
 
 #endif

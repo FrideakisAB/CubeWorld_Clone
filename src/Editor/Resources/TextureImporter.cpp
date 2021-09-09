@@ -217,6 +217,9 @@ void TextureImporter::ModalWindow(const std::string &name)
             }
             texturePtr->Apply();
             texturePtr->RenderUpdate();
+            texturePtr->IsStatic = true;
+
+            GameEngine->GetAssetsManager().AddAsset(assetName, texture);
             auto deleter = [](const AssetsHandle &handle){
                 auto *texture = static_cast<Texture*>(handle.get());
                 for (u32 i = 0; i < 6; ++i)
@@ -229,8 +232,6 @@ void TextureImporter::ModalWindow(const std::string &name)
                 }
             };
             GameEditor->GetAssetsWriter().AddAsset(texture, deleter);
-
-            GameEngine->GetAssetsManager().AddAsset(assetName, texture);
             ImGui::CloseCurrentPopup();
         }
 
