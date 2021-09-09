@@ -1,5 +1,6 @@
 #include "Editor/ImGui/imgui_curve.h"
 
+#include <algorithm>
 #include "Utils/Curve.h"
 
 namespace Tween {
@@ -313,9 +314,9 @@ namespace ImGui
             points[2].x = -1;
         }
 
-        ImGuiWindow* window = GetCurrentWindow();
-        ImGuiContext& g = *GImGui;
-        const ImGuiStyle& style = g.Style;
+        ImGuiWindow *window = GetCurrentWindow();
+        ImGuiContext &g = *GImGui;
+        const ImGuiStyle &style = g.Style;
         const ImGuiID id = window->GetID(label);
         if (window->SkipItems)
             return false;
@@ -331,16 +332,14 @@ namespace ImGui
         while (max < maxPoints && points[max].x >= 0)
             ++max;
 
-        int kill = 0;
+        u32 kill = 0;
         do
         {
             if (kill)
             {
                 modified = true;
                 for (u32 i = kill + 1; i < max; ++i)
-                {
                     points[i - 1] = points[i];
-                }
                 --max;
                 points[max].x = -1;
                 kill = 0;
@@ -388,13 +387,34 @@ namespace ImGui
 
                 if (sel != -1)
                     points[sel] = pos;
-                else if (max < maxPoints - 1)
+                else
                 {
-                    ++max;
-                    for (u32 i = max; i > left && i > 1; --i)
-                        points[i] = points[i - 1];
-                    points[left + 1] = pos;
-                    points[max].x = -1;
+                    if (max < maxPoints)
+                    {
+                        ++max;
+                        for (u32 i = max - 1; i > left && i > 1; --i)
+                            points[i] = points[i - 1];
+                        points[left + 1] = pos;
+                        if (max < maxPoints)
+                            points[max].x = -1;
+                    }
+                    else
+                    {
+                        auto nearPointsIt = std::adjacent_find(points, points + 10, [=](const glm::vec2 &left, const glm::vec2 &right){
+                            return left.x <= pos.x && right.x >= pos.x;
+                        });
+
+                        if (nearPointsIt != points + 10)
+                        {
+                            f32 leftDiff = pos.x - nearPointsIt[0].x;
+                            f32 rightDiff = nearPointsIt[1].x - pos.x;
+
+                            if (leftDiff < rightDiff)
+                                nearPointsIt[0] = pos;
+                            else
+                                nearPointsIt[1] = pos;
+                        }
+                    }
                 }
 
                 // snap first/last to min/max
@@ -557,7 +577,8 @@ namespace ImGui
             ImVec2 pos = (g.IO.MousePos - bb.Min) / (bb.Max - bb.Min);
             pos.y = 1 - pos.y;              
 
-            sprintf(buf, "%s (%f,%f; free points: %u)", label, pos.x, pos.y, maxPoints - max - 1);
+            int freePoints = maxPoints - ImClamp(max, 0, 10);
+            sprintf(buf, "%s (%f,%f; free points: %i)", label, pos.x, pos.y, freePoints);
             str = buf;
         }
 
