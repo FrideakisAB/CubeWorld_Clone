@@ -37,7 +37,7 @@ void TextureImporter::ModalWindow(const std::string &name)
     center.y /= 2.0f;
 
     ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
-    if (ImGui::BeginPopupModal("Import texture window", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    if (ImGui::BeginPopupModal(name.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
         ImGui::Text("Path: %s", currentPath.c_str());
         ImGui::Text("Width:"); ImGui::SameLine();
@@ -162,7 +162,7 @@ void TextureImporter::ModalWindow(const std::string &name)
             label += "(Uniq)";
 
         char buffer[256] = {0};
-        if(assetName.size() < 256)
+        if (assetName.size() < 256)
             std::copy(assetName.begin(), assetName.end(), buffer);
         ImGui::InputText(label.c_str(), buffer, IM_ARRAYSIZE(buffer));
         assetName = buffer;

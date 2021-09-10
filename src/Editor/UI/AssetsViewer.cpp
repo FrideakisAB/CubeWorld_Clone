@@ -80,7 +80,7 @@ void AssetsViewer::importAssetModal()
     center.x /= 2.0f;
     center.y /= 2.0f;
 
-    bool isOpenTexturePopup = false;
+    bool isOpenTexturePopup = false, isOpenModelPopup = false;
     ImGui::SetNextWindowPos(center, 0, ImVec2(0.5f, 0.5f));
     if (ImGui::BeginPopupModal("Import asset window", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
     {
@@ -103,6 +103,8 @@ void AssetsViewer::importAssetModal()
                 else if (importer.IsExtensionSupported(res.extension().string()))
                 {
                     ImGui::CloseCurrentPopup();
+                    modelImporter.SetCurrentData(res.string());
+                    isOpenModelPopup = true;
                 }
             }
             ifd::FileDialog::Instance().Close();
@@ -118,6 +120,9 @@ void AssetsViewer::importAssetModal()
 
     if (isOpenTexturePopup)
         ImGui::OpenPopup("Import texture window");
+    else if (isOpenModelPopup)
+        ImGui::OpenPopup("Import model window");
 
+    modelImporter.ModalWindow("Import model window");
     textureImporter.ModalWindow("Import texture window");
 }

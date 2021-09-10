@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Editor/UI/IEditorWindow.h"
+#include "Editor/Resources/ModelImporter.h"
 #include "Editor/Resources/TextureImporter.h"
 
 class AssetsViewer final : public IEditorWindow {
@@ -17,6 +18,7 @@ private:
     std::string modelFilter;
 
     void importAssetModal();
+    ModelImporter modelImporter;
     TextureImporter textureImporter;
 
 public:
