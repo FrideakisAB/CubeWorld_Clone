@@ -87,7 +87,8 @@ IAsset *GameScene::Clone() const
 
 void GameScene::RemoveObject(ECS::EntityId eid)
 {
-    gameObjects.erase(gameObjects.find(eid));
+    if (auto It = gameObjects.find(eid); It != gameObjects.end())
+        gameObjects.erase(It);
 }
 
 void GameScene::Validate(ECS::EntityId eid, GameObject *gameObject)
