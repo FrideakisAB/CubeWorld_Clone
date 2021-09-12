@@ -36,10 +36,10 @@ namespace ECS {
         IEntity();
         virtual ~IEntity() noexcept = default;
 
-        json SerializeComponents();
+        [[nodiscard]] json SerializeComponents() const;
         void UnSerializeComponents(const json &j);
 
-        json SerializeObj() override;
+        [[nodiscard]] json SerializeObj() const override;
         void UnSerializeObj(const json &j) override;
 
         template<class T>

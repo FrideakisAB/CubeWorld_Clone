@@ -85,7 +85,7 @@ void Gradient::RefreshCache()
         computeColorAt(f32(i) / (CacheSize - 1.0f), &cachedValues[i]);
 }
 
-json Gradient::SerializeObj()
+json Gradient::SerializeObj() const
 {
     json data;
 

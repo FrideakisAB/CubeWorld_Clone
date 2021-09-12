@@ -8,7 +8,7 @@ IAsset *Material::Clone() const
     return new Material(std::cref(*this));
 }
 
-json Material::SerializeObj()
+json Material::SerializeObj() const
 {
     json data;
 
@@ -64,7 +64,7 @@ void MaterialComponent::SetMaterial(const AssetsHandle &materialHandle)
     }
 }
 
-json MaterialComponent::SerializeObj()
+json MaterialComponent::SerializeObj() const
 {
     json data;
 

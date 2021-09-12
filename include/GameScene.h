@@ -39,7 +39,7 @@ public:
 
     [[nodiscard]] IAsset *Clone() const final;
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 };
 

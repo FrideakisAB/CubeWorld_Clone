@@ -36,7 +36,7 @@ public:
     inline AssetsHandle &GetAsset() { return skyboxHandle; }
     [[nodiscard]] Texture &GetSkybox() const noexcept { return *skybox; }
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 };
 

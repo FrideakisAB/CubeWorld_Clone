@@ -4,6 +4,7 @@
 #include <string>
 #include <future>
 #include <filesystem>
+#include "GameScene.h"
 #include <assimp/mesh.h>
 #include "Render/Mesh.h"
 #include "Render/Render.h"
@@ -47,6 +48,7 @@ private:
     std::string_view importStateName;
     ModelProgressHandler *progressHandler;
     std::future<void> loadingFuture;
+    static GameScene gameScene;
 
     void processModel();
     void drawParameters();

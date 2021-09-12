@@ -6,10 +6,10 @@
 
 void GameObject::OnDelete()
 {
-    GameEngine->GetGameScene().RemoveObject(this->GetEntityID());
+    gameScene->RemoveObject(this->GetEntityID());
 }
 
-json GameObject::SerializeObj()
+json GameObject::SerializeObj() const
 {
     json data;
 

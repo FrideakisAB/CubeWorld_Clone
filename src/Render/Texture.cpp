@@ -36,13 +36,13 @@ Texture::Texture(Texture &&texture) noexcept
 
 Texture::~Texture()
 {
-    if (texture != 0)
+    if (textureId != 0)
     {
         for (auto &i : src)
             delete[] i;
 
         auto deleter = [=]() {
-            glDeleteTextures(1, &texture);
+            glDeleteTextures(1, &textureId);
         };
 
         ReleaseHandle(deleter);
@@ -113,15 +113,15 @@ void Texture::SubmitData(SamplerData &samplerData)
 {
     if (applyRequire)
     {
-        if (texture != 0)
-            glDeleteTextures(1, &texture);
+        if (textureId != 0)
+            glDeleteTextures(1, &textureId);
 
-        glGenTextures(1, &texture);
+        glGenTextures(1, &textureId);
 
         switch (tt)
         {
         case TexType::Texture1D:
-            glBindTexture(GL_TEXTURE_1D, texture);
+            glBindTexture(GL_TEXTURE_1D, textureId);
             glTexImage1D(GL_TEXTURE_1D, 0, Utils::GetTextDataTypeGL(type), whd.x, 0, Utils::GetTextDataTypeGL(type), GL_UNSIGNED_BYTE, src[0]);
 
             glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, Utils::GetWrapTypeGL(wrapS));
@@ -138,7 +138,7 @@ void Texture::SubmitData(SamplerData &samplerData)
             break;
 
         case TexType::Texture2D:
-            glBindTexture(GL_TEXTURE_2D, texture);
+            glBindTexture(GL_TEXTURE_2D, textureId);
             glTexImage2D(GL_TEXTURE_2D, 0, Utils::GetTextDataTypeGL(type), whd.x, whd.y, 0, Utils::GetTextDataTypeGL(type), GL_UNSIGNED_BYTE, src[0]);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, Utils::GetWrapTypeGL(wrapS));
@@ -156,7 +156,7 @@ void Texture::SubmitData(SamplerData &samplerData)
             break;
 
         case TexType::TextureCube:
-            glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, textureId);
             for(GLuint i = 0; i < 6; ++i)
                 glTexImage2D(
                         GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, Utils::GetTextDataTypeGL(type), whd.x, whd.y,
@@ -188,7 +188,7 @@ void Texture::SubmitData(SamplerData &samplerData)
             }
         }
 
-        samplerData.Handle = texture;
+        samplerData.Handle = textureId;
         samplerData.TextureDataType = type;
         samplerData.TextureType = tt;
 
@@ -196,7 +196,7 @@ void Texture::SubmitData(SamplerData &samplerData)
     }
     else
     {
-        samplerData.Handle = texture;
+        samplerData.Handle = textureId;
         samplerData.TextureDataType = type;
         samplerData.TextureType = tt;
     }
@@ -207,7 +207,7 @@ IAsset *Texture::Clone() const
     return new Texture(std::cref(*this));
 }
 
-json Texture::SerializeObj()
+json Texture::SerializeObj() const
 {
     json data;
 

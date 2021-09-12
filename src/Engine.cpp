@@ -1,18 +1,19 @@
 #include "Engine.h"
 
 #include "ECS/Engine.h"
+#include "Assets/Prefab.h"
 #include "ECS/SystemManager.h"
-#include "ECS/Serialization/EntityFactory.h"
-#include "ECS/Serialization/ComponentFactory.h"
 #include "Memory/MemoryManager.h"
 #include "Assets/AssetsManager.h"
 #include "Systems/RenderSystem.h"
+#include "Components/Components.h"
 #include "Systems/ParticleWorker.h"
+#include "ECS/Serialization/EntityFactory.h"
+#include "ECS/Serialization/ComponentFactory.h"
 
 #include "GameScene.h"
 #include "GameObject.h"
 #include "Utils/Primitives.h"
-#include "Components/Components.h"
 
 Engine *GameEngine = nullptr;
 
@@ -33,6 +34,7 @@ Engine::Engine()
 
     auto &assetsFactory = assetsManager->GetAssetsFactory();
     assetsFactory.Register<Mesh>();
+    assetsFactory.Register<Prefab>();
     assetsFactory.Register<Texture>();
     assetsFactory.Register<Material>();
 

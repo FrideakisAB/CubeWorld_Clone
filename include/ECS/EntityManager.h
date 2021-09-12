@@ -121,10 +121,10 @@ namespace ECS {
                     this->pendingDestroyedEntities.push_back(entityId);
                     ++this->numPendingDestroyedEntities;
                 }
-            }
 
-            entity->onDelete();
-            entity->OnDelete();
+                entity->onDelete();
+                entity->OnDelete();
+            }
         }
 
         inline IEntity *GetEntity(EntityId entityId)

@@ -63,7 +63,7 @@ public:
     void Apply() noexcept;
     void Recreate() noexcept;
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json& j) final;
 
     void SerializeBin(std::ofstream &file) final;

@@ -4,7 +4,7 @@
 #include "Components/Transform.h"
 #include <glm/gtx/matrix_decompose.hpp>
 
-Camera* Camera::Main = nullptr;
+Camera *Camera::Main = nullptr;
 
 glm::mat4 Camera::GetVPMatrix(u32 width, u32 height) const
 {
@@ -97,7 +97,7 @@ void Camera::SetSkybox(Texture *skybox)
     }
 }
 
-json Camera::SerializeObj()
+json Camera::SerializeObj() const
 {
     json data;
 

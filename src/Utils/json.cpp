@@ -5,11 +5,22 @@
 std::string Utils::FileToString(std::ifstream&& file)
 {
     if(!file.is_open())
-        return std::string("");
+        return {};
 
     std::string src;
     getline(file, src, '\0' );
     file.close();
+
+    return src;
+}
+
+std::string Utils::FileToString(std::ifstream &file)
+{
+    if(!file.is_open())
+        return {};
+
+    std::string src;
+    getline(file, src, '\0' );
 
     return src;
 }

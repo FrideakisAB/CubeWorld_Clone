@@ -98,7 +98,7 @@ void Transform::recalculate()
     }
 }
 
-json Transform::SerializeObj()
+json Transform::SerializeObj() const
 {
     json data;
 

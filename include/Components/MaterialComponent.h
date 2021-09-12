@@ -21,7 +21,7 @@ struct Material final : public IAsset {
 
     [[nodiscard]] IAsset *Clone() const final;
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json& j) final;
 };
 
@@ -36,7 +36,7 @@ public:
     [[nodiscard]] AssetsHandle GetMaterialHandle() const noexcept { return materialHandle; }
     [[nodiscard]] bool IsValid() const noexcept { return material != nullptr; }
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 
     bool Instancing = true;

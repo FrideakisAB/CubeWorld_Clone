@@ -11,7 +11,7 @@ protected:
 
 private:
     u8 *src[6] = {};
-    u32 texture = 0;
+    u32 textureId = 0;
     glm::uvec3 whd = glm::uvec3(1);
     WrapType wrapS = WrapType::Repeat;
     WrapType wrapT = WrapType::Repeat;
@@ -77,7 +77,7 @@ public:
 
     [[nodiscard]] IAsset *Clone() const final;
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json& j) final;
 
     void SerializeBin(std::ofstream &file) final;

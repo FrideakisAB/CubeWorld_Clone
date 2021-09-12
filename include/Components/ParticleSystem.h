@@ -194,7 +194,7 @@ public:
 
     [[nodiscard]] ParticleRender &GetRender() noexcept { return render; }
 
-    json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 };
 

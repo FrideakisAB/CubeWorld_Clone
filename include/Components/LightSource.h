@@ -18,7 +18,7 @@ public:
     float Intensity = 1.0f;
     float CutterOff = 0.0f;
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 };
 

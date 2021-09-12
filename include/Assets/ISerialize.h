@@ -6,7 +6,7 @@
 
 class ISerialize {
 public:
-	virtual json SerializeObj() { return {}; }
+	[[nodiscard]] virtual json SerializeObj() const { return {}; }
 	virtual void UnSerializeObj(const json &j) {}
 };
 

@@ -20,7 +20,7 @@ private:
 public:
     ~AssetsWriter();
 
-    void AddAsset(const AssetsHandle &assetsHandle, std::function<void(const AssetsHandle &)> deleter);
+    void AddAsset(const AssetsHandle &assetsHandle, std::function<void(const AssetsHandle &)> deleter=[](const AssetsHandle &handle){});
 };
 
 #endif

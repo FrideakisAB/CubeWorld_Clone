@@ -1,6 +1,6 @@
 #include "Components/LightSource.h"
 
-json LightSource::SerializeObj()
+json LightSource::SerializeObj() const
 {
     json data;
 

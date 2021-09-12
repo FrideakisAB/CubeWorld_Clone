@@ -56,7 +56,7 @@ public:
 
     [[nodiscard]] bool IsValid() const noexcept { return mesh != nullptr; }
 
-    json SerializeObj() final
+    [[nodiscard]] json SerializeObj() const final
     {
         json data;
 

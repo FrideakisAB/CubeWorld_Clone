@@ -48,7 +48,7 @@ public:
     [[nodiscard]] inline glm::vec3 Up() const noexcept { return up; }
     [[nodiscard]] inline glm::vec3 Forward() const noexcept { return forward; }
 
-    [[nodiscard]] json SerializeObj() final;
+    [[nodiscard]] json SerializeObj() const final;
     void UnSerializeObj(const json &j) final;
 };
 

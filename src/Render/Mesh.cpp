@@ -253,7 +253,7 @@ IAsset *Mesh::Clone() const
     return new Mesh(std::cref(*this));
 }
 
-json Mesh::SerializeObj()
+json Mesh::SerializeObj() const
 {
     json data;
 

@@ -47,6 +47,7 @@ set(Source
 	src/GameScene.cpp
 	src/GameObject.cpp
 
+	src/Assets/Prefab.cpp
 	src/Assets/AssetsManager.cpp
 
 	src/Components/Camera.cpp

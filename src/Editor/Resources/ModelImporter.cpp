@@ -5,11 +5,14 @@
 #include "GameScene.h"
 #include <assimp/scene.h>
 #include "Editor/Editor.h"
+#include "Assets/Prefab.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include "Assets/AssetsManager.h"
 #include "Components/Components.h"
 #include "Editor/ImGui/ImFileDialog.h"
+
+GameScene ModelImporter::gameScene;
 
 ModelImporter::ModelImporter()
 {
@@ -78,7 +81,7 @@ void ModelImporter::processModel()
     importState = 0.0f;
     importStateName = "Process hierarchy";
 
-    GameObject *go = GameEngine->GetGameScene().Create(assetName);
+    GameObject *go = gameScene.Create(assetName);
     go->AddComponent<Transform>();
     f32 incValue = 1.0f / static_cast<f32>(scene->mRootNode->mNumChildren);
     for (u32 i = 0; i < scene->mRootNode->mNumChildren; ++i)
@@ -129,6 +132,18 @@ void ModelImporter::processModel()
             importState = 1.0f;
     }
 
+    importState = 0.0f;
+    importStateName = "Save asset";
+
+    AssetsHandle handle = std::make_shared<Prefab>(*go);
+    GameEngine->GetAssetsManager().AddAsset(assetName, handle);
+    importState = 0.5f;
+    GameEditor->GetAssetsWriter().AddAsset(handle);
+
+    gameScene.Delete(go);
+
+    importState = 1.0f;
+
     isProcessingFinish = true;
 }
 
@@ -147,11 +162,10 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
         pos.scale = {scaling.x / 100.0f, scaling.y / 100.0f, scaling.z / 100.0f};
         pos.rotate = glm::quat(glm::vec3(rotation.x, rotation.y, rotation.z));
 
-        GameObject *parent = nullptr;
-
+        GameObject *parent;
         if (node->mNumMeshes != 1)
         {
-            auto *childGameObject = GameEngine->GetGameScene().Create(node->mName.C_Str());
+            auto *childGameObject = gameScene.Create(node->mName.C_Str());
             parent = childGameObject;
             go->AddChild(childGameObject);
 
@@ -183,7 +197,7 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
         }
         else if (node->mNumMeshes != 0)
         {
-            auto *childGameObject = GameEngine->GetGameScene().Create(node->mName.C_Str());
+            auto *childGameObject = gameScene.Create(node->mName.C_Str());
             parent = childGameObject;
 
             auto materialHandle = std::make_shared<Material>();
@@ -205,7 +219,7 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
         }
         else
         {
-            auto *childGameObject = GameEngine->GetGameScene().Create(node->mName.C_Str());
+            auto *childGameObject = gameScene.Create(node->mName.C_Str());
             parent = childGameObject;
 
             childGameObject->AddComponent<Transform>()->SetLocalPos(pos);
@@ -224,7 +238,7 @@ void ModelImporter::importLight(aiLight *light, GameObject *go)
         light->mType == aiLightSource_SPOT ||
         light->mType == aiLightSource_POINT)
     {
-        auto *lightGameObject = GameEngine->GetGameScene().Create(light->mName.C_Str());
+        auto *lightGameObject = gameScene.Create(light->mName.C_Str());
         go->AddChild(lightGameObject);
 
         Position pos;
@@ -262,7 +276,7 @@ void ModelImporter::importLight(aiLight *light, GameObject *go)
 
 void ModelImporter::importCamera(aiCamera *camera, GameObject *go)
 {
-    auto* cameraGameObject = GameEngine->GetGameScene().Create(camera->mName.C_Str());
+    auto* cameraGameObject = gameScene.Create(camera->mName.C_Str());
     go->AddChild(cameraGameObject);
 
     Position pos;

@@ -10,7 +10,8 @@
 using json = nlohmann::json;
 
 namespace Utils {
-    std::string FileToString(std::ifstream&& file);
+    [[nodiscard]] std::string FileToString(std::ifstream&& file);
+    [[nodiscard]] std::string FileToString(std::ifstream &file);
 }
 
 namespace json_utils {

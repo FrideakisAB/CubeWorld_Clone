@@ -384,13 +384,13 @@ void ParticleSystem::SetMaxParticles(u32 maxParticles)
     Restart();
 }
 
-void SavePoint(json &j, const std::string &name, glm::vec2 *base, u32 count)
+void SavePoint(json &j, const std::string &name, const glm::vec2 *base, u32 count)
 {
     for (u32 i = 0; i < count; ++i)
         j[name][i] = {base[i].x, base[i].y};
 }
 
-json ParticleSystem::SerializeObj()
+json ParticleSystem::SerializeObj() const
 {
     json data;
 

@@ -8,7 +8,7 @@
 namespace ECS {
     IEntity::IEntity() : localActive(true), globalActive(true), destroyed(false) {}
 
-    json IEntity::SerializeComponents()
+    json IEntity::SerializeComponents() const
     {
         json s;
         s["cmps"] = {""};
@@ -66,8 +66,12 @@ namespace ECS {
         if (parentId != INVALID_ENTITY_ID)
             ECS_Engine->GetEntityManager()->GetEntity(parentId)->RemoveChild(entityId);
 
-        for (EntityId id : childIds)
-            ECS_Engine->GetEntityManager()->DestroyEntity(id);
+        auto It = childIds.begin();
+        while (It != childIds.end())
+        {
+            ECS_Engine->GetEntityManager()->DestroyEntity(*It);
+            It = childIds.begin();
+        }
     }
 
     void IEntity::recSetActive()
@@ -153,7 +157,7 @@ namespace ECS {
         return ECS_Engine->GetEntityManager()->GetEntity(childIds[i]);
     }
 
-    json IEntity::SerializeObj()
+    json IEntity::SerializeObj() const
     {
         json data;
 

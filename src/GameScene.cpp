@@ -3,7 +3,7 @@
 GameScene::~GameScene()
 {
     auto It = gameObjects.begin();
-    while(It != gameObjects.end())
+    while (It != gameObjects.end())
     {
         Delete(It->second);
         It = gameObjects.begin();
@@ -17,6 +17,7 @@ GameObject *GameScene::Create(const std::string &name, const std::string &tag)
     auto id = EM->CreateEntity<GameObject>();
     auto *go = (GameObject*)EM->GetEntity(id);
 
+    go->gameScene = this;
     go->Name = name;
     go->Tag = tag;
 
@@ -97,7 +98,7 @@ void GameScene::Validate(ECS::EntityId eid, GameObject *gameObject)
         gameObjects[eid] = gameObject;
 }
 
-json GameScene::SerializeObj()
+json GameScene::SerializeObj() const
 {
     json data;
 

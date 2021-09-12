@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include "Assets/ISerialize.h"
 
-class Gradient : public ISerialize {
+class Gradient final : public ISerialize {
 public:
     struct Mark {
         glm::vec4 color;
@@ -33,8 +33,8 @@ public:
     [[nodiscard]] std::list<Mark> &GetMarks() noexcept { return marks; }
     void RefreshCache();
 
-    json SerializeObj() override;
-    void UnSerializeObj(const json &j) override;
+    [[nodiscard]] json SerializeObj() const final;
+    void UnSerializeObj(const json &j) final;
 
     MarkIterator DraggingIterator = marks.begin();
     MarkIterator SelectedIterator = marks.begin();
