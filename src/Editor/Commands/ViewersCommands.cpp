@@ -194,3 +194,25 @@ void SetRawMaterial::Undo()
             validator.Get(goId)->GetComponent<MaterialComponent>()->SetMaterial({});
     }
 }
+
+UpdateLighting::UpdateLighting(f32 ambient, f32 shadowsPower, f32 exposure)
+    : ambient(ambient), shadowsPower(shadowsPower), exposure(exposure)
+{
+    ambientPrev = GameEngine->GetLighting().Ambient;
+    shadowsPowerPrev = GameEngine->GetLighting().ShadowsPower;
+    exposurePrev = GameEngine->GetLighting().Exposure;
+}
+
+void UpdateLighting::Execute()
+{
+    GameEngine->GetLighting().Ambient = ambient;
+    GameEngine->GetLighting().ShadowsPower = shadowsPower;
+    GameEngine->GetLighting().Exposure = exposure;
+}
+
+void UpdateLighting::Undo()
+{
+    GameEngine->GetLighting().Ambient = ambientPrev;
+    GameEngine->GetLighting().ShadowsPower = shadowsPowerPrev;
+    GameEngine->GetLighting().Exposure = exposurePrev;
+}

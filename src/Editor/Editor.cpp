@@ -26,6 +26,7 @@ Editor::Editor()
     windowsMenu.Windows["Editor viewer"] = &editorViewer;
     windowsMenu.Windows["Assets viewer"] = &assetsViewer;
     windowsMenu.Windows["Game window"] = gameWindow;
+    windowsMenu.Windows["Lighting window"] = &lightingWindow;
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
@@ -52,6 +53,7 @@ void Editor::DrawWindows()
     sceneEditor.Draw();
     logViewer.Draw();
     editorViewer.Draw();
+    lightingWindow.Draw();
     logViewer.StartCapture();
     gameWindow->Draw();
     logViewer.EndCapture();

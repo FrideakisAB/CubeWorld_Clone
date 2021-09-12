@@ -1,0 +1,13 @@
+{
+    "parameterCount": 2,
+    "parameters": [
+        {
+            "name": "texture_diffuse",
+            "valueType": 11
+        },
+        {
+            "name": "main_specular",
+            "valueType": 2
+        }
+    ]
+}

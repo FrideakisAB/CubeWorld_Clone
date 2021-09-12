@@ -3,7 +3,7 @@
 #include "Editor/Editor.h"
 #include "Render/Texture.h"
 #include "Systems/RenderSystem.h"
-#include "Editor/ImGui/imgui_custom.h"
+#include "Editor/ImGui/ImCustom.h"
 #include "Components/MaterialComponent.h"
 #include "Editor/Commands/ViewersCommands.h"
 

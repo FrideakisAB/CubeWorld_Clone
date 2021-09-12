@@ -67,10 +67,7 @@ Engine::Engine()
     AssetsHandle materialHandle = std::make_shared<Material>();
     auto *material = static_cast<Material*>(materialHandle.get());
     material->Shader = "LightBloom";
-    Utils::ShaderParamValue uniform;
-    uniform.value = glm::vec3(1.0f, 1.0f, 1.0f);
-    uniform.valueType = Utils::ShaderValue::Vector3;
-    material->Uniforms["color_light"] = uniform;
+    material->Uniforms["color_light"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
     materialComponent->SetMaterial(materialHandle);
     mesh->SetMesh(assetsManager->GetAsset("Sphere"));
 
@@ -110,13 +107,8 @@ Engine::Engine()
     materialHandle = std::make_shared<Material>();
     material = static_cast<Material*>(materialHandle.get());
     material->Shader = "LightAccumulation";
-    Utils::ShaderParamValue uniformPlane;
-    uniformPlane.value = glm::vec3(1.0f, 0.0f, 0.0f);
-    uniformPlane.valueType = Utils::ShaderValue::Vector3;
-    material->Uniforms["color_diffuse"] = uniformPlane;
-    uniformPlane.value = 0.1f;
-    uniformPlane.valueType = Utils::ShaderValue::Float;
-    material->Uniforms["main_specular"] = uniformPlane;
+    material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
+    material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
     materialComponent->SetMaterial(materialHandle);
     mesh->SetMesh(assetsManager->GetAsset("Plane"));
 }

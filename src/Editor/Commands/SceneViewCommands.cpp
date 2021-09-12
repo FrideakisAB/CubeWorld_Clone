@@ -5,6 +5,7 @@
 #include "GameScene.h"
 #include "GameObject.h"
 #include "Editor/Editor.h"
+#include "Assets/Prefab.h"
 
 namespace fs = std::filesystem;
 
@@ -218,5 +219,29 @@ void CustomCreate::Undo()
 
     recInv(secGO);
     GameEngine->GetGameScene().Delete(secGO);
+    validator.Invalidate(goId);
+}
+
+InstantiatePrefab::InstantiatePrefab(std::string assetName, ECS::EntityId *goId)
+    : assetName(std::move(assetName)), goEID(goId)
+{}
+
+void InstantiatePrefab::Execute()
+{
+    if (goId == 0)
+    {
+        go = GameEngine->GetAssetsManager().GetAsset<Prefab>(assetName)->Use();
+        goId = validator.Map(go);
+    }
+    else
+        validator.Validate(goId, GameEngine->GetAssetsManager().GetAsset<Prefab>(assetName)->Use());
+
+    if (goEID != nullptr)
+        *goEID = validator.Get(goId)->GetEntityID();
+}
+
+void InstantiatePrefab::Undo()
+{
+    GameEngine->GetGameScene().Delete(validator.Get(goId));
     validator.Invalidate(goId);
 }

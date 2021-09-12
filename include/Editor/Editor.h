@@ -10,6 +10,7 @@
 #include "Editor/UI/SceneEditor.h"
 #include "Editor/UI/AssetsViewer.h"
 #include "Editor/UI/EditorViewer.h"
+#include "Editor/UI/LightingWindow.h"
 #include "Editor/Render/EditorRender.h"
 #include "Editor/Commands/CommandList.h"
 #include "Editor/Resources/AssetsWriter.h"
@@ -43,6 +44,7 @@ private:
     FileMenu fileMenu;
     WindowsMenu windowsMenu;
     GameWindow *gameWindow;
+    LightingWindow lightingWindow;
     EditorRender render;
     AssetsWriter assetsWriter;
 

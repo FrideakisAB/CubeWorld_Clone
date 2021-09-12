@@ -25,7 +25,7 @@ void GameWindow::Draw()
         ImVec2 buttonSize = ImGui::CalcTextSize("Play Pause Stop");
         ImGui::SetCursorPosX((sizeAvail.x - buttonSize.x) / 2);
 
-        if(ImGui::Button("Play"))
+        if (ImGui::Button("Play"))
         {
             if (state == State::Stop)
             {
@@ -44,7 +44,7 @@ void GameWindow::Draw()
         }
 
         ImGui::SameLine();
-        if(ImGui::Button("Pause"))
+        if (ImGui::Button("Pause"))
         {
             if (state == State::Run)
             {
@@ -55,7 +55,7 @@ void GameWindow::Draw()
         }
 
         ImGui::SameLine();
-        if(ImGui::Button("Stop"))
+        if (ImGui::Button("Stop"))
         {
             if (state != State::Stop)
             {

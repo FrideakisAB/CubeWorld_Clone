@@ -2,7 +2,7 @@
 
 #include "Editor/Editor.h"
 #include "Components/Camera.h"
-#include "Editor/ImGui/imgui_custom.h"
+#include "Editor/ImGui/ImCustom.h"
 #include "Editor/Commands/ViewersCommands.h"
 
 void CameraViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)

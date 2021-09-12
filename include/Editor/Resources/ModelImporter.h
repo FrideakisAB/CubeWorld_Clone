@@ -9,6 +9,7 @@
 #include "Render/Mesh.h"
 #include "Render/Render.h"
 #include <assimp/scene.h>
+#include "Assets/AssetsManager.h"
 #include <assimp/ProgressHandler.hpp>
 
 namespace fs = std::filesystem;
@@ -53,11 +54,12 @@ private:
     void processModel();
     void drawParameters();
     void drawProgressBar();
-    void recAdd(const aiScene *sceneModel, aiNode *node, GameObject *go);
+    void recAdd(const aiScene *sceneModel, aiNode *node, GameObject *go, const std::map<u32, AssetsHandle> &materials);
 
     static Mesh *convertMesh(aiMesh *mesh);
     static void importLight(aiLight *light, GameObject *go);
     static void importCamera(aiCamera *camera, GameObject *go);
+    static AssetsHandle importMaterial(aiMaterial *materialAssimp);
 
 public:
     ModelImporter();

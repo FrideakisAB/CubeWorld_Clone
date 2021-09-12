@@ -4,7 +4,7 @@
 
 std::string Utils::FileToString(std::ifstream&& file)
 {
-    if(!file.is_open())
+    if (!file.is_open())
         return {};
 
     std::string src;
@@ -16,7 +16,7 @@ std::string Utils::FileToString(std::ifstream&& file)
 
 std::string Utils::FileToString(std::ifstream &file)
 {
-    if(!file.is_open())
+    if (!file.is_open())
         return {};
 
     std::string src;

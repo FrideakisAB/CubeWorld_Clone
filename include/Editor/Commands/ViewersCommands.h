@@ -155,7 +155,7 @@ public:
     void Undo() final;
 };
 
-class Material;
+struct Material;
 
 class SetRawMaterial final : public ICommand {
 private:
@@ -169,6 +169,18 @@ private:
 public:
     SetRawMaterial(GameObject *gameObject, Material *material);
     ~SetRawMaterial() final;
+
+    void Execute() final;
+    void Undo() final;
+};
+
+class UpdateLighting final : public ICommand {
+private:
+    f32 ambient, shadowsPower, exposure;
+    f32 ambientPrev, shadowsPowerPrev, exposurePrev;
+
+public:
+    UpdateLighting(f32 ambient, f32 shadowsPower, f32 exposure);
 
     void Execute() final;
     void Undo() final;

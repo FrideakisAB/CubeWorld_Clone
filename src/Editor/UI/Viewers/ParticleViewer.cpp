@@ -5,7 +5,7 @@
 #include "Editor/ImGui/imgui_curve.h"
 #include "Components/ParticleSystem.h"
 #include "Editor/Commands/ViewersCommands.h"
-#include "Editor/ImGui/imgui_color_gradient.h"
+#include "Editor/ImGui/ImColorGradient.h"
 
 void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
 {

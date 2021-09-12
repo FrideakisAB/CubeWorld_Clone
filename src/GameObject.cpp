@@ -24,10 +24,13 @@ json GameObject::SerializeObj() const
 
 void GameObject::UnSerializeObj(const json &j)
 {
+    if (gameScene == nullptr)
+        gameScene = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(this->GetParentID()))->gameScene;
+
     IEntity::UnSerializeObj(j["base"]);
 
     Name = j["name"];
     Tag = j["tag"];
 
-    GameEngine->GetGameScene().Validate(this->GetEntityID(), this);
+    gameScene->Validate(this->GetEntityID(), this);
 }

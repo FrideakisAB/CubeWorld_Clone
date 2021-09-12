@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "GameScene.h"
 #include "Editor/Editor.h"
+#include "Assets/Prefab.h"
 #include "Utils/Primitives.h"
 #include "Components/Components.h"
 #include "Editor/Commands/SceneViewCommands.h"
@@ -17,6 +18,16 @@ void SceneViewer::Draw()
             {
                 GameEditor->CommandList.AddCommand<RemoveParent>(*((ECS::EntityId*)payload->Data));
                 GameEditor->CommandList.Redo();
+                ImGui::EndDragDropTarget();
+            }
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+            {
+                std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                if (GameEngine->GetAssetsManager().GetAsset<Prefab>(str.data()) != nullptr)
+                {
+                    GameEditor->CommandList.AddCommand<InstantiatePrefab>(std::string(str));
+                    GameEditor->CommandList.Redo();
+                }
                 ImGui::EndDragDropTarget();
             }
         }
@@ -56,6 +67,16 @@ void SceneViewer::Draw()
                 {
                     GameEditor->CommandList.AddCommand<RemoveParent>(*((ECS::EntityId*)payload->Data));
                     GameEditor->CommandList.Redo();
+                    ImGui::EndDragDropTarget();
+                }
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+                {
+                    std::string_view str = *static_cast<std::string_view*>(payload->Data);
+                    if (GameEngine->GetAssetsManager().GetAsset<Prefab>(str.data()) != nullptr)
+                    {
+                        GameEditor->CommandList.AddCommand<InstantiatePrefab>(std::string(str));
+                        GameEditor->CommandList.Redo();
+                    }
                     ImGui::EndDragDropTarget();
                 }
             }
@@ -139,6 +160,18 @@ void SceneViewer::recursiveTreeDraw(const std::string &name, GameObject *gameObj
             parentObjectId = gameObject->GetEntityID();
             ImGui::EndDragDropTarget();
         }
+        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ASSET_"))
+        {
+            std::string_view str = *static_cast<std::string_view*>(payload->Data);
+            if (GameEngine->GetAssetsManager().GetAsset<Prefab>(str.data()) != nullptr)
+            {
+                GameEditor->CommandList.AddCommand<InstantiatePrefab>(std::string(str), &targetObjectId);
+                GameEditor->CommandList.Redo();
+
+                parentObjectId = gameObject->GetEntityID();
+            }
+            ImGui::EndDragDropTarget();
+        }
     }
 
     if (isSubTreeOpen && gameObject->GetChildCount() > 0)
@@ -190,13 +223,8 @@ void SceneViewer::SceneMenu::Draw()
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
                 material->Shader = "LightAccumulation";
-                Utils::ShaderParamValue uniform;
-                uniform.value = glm::vec3(1.0f, 0.0f, 0.0f);
-                uniform.valueType = Utils::ShaderValue::Vector3;
-                material->Uniforms["color_diffuse"] = uniform;
-                uniform.value = 0.1f;
-                uniform.valueType = Utils::ShaderValue::Float;
-                material->Uniforms["main_specular"] = uniform;
+                material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
+                material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);
             };
             GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
@@ -213,13 +241,8 @@ void SceneViewer::SceneMenu::Draw()
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
                 material->Shader = "LightAccumulation";
-                Utils::ShaderParamValue uniform;
-                uniform.value = glm::vec3(1.0f, 0.0f, 0.0f);
-                uniform.valueType = Utils::ShaderValue::Vector3;
-                material->Uniforms["color_diffuse"] = uniform;
-                uniform.value = 0.1f;
-                uniform.valueType = Utils::ShaderValue::Float;
-                material->Uniforms["main_specular"] = uniform;
+                material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
+                material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);
             };
             GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);
@@ -236,13 +259,8 @@ void SceneViewer::SceneMenu::Draw()
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
                 material->Shader = "LightAccumulation";
-                Utils::ShaderParamValue uniform;
-                uniform.value = glm::vec3(1.0f, 0.0f, 0.0f);
-                uniform.valueType = Utils::ShaderValue::Vector3;
-                material->Uniforms["color_diffuse"] = uniform;
-                uniform.value = 0.1f;
-                uniform.valueType = Utils::ShaderValue::Float;
-                material->Uniforms["main_specular"] = uniform;
+                material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
+                material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);
             };
             GameEditor->CommandList.AddCommand<CustomCreate>(&targetObjectId, func);

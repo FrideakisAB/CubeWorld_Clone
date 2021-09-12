@@ -145,7 +145,7 @@ void EditorViewer::showGizmo(const CameraInfo &cameraInfo, glm::vec4 windowPosit
 {
     if (GameEditor->Selected != ECS::INVALID_ENTITY_ID)
     {
-        auto *go = static_cast<GameObject *>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
+        auto *go = static_cast<GameObject*>(ECS::ECS_Engine->GetEntityManager()->GetEntity(GameEditor->Selected));
         if (auto *transform = go->GetComponent<Transform>(); transform != nullptr)
         {
             ImGuizmo::OPERATION operation;
@@ -239,13 +239,7 @@ void EditorViewer::showParticleControls(glm::vec4 windowPosition)
 
             ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
             ImGui::SetNextWindowBgAlpha(0.35f);
-
-            f64 x, y;
-            glfwGetCursorPos(glfwGetCurrentContext(), &x, &y);
-            if (x >= windowPosition.x + windowPosition.z / 3 && x <= windowPosition.z + windowPosition.x &&
-                y >= windowPosition.y + windowPosition.w * 2 / 3 && y <= windowPosition.w + windowPosition.y)
-                ImGui::SetNextWindowFocus();
-            ImGui::Begin("Particle system control", nullptr, windowFlags);
+            ImGui::BeginChild("Particle system control", ImVec2(220, 65), true, windowFlags);
             ImGui::TextColored(ImVec4(1.0f, 0.72f, 0.02f, 1.0f), "Particle system control");
             ImGui::Text("Active particles: %u", ps->GetActiveParticlesCount());
 
@@ -264,7 +258,7 @@ void EditorViewer::showParticleControls(glm::vec4 windowPosition)
             if (ImGui::Button("Restart"))
                 ps->Restart();
 
-            ImGui::End();
+            ImGui::EndChild();
 
             return;
         }

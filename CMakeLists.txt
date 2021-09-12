@@ -116,6 +116,7 @@ set(Editor_Source
 	src/Editor/UI/SceneEditor.cpp
 	src/Editor/UI/AssetsViewer.cpp
 	src/Editor/UI/EditorViewer.cpp
+	src/Editor/UI/LightingWindow.cpp
 
 	src/Editor/UI/Viewers/MeshViewer.cpp
 	src/Editor/UI/Viewers/LightViewer.cpp
@@ -124,14 +125,14 @@ set(Editor_Source
 	src/Editor/UI/Viewers/ParticleViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
 
+	src/Editor/ImGui/ImCustom.cpp
 	src/Editor/ImGui/ImGuizmo.cpp
 	src/Editor/ImGui/imgui_dock.cpp
 	src/Editor/ImGui/imgui_curve.cpp
-	src/Editor/ImGui/imgui_custom.cpp
 	src/Editor/ImGui/ImFileDialog.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
+	src/Editor/ImGui/ImColorGradient.cpp
 	src/Editor/ImGui/imgui_impl_opengl3.cpp
-	src/Editor/ImGui/imgui_color_gradient.cpp
 
 	src/Editor/Resources/AssetsWriter.cpp
 	src/Editor/Resources/ModelImporter.cpp

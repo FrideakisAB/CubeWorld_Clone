@@ -78,18 +78,40 @@ void ModelImporter::processModel()
         return;
     }
 
+    std::map<u32, AssetsHandle> materials;
+    f32 incValue;
+    if (isImportMaterials)
+    {
+        importState = 0.0f;
+        importStateName = "Import materials";
+
+        if (scene->HasMaterials())
+        {
+            incValue = 1.0f / static_cast<f32>(scene->mNumMaterials);
+            for (u32 i = 0; i < scene->mNumMaterials; ++i)
+            {
+                importState += incValue;
+                if (importState > 1.0f)
+                    importState = 1.0f;
+                materials[i] = importMaterial(scene->mMaterials[i]);
+            }
+        }
+        else
+            importState = 1.0f;
+    }
+
     importState = 0.0f;
     importStateName = "Process hierarchy";
 
     GameObject *go = gameScene.Create(assetName);
     go->AddComponent<Transform>();
-    f32 incValue = 1.0f / static_cast<f32>(scene->mRootNode->mNumChildren);
+    incValue = 1.0f / static_cast<f32>(scene->mRootNode->mNumChildren);
     for (u32 i = 0; i < scene->mRootNode->mNumChildren; ++i)
     {
         importState += incValue;
         if (importState > 1.0f)
             importState = 1.0f;
-        recAdd(scene, scene->mRootNode->mChildren[i], go);
+        recAdd(scene, scene->mRootNode->mChildren[i], go, materials);
     }
 
     if (isImportLights)
@@ -147,7 +169,7 @@ void ModelImporter::processModel()
     isProcessingFinish = true;
 }
 
-void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *go)
+void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *go, const std::map<u32, AssetsHandle> &materials)
 {
     if (node->mNumMeshes != 0 || node->mNumChildren != 0)
     {
@@ -177,43 +199,54 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
 
                 auto *subChildGO = GameEngine->GetGameScene().Create(meshName);
 
-                auto materialHandle = std::make_shared<Material>();
-                auto *material = static_cast<Material*>(materialHandle.get());
-                material->Shader = "LightAccumulation";
-                Utils::ShaderParamValue uniformPlane;
-                uniformPlane.value = glm::vec3(1.0f, 0.0f, 0.0f);
-                uniformPlane.valueType = Utils::ShaderValue::Vector3;
-                material->Uniforms["color_diffuse"] = uniformPlane;
-                uniformPlane.value = 0.1f;
-                uniformPlane.valueType = Utils::ShaderValue::Float;
-                material->Uniforms["main_specular"] = uniformPlane;
-                childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
+                if (auto It = materials.find(sceneModel->mMeshes[node->mMeshes[i]]->mMaterialIndex); It != materials.end())
+                    childGameObject->AddComponent<MaterialComponent>()->SetMaterial(It->second);
+                else
+                {
+                    auto materialHandle = std::make_shared<Material>();
+                    auto *material = static_cast<Material*>(materialHandle.get());
+                    material->Shader = "LightAccumulation";
+                    material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
+                    material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
+                    childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
+                }
+
                 subChildGO->AddComponent<Transform>()->SetLocalPos(pos);
                 auto *meshComp = subChildGO->AddComponent<MeshComponent>();
                 meshComp->SetMesh(convertMesh(sceneModel->mMeshes[node->mMeshes[i]]));
+
+                meshName = assetName + "_" + std::string(node->mName.C_Str()) + "_" + std::to_string(i);
+                GameEngine->GetAssetsManager().AddAsset(meshName, meshComp->GetAsset());
+                GameEditor->GetAssetsWriter().AddAsset(meshComp->GetAsset());
 
                 childGameObject->AddChild(subChildGO);
             }
         }
         else if (node->mNumMeshes != 0)
         {
-            auto *childGameObject = gameScene.Create(node->mName.C_Str());
+            std::string meshName = node->mName.C_Str();
+            auto *childGameObject = gameScene.Create(meshName);
             parent = childGameObject;
 
-            auto materialHandle = std::make_shared<Material>();
-            auto *material = static_cast<Material*>(materialHandle.get());
-            material->Shader = "LightAccumulation";
-            Utils::ShaderParamValue uniformPlane;
-            uniformPlane.value = glm::vec3(1.0f, 0.0f, 0.0f);
-            uniformPlane.valueType = Utils::ShaderValue::Vector3;
-            material->Uniforms["color_diffuse"] = uniformPlane;
-            uniformPlane.value = 0.1f;
-            uniformPlane.valueType = Utils::ShaderValue::Float;
-            material->Uniforms["main_specular"] = uniformPlane;
-            childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
+            if (auto It = materials.find(sceneModel->mMeshes[node->mMeshes[0]]->mMaterialIndex); It != materials.end())
+                childGameObject->AddComponent<MaterialComponent>()->SetMaterial(It->second);
+            else
+            {
+                auto materialHandle = std::make_shared<Material>();
+                auto *material = static_cast<Material*>(materialHandle.get());
+                material->Shader = "LightAccumulation";
+                material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
+                material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
+                childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
+            }
+
             childGameObject->AddComponent<Transform>()->SetLocalPos(pos);
             auto *meshComp = childGameObject->AddComponent<MeshComponent>();
             meshComp->SetMesh(convertMesh(sceneModel->mMeshes[node->mMeshes[0]]));
+
+            meshName = assetName + "_" + std::string(node->mName.C_Str()) + "_" + std::string(sceneModel->mMeshes[node->mMeshes[0]]->mName.C_Str());
+            GameEngine->GetAssetsManager().AddAsset(meshName, meshComp->GetAsset());
+            GameEditor->GetAssetsWriter().AddAsset(meshComp->GetAsset());
 
             go->AddChild(childGameObject);
         }
@@ -228,7 +261,7 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
         }
 
         for (u32 i = 0; i < node->mNumChildren; ++i)
-            recAdd(sceneModel, node->mChildren[i], parent);
+            recAdd(sceneModel, node->mChildren[i], parent, materials);
     }
 }
 
@@ -252,7 +285,7 @@ void ModelImporter::importLight(aiLight *light, GameObject *go)
 
         lightGameObject->AddComponent<Transform>()->SetLocalPos(pos);
         auto *lightSource = lightGameObject->AddComponent<LightSource>();
-        lightSource->Color = {light->mColorDiffuse.r / 100.0f, light->mColorDiffuse.g / 100.0f, light->mColorDiffuse.b / 100.0f};
+        lightSource->Color = {light->mColorDiffuse.r / 1000.0f, light->mColorDiffuse.g / 1000.0f, light->mColorDiffuse.b / 1000.0f};
 
         switch (light->mType)
         {
@@ -276,7 +309,7 @@ void ModelImporter::importLight(aiLight *light, GameObject *go)
 
 void ModelImporter::importCamera(aiCamera *camera, GameObject *go)
 {
-    auto* cameraGameObject = gameScene.Create(camera->mName.C_Str());
+    auto *cameraGameObject = gameScene.Create(camera->mName.C_Str());
     go->AddChild(cameraGameObject);
 
     Position pos;
@@ -290,6 +323,46 @@ void ModelImporter::importCamera(aiCamera *camera, GameObject *go)
     resCamera->NearClip = camera->mClipPlaneNear;
     resCamera->FarClip = camera->mClipPlaneFar;
     resCamera->Fov = glm::degrees(camera->mHorizontalFOV);
+}
+
+AssetsHandle ModelImporter::importMaterial(aiMaterial *materialAssimp)
+{
+    aiColor3D color;
+    materialAssimp->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+    aiColor3D bloom;
+    materialAssimp->Get(AI_MATKEY_COLOR_EMISSIVE, bloom);
+
+    f32 specular;
+    materialAssimp->Get(AI_MATKEY_SHININESS, specular);
+    specular = glm::clamp(specular, 0.0f, 1.0f);
+
+    aiString tex;
+    materialAssimp->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), tex);
+
+    aiTextureMapMode mapModeU, mapModeV;
+    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_U_DIFFUSE(0), mapModeU);
+    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_V_DIFFUSE(0), mapModeV);
+
+    if (!bloom.IsBlack())
+    {
+        AssetsHandle materialHandle = std::make_shared<Material>();
+        auto *material = static_cast<Material*>(materialHandle.get());
+        material->Shader = "LightBloom";
+        material->Uniforms["color_light"] = {Utils::ShaderValue::Vector3, glm::vec3(bloom.r, bloom.g, bloom.b)};
+
+        return materialHandle;
+    }
+    else
+    {
+        AssetsHandle materialHandle = std::make_shared<Material>();
+        auto *material = static_cast<Material*>(materialHandle.get());
+        material->Shader = "LightAccumulation";
+        material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(color.r, color.g, color.b)};
+        material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, specular};
+
+        return materialHandle;
+    }
 }
 
 Mesh *ModelImporter::convertMesh(aiMesh *mesh)

@@ -74,4 +74,18 @@ public:
     void Undo() final;
 };
 
+class InstantiatePrefab final : public ICommand {
+private:
+    std::string assetName;
+    GameObject *go = nullptr;
+    u64 goId = 0;
+    ECS::EntityId *goEID;
+
+public:
+    explicit InstantiatePrefab(std::string assetName, ECS::EntityId *goId=nullptr);
+
+    void Execute() final;
+    void Undo() final;
+};
+
 #endif

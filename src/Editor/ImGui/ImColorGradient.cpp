@@ -1,4 +1,4 @@
-#include "Editor/ImGui/imgui_color_gradient.h"
+#include "Editor/ImGui/ImColorGradient.h"
 
 #include <optional>
 #include "imgui_internal.h"
@@ -180,7 +180,7 @@ namespace ImGui
         ImGui::SetCursorScreenPos(ImVec2(bar_pos.x, bar_pos.y + height + 20.0f));
     }
     
-    bool GradientButton(const char* str_name, Gradient* gradient, u32 height=GRADIENT_BAR_WIDGET_HEIGHT)
+    bool GradientButton(const std::string &name, Gradient* gradient, u32 height=GRADIENT_BAR_WIDGET_HEIGHT)
     {
         if (!gradient)
             return false;
@@ -188,11 +188,11 @@ namespace ImGui
         ImVec2 widget_pos = ImGui::GetCursorScreenPos();
         
         float maxWidth = ImMax(250.0f, ImGui::GetContentRegionAvailWidth() - 100.0f);
-        bool clicked = ImGui::InvisibleButton(str_name, ImVec2(maxWidth, height));
+        bool clicked = ImGui::InvisibleButton(name.c_str(), ImVec2(maxWidth, height));
         
         DrawGradientBar(gradient, widget_pos, maxWidth, height);
         ImGui::SameLine();
-		ImGui::Text(str_name);
+		ImGui::Text("%s", name.c_str());
 		
         return clicked;
     }

@@ -14,12 +14,10 @@ AssetsViewer::AssetsViewer()
     modelFilter += "Model file (";
     std::string tempExt;
     importer.GetExtensionList(tempExt);
-    logger->Debug(tempExt);
     modelFilter += tempExt;
     modelFilter += "){";
     std::replace(tempExt.begin(), tempExt.end(), ';', ',');
     tempExt.erase(std::remove(tempExt.begin(), tempExt.end(), '*'), tempExt.end());
-    logger->Debug(tempExt);
     modelFilter += tempExt;
     modelFilter += "},";
 }

@@ -9,7 +9,7 @@ class GameObject : public ECS::Entity<GameObject> {
     friend GameScene;
 
 private:
-    GameScene *gameScene;
+    GameScene *gameScene = nullptr;
 
 protected:
     void OnDelete() override;
