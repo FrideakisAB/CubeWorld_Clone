@@ -1,8 +1,8 @@
 #ifndef ASSETSWRITER_H
 #define ASSETSWRITER_H
 
+#include <map>
 #include <mutex>
-#include <vector>
 #include <future>
 #include "Platform.h"
 #include "Assets/AssetsManager.h"
@@ -15,12 +15,13 @@ private:
     };
 
     std::mutex referenceDbLock;
-    std::vector<std::future<Code>> resources;
+    std::map<std::string, std::future<Code>> resources;
 
 public:
     ~AssetsWriter();
 
     void AddAsset(const AssetsHandle &assetsHandle, std::function<void(const AssetsHandle &)> deleter=[](const AssetsHandle &handle){});
+    std::future<Code> RemoveAsset(const std::string &name);
 };
 
 #endif

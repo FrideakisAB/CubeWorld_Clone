@@ -60,6 +60,11 @@ public:
     {
         return astSetRegistry[name].first->Add();
     }
+
+    size_t GetID(const std::string &name)
+    {
+        return astSetRegistry[name].second;
+    }
 };
 
 #endif

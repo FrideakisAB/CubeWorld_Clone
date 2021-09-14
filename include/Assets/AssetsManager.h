@@ -12,6 +12,7 @@ namespace fs = std::filesystem;
 using AssetsHandle = std::shared_ptr<IAsset>;
 
 class AssetsManager {
+    friend class AssetsViewer;
 public:
     using AssetIterator = std::unordered_map<std::string, AssetsHandle>::const_iterator;
 

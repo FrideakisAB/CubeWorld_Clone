@@ -3,6 +3,36 @@
 #include <array>
 #include <string>
 #include "imgui_internal.h"
+#include "Render/Texture.h"
+
+void ImGui::TextureWidget(const std::string &asset, ImVec2 size)
+{
+    if (auto *texture = GameEngine->GetAssetsManager().GetAsset<Texture>(asset); texture != nullptr && texture->GetType() == TexType::Texture2D)
+    {
+        texture->RenderUpdate();
+
+        if (texture->GetDrawData().Handle != 0)
+        {
+            if (size.x == 0.0f && size.y == 0.0f)
+                size = ImVec2(texture->GetWH().x, texture->GetWH().y);
+            else
+            {
+                if (texture->GetWH().x > texture->GetWH().y)
+                {
+                    f64 aspect = size.x / static_cast<f64>(texture->GetWH().x);
+                    size.y = texture->GetWH().y * aspect;
+                }
+                else if (texture->GetWH().x < texture->GetWH().y)
+                {
+                    f64 aspect = size.y / static_cast<f64>(texture->GetWH().y);
+                    size.x = texture->GetWH().x * aspect;
+                }
+            }
+
+            ImGui::Image(reinterpret_cast<void *>(texture->GetDrawData().Handle), size);
+        }
+    }
+}
 
 std::array<ImU32, 4> statesColor = {
         IM_COL32(153, 153, 153, 255),

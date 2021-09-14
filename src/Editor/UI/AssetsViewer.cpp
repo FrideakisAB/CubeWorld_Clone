@@ -2,8 +2,11 @@
 
 #include "Engine.h"
 #include <stb_image.h>
+#include "Editor/Editor.h"
+#include "Assets/Prefab.h"
 #include <assimp/Importer.hpp>
 #include "Assets/AssetsManager.h"
+#include "Editor/ImGui/ImCustom.h"
 #include "Editor/ImGui/ImFileDialog.h"
 
 const std::string AssetsViewer::imageFilter = "Image file (*.png;*.jpg;*.jpeg;*.bmp;*.tga;*.gif){.png,.jpg,.jpeg,.bmp,.tga,.gif},";
@@ -20,6 +23,16 @@ AssetsViewer::AssetsViewer()
     tempExt.erase(std::remove(tempExt.begin(), tempExt.end(), '*'), tempExt.end());
     modelFilter += tempExt;
     modelFilter += "},";
+
+    json staticReference = json_utils::TryParse(Utils::FileToString(std::ifstream("data/staticReference.db")));
+
+    for (auto &value : staticReference.items())
+    {
+        json assetData = json_utils::TryParse(Utils::FileToString(std::ifstream(value.value()[0].get<std::string>())));
+
+        size_t typeId = GameEngine->GetAssetsManager().GetAssetsFactory().GetID(assetData["nameType"].get<std::string>());
+        staticAssets.emplace_back(value.key(), typeId);
+    }
 }
 
 void AssetsViewer::Draw()
@@ -49,27 +62,149 @@ void AssetsViewer::Draw()
         ImGui::BeginChild("scrolling", ImVec2(0,0), false, ImGuiWindowFlags_HorizontalScrollbar);
         for (const auto &assetSet : GameEngine->GetAssetsManager())
         {
-            bool nameFilterFlag = !filter.IsActive() || filter.PassFilter(assetSet.first.c_str(), assetSet.first.c_str() + assetSet.first.size());
-            bool typeFilterFlag = itemCurrent == 0 || assetsFactory.astSetRegistry[assetsNames[itemCurrent]].second == assetSet.second->GetTypeID();
-            if (nameFilterFlag && typeFilterFlag)
-            {
-                bool isSelected = assetSet.first == selected;
-                if (ImGui::Selectable(assetSet.first.c_str(), isSelected))
-                    selected = assetSet.first;
-                if (ImGui::BeginDragDropSource())
-                {
-                    std::string_view asset = assetSet.first;
-                    ImGui::SetDragDropPayload("ASSET_", &asset, sizeof(std::string_view));
-                    ImGui::Text("Asset: %s", assetSet.first.c_str());
-                    ImGui::EndDragDropSource();
-                }
-            }
+            if (auto It = std::find(staticAssets.begin(), staticAssets.end(), std::pair(assetSet.first, assetSet.second->GetTypeID())); It != staticAssets.end())
+                staticAssets.erase(It);
+
+            displayAsset(assetSet.first, assetSet.second->GetTypeID());
         }
+
+        for (const auto &assetName : staticAssets)
+            displayAsset(assetName.first, assetName.second);
         ImGui::EndChild();
 
         importAssetModal();
     }
     ImGui::EndDock();
+
+    if (!deletedAsset.first.empty())
+    {
+        if (deletedAsset.second != boost::typeindex::type_id<Prefab>().hash_code())
+        {
+            auto future = GameEditor->GetAssetsWriter().RemoveAsset(deletedAsset.first);
+            if (future.valid())
+                future.get();
+
+            json staticReference = json_utils::TryParse(Utils::FileToString(std::ifstream("data/staticReference.db")));
+
+            if (staticReference.find(deletedAsset.first) != staticReference.end())
+            {
+                if (!staticReference[deletedAsset.first][0].get<std::string>().empty())
+                    fs::remove(staticReference[deletedAsset.first][0].get<std::string>());
+                if (!staticReference[deletedAsset.first][1].get<std::string>().empty())
+                    fs::remove(staticReference[deletedAsset.first][1].get<std::string>());
+
+                auto &assetsManager = GameEngine->GetAssetsManager();
+                assetsManager.staticResources.erase(deletedAsset.first);
+                assetsManager.assets.erase(deletedAsset.first);
+                staticReference.erase(deletedAsset.first);
+
+                if (auto It = std::find(staticAssets.begin(), staticAssets.end(), deletedAsset); It != staticAssets.end())
+                    staticAssets.erase(It);
+
+                std::ofstream staticReferenceFile("data/staticReference.db", std::ios::trunc);
+                staticReferenceFile << staticReference.dump(4);
+                staticReferenceFile.close();
+            }
+
+            deletedAsset = {};
+        }
+        else
+        {
+            auto &assetsManager = GameEngine->GetAssetsManager();
+            json staticReference = json_utils::TryParse(Utils::FileToString(std::ifstream("data/staticReference.db")));
+
+            auto assetIt = assetsManager.assets.find(deletedAsset.first);
+            if (staticReference.find(deletedAsset.first) != staticReference.end() && (assetIt == assetsManager.assets.end() || !assetIt->second->IsDynamic()))
+            {
+                auto srIt = staticReference.begin();
+                while (srIt != staticReference.end())
+                {
+                    std::string staticAssetName = srIt.key();
+                    if (staticAssetName.find(deletedAsset.first) != std::string::npos && staticAssetName != deletedAsset.first)
+                    {
+                        auto future = GameEditor->GetAssetsWriter().RemoveAsset(staticAssetName);
+                        if (future.valid())
+                            future.get();
+
+                        if (!staticReference[staticAssetName][0].get<std::string>().empty())
+                            fs::remove(staticReference[staticAssetName][0].get<std::string>());
+                        if (!staticReference[staticAssetName][1].get<std::string>().empty())
+                            fs::remove(staticReference[staticAssetName][1].get<std::string>());
+
+                        if (assetsManager.staticResources.find(staticAssetName) != assetsManager.staticResources.end())
+                            assetsManager.staticResources.erase(staticAssetName);
+                        assetsManager.assets.erase(staticAssetName);
+                        staticReference.erase(staticAssetName);
+                        srIt = staticReference.begin();
+
+                        auto It = std::find_if(staticAssets.begin(), staticAssets.end(), [&](const std::pair<std::string, size_t> &val){
+                            return val.first == staticAssetName;
+                        });
+                        if (It != staticAssets.end())
+                            staticAssets.erase(It);
+                    }
+                    else
+                        ++srIt;
+                }
+            }
+            else
+            {
+                auto srIt = assetsManager.assets.begin();
+                while (srIt != assetsManager.assets.end())
+                {
+                    std::string staticAssetName = srIt->first;
+                    if (staticAssetName.find(deletedAsset.first) != std::string::npos && staticAssetName != deletedAsset.first)
+                    {
+                        auto future = GameEditor->GetAssetsWriter().RemoveAsset(staticAssetName);
+                        if (future.valid())
+                            future.get();
+
+                        if (!staticReference[staticAssetName][0].get<std::string>().empty())
+                            fs::remove(staticReference[staticAssetName][0].get<std::string>());
+                        if (!staticReference[staticAssetName][1].get<std::string>().empty())
+                            fs::remove(staticReference[staticAssetName][1].get<std::string>());
+
+                        if (assetsManager.staticResources.find(staticAssetName) != assetsManager.staticResources.end())
+                            assetsManager.staticResources.erase(staticAssetName);
+                        assetsManager.assets.erase(staticAssetName);
+                        staticReference.erase(staticAssetName);
+                        srIt = assetsManager.assets.begin();
+
+                        auto It = std::find_if(staticAssets.begin(), staticAssets.end(), [&](const std::pair<std::string, size_t> &val){
+                            return val.first == staticAssetName;
+                        });
+                        if (It != staticAssets.end())
+                            staticAssets.erase(It);
+                    }
+                    else
+                        ++srIt;
+                }
+            }
+
+            auto future = GameEditor->GetAssetsWriter().RemoveAsset(deletedAsset.first);
+            if (future.valid())
+                future.get();
+
+            if (!staticReference[deletedAsset.first][0].get<std::string>().empty())
+                fs::remove(staticReference[deletedAsset.first][0].get<std::string>());
+            if (!staticReference[deletedAsset.first][1].get<std::string>().empty())
+                fs::remove(staticReference[deletedAsset.first][1].get<std::string>());
+
+            if (assetsManager.staticResources.find(deletedAsset.first) != assetsManager.staticResources.end())
+                assetsManager.staticResources.erase(deletedAsset.first);
+            assetsManager.assets.erase(deletedAsset.first);
+            staticReference.erase(deletedAsset.first);
+
+            if (auto It = std::find(staticAssets.begin(), staticAssets.end(), deletedAsset); It != staticAssets.end())
+                staticAssets.erase(It);
+
+            deletedAsset = {};
+
+            std::ofstream staticReferenceFile("data/staticReference.db", std::ios::trunc);
+            staticReferenceFile << staticReference.dump(4);
+            staticReferenceFile.close();
+        }
+    }
 }
 
 void AssetsViewer::importAssetModal()
@@ -123,4 +258,38 @@ void AssetsViewer::importAssetModal()
 
     modelImporter.ModalWindow("Import model window");
     textureImporter.ModalWindow("Import texture window");
+}
+
+void AssetsViewer::displayAsset(const std::string &name, size_t type)
+{
+    bool nameFilterFlag = !filter.IsActive() || filter.PassFilter(name.c_str(), name.c_str() + name.size());
+    bool typeFilterFlag = itemCurrent == 0 || GameEngine->GetAssetsManager().GetAssetsFactory().astSetRegistry[assetsNames[itemCurrent]].second == type;
+    if (nameFilterFlag && typeFilterFlag)
+    {
+        static ImGuiTreeNodeFlags baseFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth |
+                                              ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        ImGuiTreeNodeFlags nodeFlags = baseFlags;
+
+        if (name == selected)
+            nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+        ImGui::TreeNodeEx(name.c_str(), nodeFlags);
+        if (ImGui::IsItemClicked())
+            selected = name;
+        if (ImGui::BeginDragDropSource())
+        {
+            std::string_view asset = name;
+            ImGui::SetDragDropPayload("ASSET_", &asset, sizeof(std::string_view));
+            ImGui::Text("Asset: %s", name.c_str());
+            if (type == boost::typeindex::type_id<Texture>().hash_code())
+                ImGui::TextureWidget(name, ImVec2(128, 128));
+            ImGui::EndDragDropSource();
+        }
+        if (ImGui::BeginPopupContextItem(name.c_str()))
+        {
+            if (ImGui::MenuItem("Delete"))
+                deletedAsset = {name, type};
+            ImGui::EndPopup();
+        }
+    }
 }

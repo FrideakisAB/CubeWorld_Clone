@@ -4,7 +4,7 @@ AssetsWriter::~AssetsWriter()
 {
     for (auto &res : resources)
     {
-        Code result = res.get();
+        Code result = res.second.get();
         if (result == Code::Failed)
             logger->Error("Resource not save! Error in save function!");
     }
@@ -55,5 +55,18 @@ void AssetsWriter::AddAsset(const AssetsHandle &assetsHandle, std::function<void
         return Code::Success;
     };
 
-    resources.push_back(std::async(std::launch::async, saveFunction));
+    resources[assetsHandle->GetName()] = std::async(std::launch::async, saveFunction);
+}
+
+std::future<AssetsWriter::Code> AssetsWriter::RemoveAsset(const std::string &name)
+{
+    if (auto It = resources.find(name); It != resources.end())
+    {
+        std::future<Code> future = std::move(It->second);
+        resources.erase(It);
+
+        return std::move(future);
+    }
+
+    return {};
 }

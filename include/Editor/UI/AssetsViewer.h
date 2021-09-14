@@ -12,6 +12,7 @@ private:
     ImGuiTextFilter filter;
     std::string selected;
     std::vector<const char*> assetsNames;
+    std::vector<std::pair<std::string, size_t>> staticAssets;
     int itemCurrent = 0;
 
     static const std::string imageFilter;
@@ -20,6 +21,9 @@ private:
     void importAssetModal();
     ModelImporter modelImporter;
     TextureImporter textureImporter;
+
+    void displayAsset(const std::string &name, size_t type);
+    std::pair<std::string, size_t> deletedAsset;
 
 public:
     AssetsViewer();
