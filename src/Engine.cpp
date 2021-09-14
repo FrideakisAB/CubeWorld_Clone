@@ -66,7 +66,7 @@ Engine::Engine()
     sphere->GetComponent<Transform>()->SetLocalPos(pos);
     AssetsHandle materialHandle = std::make_shared<Material>();
     auto *material = static_cast<Material*>(materialHandle.get());
-    material->Shader = "LightBloom";
+    material->Shader = "Bloom";
     material->Uniforms["color_light"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
     materialComponent->SetMaterial(materialHandle);
     mesh->SetMesh(assetsManager->GetAsset("Sphere"));
@@ -106,7 +106,7 @@ Engine::Engine()
     plane->GetComponent<Transform>()->SetLocalPos(pos);
     materialHandle = std::make_shared<Material>();
     material = static_cast<Material*>(materialHandle.get());
-    material->Shader = "LightAccumulation";
+    material->Shader = "BlinnPhong";
     material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
     material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
     materialComponent->SetMaterial(materialHandle);

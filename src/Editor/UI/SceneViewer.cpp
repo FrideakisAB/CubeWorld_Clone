@@ -222,7 +222,7 @@ void SceneViewer::SceneMenu::Draw()
                 mesh->SetMesh(Utils::CreatePlane());
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
-                material->Shader = "LightAccumulation";
+                material->Shader = "BlinnPhong";
                 material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
                 material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);
@@ -240,7 +240,7 @@ void SceneViewer::SceneMenu::Draw()
                 mesh->SetMesh(Utils::CreateCube());
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
-                material->Shader = "LightAccumulation";
+                material->Shader = "BlinnPhong";
                 material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
                 material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);
@@ -258,7 +258,7 @@ void SceneViewer::SceneMenu::Draw()
                 mesh->SetMesh(Utils::CreateSphere(32));
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
-                material->Shader = "LightAccumulation";
+                material->Shader = "BlinnPhong";
                 material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 0.0f, 0.0f)};
                 material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 materialComponent->SetMaterial(materialHandle);

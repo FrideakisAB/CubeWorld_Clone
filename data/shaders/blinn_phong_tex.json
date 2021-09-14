@@ -11,7 +11,7 @@
             "valueType": 2
         }
     ],
-    "shaderName": "LightAccumulationTexture",
+    "shaderName": "BlinnPhongTex",
     "tag": "SHADER",
     "vertex": "#version 440 core\n\nlayout (location = 0) in vec3 aPos;\nlayout (location = 1) in vec3 aNormal;\nlayout (location = 2) in vec2 aTexCoords;\n\nuniform mat4 model;\nuniform mat4 vp;\nuniform mat4 lightSpaceMatrix;\n\nout vec4 FragPosLightSpace;\nout vec3 FragPos;\nout vec3 Normal;\nout vec2 TexCoords;\n\nvoid main()\n{\n    FragPos = vec3(model * vec4(aPos, 1.0));\n    Normal = normalize(mat3(transpose(inverse(model))) * aNormal);  \n    TexCoords = aTexCoords;\n    FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);\n\n    gl_Position = vp * vec4(FragPos, 1.0);\n}"
 }

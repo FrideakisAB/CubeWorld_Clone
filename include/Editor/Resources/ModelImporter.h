@@ -59,7 +59,8 @@ private:
     static Mesh *convertMesh(aiMesh *mesh);
     static void importLight(aiLight *light, GameObject *go);
     static void importCamera(aiCamera *camera, GameObject *go);
-    static AssetsHandle importMaterial(aiMaterial *materialAssimp);
+    static AssetsHandle importMaterial(const std::string &assetName, aiMaterial *materialAssimp);
+    static AssetsHandle importTexture(const std::string &assetName, const aiString &path, aiTextureMapMode mapModeU, aiTextureMapMode mapModeV);
 
 public:
     ModelImporter();

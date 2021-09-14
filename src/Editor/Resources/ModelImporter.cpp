@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "Engine.h"
 #include "GameScene.h"
+#include "stb_image.h"
 #include <assimp/scene.h>
 #include "Editor/Editor.h"
 #include "Assets/Prefab.h"
@@ -93,7 +94,7 @@ void ModelImporter::processModel()
                 importState += incValue;
                 if (importState > 1.0f)
                     importState = 1.0f;
-                materials[i] = importMaterial(scene->mMaterials[i]);
+                materials[i] = importMaterial(assetName + "_Material_Texture_" + std::to_string(i), scene->mMaterials[i]);
             }
         }
         else
@@ -205,7 +206,7 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
                 {
                     auto materialHandle = std::make_shared<Material>();
                     auto *material = static_cast<Material*>(materialHandle.get());
-                    material->Shader = "LightAccumulation";
+                    material->Shader = "BlinnPhong";
                     material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
                     material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                     childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
@@ -234,7 +235,7 @@ void ModelImporter::recAdd(const aiScene *sceneModel, aiNode *node, GameObject *
             {
                 auto materialHandle = std::make_shared<Material>();
                 auto *material = static_cast<Material*>(materialHandle.get());
-                material->Shader = "LightAccumulation";
+                material->Shader = "BlinnPhong";
                 material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(1.0f, 1.0f, 1.0f)};
                 material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, 0.1f};
                 childGameObject->AddComponent<MaterialComponent>()->SetMaterial(materialHandle);
@@ -325,7 +326,8 @@ void ModelImporter::importCamera(aiCamera *camera, GameObject *go)
     resCamera->Fov = glm::degrees(camera->mHorizontalFOV);
 }
 
-AssetsHandle ModelImporter::importMaterial(aiMaterial *materialAssimp)
+#define AI_MATKEY_SPECULAR "$mat.specular",0,0
+AssetsHandle ModelImporter::importMaterial(const std::string &assetName, aiMaterial *materialAssimp)
 {
     aiColor3D color;
     materialAssimp->Get(AI_MATKEY_COLOR_DIFFUSE, color);
@@ -334,22 +336,33 @@ AssetsHandle ModelImporter::importMaterial(aiMaterial *materialAssimp)
     materialAssimp->Get(AI_MATKEY_COLOR_EMISSIVE, bloom);
 
     f32 specular;
-    materialAssimp->Get(AI_MATKEY_SHININESS, specular);
+    materialAssimp->Get(AI_MATKEY_SPECULAR, specular);
     specular = glm::clamp(specular, 0.0f, 1.0f);
 
-    aiString tex;
-    materialAssimp->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), tex);
+    aiString textureDiffuseAssimp;
+    aiTextureMapMode wrapDiffuseU, wrapDiffuseV;
+    materialAssimp->Get(AI_MATKEY_TEXTURE_DIFFUSE(0), textureDiffuseAssimp);
+    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_U_DIFFUSE(0), wrapDiffuseU);
+    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_V_DIFFUSE(0), wrapDiffuseV);
 
-    aiTextureMapMode mapModeU, mapModeV;
-    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_U_DIFFUSE(0), mapModeU);
-    materialAssimp->Get(AI_MATKEY_MAPPINGMODE_V_DIFFUSE(0), mapModeV);
+    AssetsHandle textureDiffuse = importTexture(assetName, textureDiffuseAssimp, wrapDiffuseU, wrapDiffuseV);
 
     if (!bloom.IsBlack())
     {
         AssetsHandle materialHandle = std::make_shared<Material>();
         auto *material = static_cast<Material*>(materialHandle.get());
-        material->Shader = "LightBloom";
+        material->Shader = "Bloom";
         material->Uniforms["color_light"] = {Utils::ShaderValue::Vector3, glm::vec3(bloom.r, bloom.g, bloom.b)};
+
+        return materialHandle;
+    }
+    else if (textureDiffuse)
+    {
+        AssetsHandle materialHandle = std::make_shared<Material>();
+        auto *material = static_cast<Material*>(materialHandle.get());
+        material->Shader = "BlinnPhongTex";
+        material->Samplers["texture_diffuse"] = textureDiffuse;
+        material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, specular};
 
         return materialHandle;
     }
@@ -357,12 +370,90 @@ AssetsHandle ModelImporter::importMaterial(aiMaterial *materialAssimp)
     {
         AssetsHandle materialHandle = std::make_shared<Material>();
         auto *material = static_cast<Material*>(materialHandle.get());
-        material->Shader = "LightAccumulation";
+        material->Shader = "BlinnPhong";
         material->Uniforms["color_diffuse"] = {Utils::ShaderValue::Vector3, glm::vec3(color.r, color.g, color.b)};
         material->Uniforms["main_specular"] = {Utils::ShaderValue::Float, specular};
 
         return materialHandle;
     }
+}
+
+AssetsHandle ModelImporter::importTexture(const std::string &assetName, const aiString &path, aiTextureMapMode mapModeU, aiTextureMapMode mapModeV)
+{
+    if (fs::exists(fs::path(path.C_Str())))
+    {
+        int x, y, components;
+        u8 *src = stbi_load(path.C_Str(), &x, &y, &components, 0);
+
+        AssetsHandle texture = std::make_shared<Texture>();
+        auto *texturePtr = static_cast<Texture*>(texture.get());
+        texturePtr->SetType(TexType::Texture2D);
+        texturePtr->SetFiltering(Filtering::Linear);
+        texturePtr->SetWH({x, y});
+
+        switch (mapModeU)
+        {
+        case aiTextureMapMode_Wrap:
+            texturePtr->SetWrapS(WrapType::Repeat);
+            break;
+
+        case aiTextureMapMode_Clamp:
+            texturePtr->SetWrapS(WrapType::ClampToEdge);
+            break;
+
+        case aiTextureMapMode_Mirror:
+            texturePtr->SetWrapS(WrapType::MirroredRepeat);
+            break;
+        }
+
+        switch (mapModeV)
+        {
+        case aiTextureMapMode_Wrap:
+            texturePtr->SetWrapT(WrapType::Repeat);
+            break;
+
+        case aiTextureMapMode_Clamp:
+            texturePtr->SetWrapT(WrapType::ClampToEdge);
+            break;
+
+        case aiTextureMapMode_Mirror:
+            texturePtr->SetWrapT(WrapType::MirroredRepeat);
+            break;
+        }
+
+        texturePtr->SetMipmap(true);
+
+        switch (components)
+        {
+        case 1:
+            texturePtr->SetTypeData(TexDataType::R);
+            break;
+        case 2:
+            texturePtr->SetTypeData(TexDataType::RG);
+            break;
+        case 3:
+            texturePtr->SetTypeData(TexDataType::RGB);
+            break;
+        case 4:
+            texturePtr->SetTypeData(TexDataType::RGBA);
+            break;
+        }
+
+        u8 *dataCopy = new u8[x * y * components];
+        std::copy(src, src + x * y * components, dataCopy);
+        stbi_image_free(src);
+
+        texturePtr->SetSrc(dataCopy);
+        texturePtr->Apply();
+        texturePtr->IsStatic = true;
+
+        GameEngine->GetAssetsManager().AddAsset(assetName, texture);
+        GameEditor->GetAssetsWriter().AddAsset(texture);
+
+        return texture;
+    }
+
+    return {};
 }
 
 Mesh *ModelImporter::convertMesh(aiMesh *mesh)
