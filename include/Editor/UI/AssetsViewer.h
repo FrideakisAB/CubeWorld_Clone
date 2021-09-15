@@ -7,6 +7,8 @@
 #include "Editor/Resources/ModelImporter.h"
 #include "Editor/Resources/TextureImporter.h"
 
+class MaterialComponent;
+
 class AssetsViewer final : public IEditorWindow {
 private:
     ImGuiTextFilter filter;
@@ -22,8 +24,17 @@ private:
     ModelImporter modelImporter;
     TextureImporter textureImporter;
 
+    void savePrefabModal();
+    std::string prefabName;
+    ECS::EntityId toPrefab;
+
+    void saveMaterialModal();
+    std::string materialName;
+    MaterialComponent *toMaterial;
+
     void displayAsset(const std::string &name, size_t type);
     std::pair<std::string, size_t> deletedAsset;
+    void deleteAsset(json &staticReference, const std::string &asset);
 
 public:
     AssetsViewer();

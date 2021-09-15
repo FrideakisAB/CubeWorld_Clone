@@ -48,7 +48,7 @@ std::array<const char*, 4> statesString = {
         "invalid, asset is not valid type"
 };
 
-bool ImGui::TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height, std::function<void()> func)
+bool ImGui::TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height, std::function<void()> dndTarget, std::function<void()> dndSource)
 {
     ImVec2 widget_pos = ImGui::GetCursorScreenPos();
 
@@ -56,7 +56,13 @@ bool ImGui::TextHandleButton(const std::string &label, const std::string &contex
     bool clicked = ImGui::InvisibleButton(label.c_str(), ImVec2(maxWidth, height));
 
     if (ImGui::BeginDragDropTarget())
-        func();
+        dndTarget();
+
+    if (ImGui::BeginDragDropSource())
+    {
+        dndSource();
+        ImGui::EndDragDropSource();
+    }
 
     if (ImGui::IsItemHovered())
     {

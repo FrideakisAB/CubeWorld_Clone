@@ -19,7 +19,7 @@ enum class CustomTextState : u8 {
 namespace ImGui
 {
     void TextureWidget(const std::string &asset, ImVec2 size=ImVec2(0, 0));
-    bool TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height, std::function<void()> func=[](){});
+    bool TextHandleButton(const std::string &label, const std::string &context, const std::string &type, CustomTextState state, u32 height, std::function<void()> dndTarget=[](){}, std::function<void()> dndSource=[](){});
     template<typename CMP>
     bool AssetSelectorPopup(const std::string &id, const std::string &name, const std::string &type, CustomTextState state, std::string &select, CMP cmp)
     {

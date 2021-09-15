@@ -48,7 +48,16 @@ void MaterialViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             }
         };
 
-        if (ImGui::TextHandleButton("Material", context, "Material", state, 16, dragCollector))
+        auto dragSource = [&]() {
+            if (context == "(custom)")
+            {
+                MaterialComponent *matPtr = &material;
+                ImGui::SetDragDropPayload("SCENE_MATERIAL", &matPtr, sizeof(MaterialComponent*));
+                ImGui::Text("Local material asset");
+            }
+        };
+
+        if (ImGui::TextHandleButton("Material", context, "Material", state, 16, dragCollector, dragSource))
             ImGui::OpenPopup("MaterialSelector");
 
         auto isMaterialFunction = [](const AssetsHandle &handle) {

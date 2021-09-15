@@ -56,7 +56,7 @@ void ModelImporter::processModel()
     importState = 0.0f;
     importStateName = "Load raw model";
 
-    Assimp::Importer importer;
+    static Assimp::Importer importer;
     importer.SetProgressHandler(progressHandler);
     int flags = aiProcess_GenSmoothNormals |
                 aiProcess_JoinIdenticalVertices |
@@ -166,6 +166,8 @@ void ModelImporter::processModel()
     gameScene.Delete(go);
 
     importState = 1.0f;
+
+    importer.FreeScene();
 
     isProcessingFinish = true;
 }
