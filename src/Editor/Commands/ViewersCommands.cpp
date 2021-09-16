@@ -216,3 +216,127 @@ void UpdateLighting::Undo()
     GameEngine->GetLighting().ShadowsPower = shadowsPowerPrev;
     GameEngine->GetLighting().Exposure = exposurePrev;
 }
+
+ChangeAssetState::ChangeAssetState(const std::string &asset)
+    : asset(asset)
+{
+    auto *savedAsset = GameEngine->GetAssetsManager().GetAsset<IAsset>(asset);
+    if (savedAsset != nullptr)
+    {
+        oldCache = GameEditor->CacheSystem.CreateCache(8);
+        std::ofstream file = std::ofstream(fs::current_path().string() + oldCache.GetPath());
+        std::string jsonStr = savedAsset->SerializeObj().dump();
+        file.write(jsonStr.c_str(), jsonStr.size());
+        file.close();
+
+        if (savedAsset->IsBinaryNeeded())
+        {
+            oldBinaryCache = GameEditor->CacheSystem.CreateCache(8);
+            file = std::ofstream(fs::current_path().string() + oldBinaryCache.GetPath(), std::ios::binary);
+            savedAsset->SerializeBin(file);
+            file.close();
+        }
+    }
+}
+
+ChangeAssetState::~ChangeAssetState()
+{
+    oldCache = GameEditor->CacheSystem.GetCache(oldCache.GetID());
+    if (!oldCache.GetPath().empty())
+        GameEditor->CacheSystem.RemoveCache(oldCache);
+
+    oldBinaryCache = GameEditor->CacheSystem.GetCache(oldBinaryCache.GetID());
+    if (!oldBinaryCache.GetPath().empty())
+        GameEditor->CacheSystem.RemoveCache(oldBinaryCache);
+
+    cache = GameEditor->CacheSystem.GetCache(cache.GetID());
+    if (!cache.GetPath().empty())
+        GameEditor->CacheSystem.RemoveCache(cache);
+
+    binaryCache = GameEditor->CacheSystem.GetCache(binaryCache.GetID());
+    if (!binaryCache.GetPath().empty())
+        GameEditor->CacheSystem.RemoveCache(binaryCache);
+}
+
+void ChangeAssetState::Execute()
+{
+    auto *savedAsset = GameEngine->GetAssetsManager().GetAsset<IAsset>(asset);
+    if (savedAsset != nullptr)
+    {
+        if (isSaved)
+        {
+            cache = GameEditor->CacheSystem.GetCache(cache.GetID());
+            if (!cache.GetPath().empty())
+            {
+                std::ifstream file = std::ifstream(fs::current_path().string() + cache.GetPath());
+                savedAsset->UnSerializeObj(json_utils::TryParse(Utils::FileToString(std::move(file))));
+            }
+
+            binaryCache = GameEditor->CacheSystem.GetCache(binaryCache.GetID());
+            if (!binaryCache.GetPath().empty())
+            {
+                std::ifstream file = std::ifstream(fs::current_path().string() + binaryCache.GetPath(), std::ios::binary);
+                savedAsset->UnSerializeBin(file);
+            }
+
+            auto prevSave = GameEditor->GetAssetsWriter().RemoveAsset(asset);
+            if (prevSave.valid())
+                prevSave.get();
+            auto assetHandle = GameEngine->GetAssetsManager().GetAsset(asset);
+            GameEditor->GetAssetsWriter().AddAsset(assetHandle);
+        }
+    }
+}
+
+void ChangeAssetState::Undo()
+{
+    auto *savedAsset = GameEngine->GetAssetsManager().GetAsset<IAsset>(asset);
+    if (savedAsset != nullptr)
+    {
+        oldCache = GameEditor->CacheSystem.GetCache(oldCache.GetID());
+        if (!oldCache.GetPath().empty())
+        {
+            std::ifstream file = std::ifstream(fs::current_path().string() + oldCache.GetPath());
+            savedAsset->UnSerializeObj(json_utils::TryParse(Utils::FileToString(std::move(file))));
+        }
+
+        oldBinaryCache = GameEditor->CacheSystem.GetCache(oldBinaryCache.GetID());
+        if (!oldBinaryCache.GetPath().empty())
+        {
+            std::ifstream file = std::ifstream(fs::current_path().string() + oldBinaryCache.GetPath(), std::ios::binary);
+            savedAsset->UnSerializeBin(file);
+        }
+
+        auto prevSave = GameEditor->GetAssetsWriter().RemoveAsset(asset);
+        if (prevSave.valid())
+            prevSave.get();
+        auto assetHandle = GameEngine->GetAssetsManager().GetAsset(asset);
+        GameEditor->GetAssetsWriter().AddAsset(assetHandle);
+    }
+}
+
+void ChangeAssetState::Finish()
+{
+    auto *savedAsset = GameEngine->GetAssetsManager().GetAsset<IAsset>(asset);
+    if (savedAsset != nullptr)
+    {
+        if (!isSaved)
+        {
+            cache = GameEditor->CacheSystem.CreateCache(8);
+            std::ofstream file = std::ofstream(fs::current_path().string() + cache.GetPath());
+            std::string jsonStr = savedAsset->SerializeObj().dump();
+            file.write(jsonStr.c_str(), jsonStr.size());
+            file.close();
+
+            if (savedAsset->IsBinaryNeeded())
+            {
+                binaryCache = GameEditor->CacheSystem.CreateCache(8);
+                file = std::ofstream(fs::current_path().string() + binaryCache.GetPath(), std::ios::binary);
+                savedAsset->SerializeBin(file);
+                file.close();
+            }
+
+            isSaved = true;
+        }
+    }
+}

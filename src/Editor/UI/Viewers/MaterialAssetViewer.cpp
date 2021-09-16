@@ -13,9 +13,8 @@ void MaterialAssetViewer::OnEditorUI(IAsset &asset)
 
     if (MaterialEditor(material))
     {
-        //TODO: save in history
-        /*if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
-            lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeState<MaterialComponent>>(&go);*/
+        if (lastCommandId == 0 || !GameEditor->CommandList.IsTimedValid(lastCommandId))
+            lastCommandId = GameEditor->CommandList.AddTimedCommand<ChangeAssetState>(asset.GetName());
 
         ApplyChanges(material);
     }

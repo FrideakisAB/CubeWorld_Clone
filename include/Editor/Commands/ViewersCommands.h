@@ -186,4 +186,20 @@ public:
     void Undo() final;
 };
 
+class ChangeAssetState final : public ICommand {
+private:
+    std::string asset;
+    CacheEntry oldCache, oldBinaryCache;
+    CacheEntry cache, binaryCache;
+    bool isSaved = false;
+
+public:
+    explicit ChangeAssetState(const std::string &asset);
+    ~ChangeAssetState() final;
+
+    void Execute() final;
+    void Undo() final;
+    void Finish() final;
+};
+
 #endif
