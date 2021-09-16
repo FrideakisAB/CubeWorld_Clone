@@ -19,7 +19,7 @@ public:
     template<class Vwr, class Cmp>
     void RegisterViewer()
     {
-        if(viewers.find(Cmp::STATIC_COMPONENT_TYPE_ID) != viewers.end())
+        if (viewers.find(Cmp::STATIC_COMPONENT_TYPE_ID) != viewers.end())
             delete viewers[Cmp::STATIC_COMPONENT_TYPE_ID];
 
         viewers[Cmp::STATIC_COMPONENT_TYPE_ID] = new Vwr();

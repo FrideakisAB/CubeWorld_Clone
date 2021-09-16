@@ -13,6 +13,12 @@ private:
 
 protected:
     explicit IAsset(bool binaryNeeded=false) : IBinarySerialize(binaryNeeded) {}
+    IAsset(const IAsset &asset) : IBinarySerialize(asset) {}
+    IAsset(IAsset &&asset)  noexcept : IBinarySerialize(asset)
+    {
+        std::swap(asset.name, name);
+        std::swap(asset.dynamic, dynamic);
+    }
 
 public:
     virtual ~IAsset() = default;

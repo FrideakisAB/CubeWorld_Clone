@@ -114,6 +114,7 @@ set(Editor_Source
 	src/Editor/UI/GameWindow.cpp
 	src/Editor/UI/SceneViewer.cpp
 	src/Editor/UI/SceneEditor.cpp
+	src/Editor/UI/AssetsEditor.cpp
 	src/Editor/UI/AssetsViewer.cpp
 	src/Editor/UI/EditorViewer.cpp
 	src/Editor/UI/LightingWindow.cpp
@@ -124,6 +125,7 @@ set(Editor_Source
 	src/Editor/UI/Viewers/MaterialViewer.cpp
 	src/Editor/UI/Viewers/ParticleViewer.cpp
 	src/Editor/UI/Viewers/TransformViewer.cpp
+	src/Editor/UI/Viewers/MaterialAssetViewer.cpp
 
 	src/Editor/ImGui/ImCustom.cpp
 	src/Editor/ImGui/ImGuizmo.cpp

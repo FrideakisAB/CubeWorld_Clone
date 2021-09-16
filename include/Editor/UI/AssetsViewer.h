@@ -12,7 +12,6 @@ class MaterialComponent;
 class AssetsViewer final : public IEditorWindow {
 private:
     ImGuiTextFilter filter;
-    std::string selected;
     std::vector<const char*> assetsNames;
     std::vector<std::pair<std::string, size_t>> staticAssets;
     int itemCurrent = 0;

@@ -129,19 +129,22 @@ void RenderSystem::PreUpdate()
             auto *transform = entity->GetComponent<Transform>();
             if (materialComponent != nullptr && materialComponent->IsActive() && materialComponent->IsValid() && transform != nullptr && transform->IsActive())
             {
-                mesh.GetMesh().RenderUpdate();
-
                 Material *material = materialComponent->GetMaterial();
 
-                if (materialTranslation.find(material) == materialTranslation.end())
-                    importMaterial(material);
-
-                DrawData data = mesh.GetMesh().GetDrawData();
-
-                if (data.VAO != 0)
+                if (!material->Shader.empty())
                 {
-                    renderTasks.push_back({data, Shadows, transform->GetMat()});
-                    renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                    mesh.GetMesh().RenderUpdate();
+
+                    if (materialTranslation.find(material) == materialTranslation.end())
+                        importMaterial(material);
+
+                    DrawData data = mesh.GetMesh().GetDrawData();
+
+                    if (data.VAO != 0)
+                    {
+                        renderTasks.push_back({data, Shadows, transform->GetMat()});
+                        renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                    }
                 }
             }
         }
@@ -156,22 +159,25 @@ void RenderSystem::PreUpdate()
             auto *transform = entity->GetComponent<Transform>();
             if (materialComponent != nullptr && materialComponent->IsActive() && materialComponent->IsValid() && transform != nullptr && transform->IsActive())
             {
-                ps.GetRender().RenderUpdate();
-
                 Material *material = materialComponent->GetMaterial();
 
-                if (materialTranslation.find(material) == materialTranslation.end())
-                    importMaterial(material);
-
-                DrawData data = ps.GetRender().GetDrawData();
-
-                if (data.VAO != 0)
+                if (!material->Shader.empty())
                 {
-                    if (!ps.GlobalSpace)
-                        renderTasks.push_back({data, NoShadows, transform->GetMat()});
-                    else
-                        renderTasks.push_back({data, NoShadows, glm::mat4(1.0f)});
-                    renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                    ps.GetRender().RenderUpdate();
+
+                    if (materialTranslation.find(material) == materialTranslation.end())
+                        importMaterial(material);
+
+                    DrawData data = ps.GetRender().GetDrawData();
+
+                    if (data.VAO != 0)
+                    {
+                        if (!ps.GlobalSpace)
+                            renderTasks.push_back({data, NoShadows, transform->GetMat()});
+                        else
+                            renderTasks.push_back({data, NoShadows, glm::mat4(1.0f)});
+                        renderObjects[material->Shader][material].push_back(renderTasks.size() - 1);
+                    }
                 }
             }
         }

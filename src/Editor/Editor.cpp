@@ -7,6 +7,7 @@
 #include "Editor/UI/Viewers/MaterialViewer.h"
 #include "Editor/UI/Viewers/ParticleViewer.h"
 #include "Editor/UI/Viewers/TransformViewer.h"
+#include "Editor/UI/Viewers/MaterialAssetViewer.h"
 #include <GLFW/glfw3.h>
 
 Editor *GameEditor = nullptr;
@@ -22,6 +23,7 @@ Editor::Editor()
 
     windowsMenu.Windows["Scene viewer"] = &sceneViewer;
     windowsMenu.Windows["Scene editor"] = &sceneEditor;
+    windowsMenu.Windows["Assets editor"] = &assetsEditor;
     windowsMenu.Windows["Log viewer"] = &logViewer;
     windowsMenu.Windows["Editor viewer"] = &editorViewer;
     windowsMenu.Windows["Assets viewer"] = &assetsViewer;
@@ -34,6 +36,8 @@ Editor::Editor()
     sceneEditor.ViewersRegistry.RegisterViewer<TransformViewer, Transform>();
     sceneEditor.ViewersRegistry.RegisterViewer<ParticleViewer, ParticleSystem>();
     sceneEditor.ViewersRegistry.RegisterViewer<MaterialViewer, MaterialComponent>();
+
+    assetsEditor.AssetViewersRegistry.RegisterViewer<MaterialAssetViewer, Material>();
 }
 
 Editor::~Editor()
@@ -51,6 +55,7 @@ void Editor::DrawWindows()
     assetsViewer.Draw();
     sceneViewer.Draw();
     sceneEditor.Draw();
+    assetsEditor.Draw();
     logViewer.Draw();
     editorViewer.Draw();
     lightingWindow.Draw();

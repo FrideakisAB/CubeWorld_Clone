@@ -117,7 +117,7 @@ void EditorViewer::dragCamera(glm::vec4 windowPosition) noexcept
 
         if (glfwGetMouseButton(glfwGetCurrentContext(), GLFW_MOUSE_BUTTON_RIGHT))
         {
-            f32 dt = ECS::ECS_Engine->GetTimer()->GetNonScaleDeltaTime();
+            f64 dt = static_cast<f64>(ECS::ECS_Engine->GetTimer()->GetNonScaleDeltaTime());
 
             if (!CameraInverted)
             {

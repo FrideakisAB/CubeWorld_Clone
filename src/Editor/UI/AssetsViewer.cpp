@@ -74,7 +74,7 @@ void AssetsViewer::Draw()
         if (ImVec2 sz = ImGui::GetContentRegionAvail(); sz.x > 0.0f && sz.y > 0.0f)
         {
             if (ImGui::InvisibleButton("AVBottomButton", sz))
-                selected = "";
+                GameEditor->SelectedAsset = "";
 
             if (ImGui::BeginDragDropTarget())
             {
@@ -234,12 +234,12 @@ void AssetsViewer::displayAsset(const std::string &name, size_t type)
                                               ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         ImGuiTreeNodeFlags nodeFlags = baseFlags;
 
-        if (name == selected)
+        if (name == GameEditor->SelectedAsset)
             nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
         ImGui::TreeNodeEx(name.c_str(), nodeFlags);
         if (ImGui::IsItemClicked())
-            selected = name;
+            GameEditor->SelectedAsset = name;
         if (ImGui::BeginDragDropSource())
         {
             std::string_view asset = name;
@@ -260,6 +260,9 @@ void AssetsViewer::displayAsset(const std::string &name, size_t type)
 
 void AssetsViewer::deleteAsset(json &staticReference, const std::string &asset)
 {
+    if (GameEditor->SelectedAsset == asset)
+        GameEditor->SelectedAsset = "";
+
     auto future = GameEditor->GetAssetsWriter().RemoveAsset(asset);
     if (future.valid())
         future.get();

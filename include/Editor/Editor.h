@@ -9,6 +9,7 @@
 #include "Editor/UI/SceneViewer.h"
 #include "Editor/UI/SceneEditor.h"
 #include "Editor/UI/AssetsViewer.h"
+#include "Editor/UI/AssetsEditor.h"
 #include "Editor/UI/EditorViewer.h"
 #include "Editor/UI/LightingWindow.h"
 #include "Editor/Render/EditorRender.h"
@@ -40,6 +41,7 @@ private:
     EditorViewer editorViewer;
     SceneViewer sceneViewer;
     SceneEditor sceneEditor;
+    AssetsEditor assetsEditor;
     EditorMenu editorMenu;
     FileMenu fileMenu;
     WindowsMenu windowsMenu;
@@ -56,9 +58,12 @@ public:
 
     [[nodiscard]] EditorRender &GetRender() noexcept { return render; }
     [[nodiscard]] AssetsWriter &GetAssetsWriter() noexcept { return assetsWriter; }
+    [[nodiscard]] ViewersRegister &GetViewersRegistry() noexcept { return sceneEditor.ViewersRegistry; }
+    [[nodiscard]] AssetViewersRegister &GetAssetViewersRegistry() noexcept { return assetsEditor.AssetViewersRegistry; }
 
     bool IsActiveSimulate = false;
     ECS::EntityId Selected = ECS::INVALID_ENTITY_ID;
+    std::string SelectedAsset;
     CommandList CommandList;
     CacheSystem CacheSystem;
     MenuBar Menu;

@@ -61,7 +61,7 @@ public:
 
     EditorCamera EditorCamera;
     f32 CameraSpeed = 5.0f;
-    f32 CameraSense = 5.0f;
+    f64 CameraSense = 5.0f;
     bool CameraInverted = false;
 
     void Draw() final;

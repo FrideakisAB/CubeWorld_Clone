@@ -24,7 +24,7 @@ public:
         return boost::typeindex::type_id<Prefab>().hash_code();
     }
 
-    [[nodiscard]] IAsset* Clone() const final;
+    [[nodiscard]] IAsset *Clone() const final;
 
     GameObject *Use();
 
