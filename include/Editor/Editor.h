@@ -15,6 +15,7 @@
 #include "Editor/Render/EditorRender.h"
 #include "Editor/Commands/CommandList.h"
 #include "Editor/Resources/AssetsWriter.h"
+#include "Editor/Resources/ConfigManager.h"
 
 class Editor {
 private:
@@ -29,8 +30,13 @@ private:
         void Draw() override;
     };
     class WindowsMenu final : public IMenuEntry {
+    private:
+        json data = {};
+        bool isFirstSet = false;
+
     public:
         WindowsMenu();
+        ~WindowsMenu() final;
         void Draw() override;
 
         std::map<std::string, IEditorWindow*> Windows;
@@ -44,11 +50,12 @@ private:
     AssetsEditor assetsEditor;
     EditorMenu editorMenu;
     FileMenu fileMenu;
-    WindowsMenu windowsMenu;
+    WindowsMenu *windowsMenu;
     GameWindow *gameWindow;
     LightingWindow lightingWindow;
     EditorRender render;
     AssetsWriter assetsWriter;
+    ConfigManager configManager;
 
 public:
     Editor();
@@ -60,6 +67,7 @@ public:
     [[nodiscard]] AssetsWriter &GetAssetsWriter() noexcept { return assetsWriter; }
     [[nodiscard]] ViewersRegister &GetViewersRegistry() noexcept { return sceneEditor.ViewersRegistry; }
     [[nodiscard]] AssetViewersRegister &GetAssetViewersRegistry() noexcept { return assetsEditor.AssetViewersRegistry; }
+    [[nodiscard]] ConfigManager &GetConfigManager() noexcept { return configManager; }
 
     bool IsActiveSimulate = false;
     ECS::EntityId Selected = ECS::INVALID_ENTITY_ID;

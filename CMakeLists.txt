@@ -138,6 +138,7 @@ set(Editor_Source
 
 	src/Editor/Resources/AssetsWriter.cpp
 	src/Editor/Resources/ModelImporter.cpp
+	src/Editor/Resources/ConfigManager.cpp
 	src/Editor/Resources/TextureImporter.cpp
 
 	src/Editor/Commands/CommandList.cpp

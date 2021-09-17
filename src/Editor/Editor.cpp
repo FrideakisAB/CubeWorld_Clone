@@ -14,21 +14,24 @@ Editor *GameEditor = nullptr;
 
 Editor::Editor()
 {
+    GameEditor = this;
+
     gameWindow = new GameWindow();
+    windowsMenu = new WindowsMenu();
 
     Menu.RegisterEntry(&fileMenu);
     Menu.RegisterEntry(&editorMenu);
     Menu.RegisterEntry(sceneViewer.GetMenuEntry());
-    Menu.RegisterEntry(&windowsMenu);
+    Menu.RegisterEntry(windowsMenu);
 
-    windowsMenu.Windows["Scene viewer"] = &sceneViewer;
-    windowsMenu.Windows["Scene editor"] = &sceneEditor;
-    windowsMenu.Windows["Assets editor"] = &assetsEditor;
-    windowsMenu.Windows["Log viewer"] = &logViewer;
-    windowsMenu.Windows["Editor viewer"] = &editorViewer;
-    windowsMenu.Windows["Assets viewer"] = &assetsViewer;
-    windowsMenu.Windows["Game window"] = gameWindow;
-    windowsMenu.Windows["Lighting window"] = &lightingWindow;
+    windowsMenu->Windows["Scene viewer"] = &sceneViewer;
+    windowsMenu->Windows["Scene editor"] = &sceneEditor;
+    windowsMenu->Windows["Assets editor"] = &assetsEditor;
+    windowsMenu->Windows["Log viewer"] = &logViewer;
+    windowsMenu->Windows["Editor viewer"] = &editorViewer;
+    windowsMenu->Windows["Assets viewer"] = &assetsViewer;
+    windowsMenu->Windows["Game window"] = gameWindow;
+    windowsMenu->Windows["Lighting window"] = &lightingWindow;
 
     sceneEditor.ViewersRegistry.RegisterViewer<CameraViewer, Camera>();
     sceneEditor.ViewersRegistry.RegisterViewer<LightViewer, LightSource>();
@@ -42,6 +45,7 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+    delete windowsMenu;
     delete gameWindow;
     CommandList.InvalidateAll();
     CacheSystem.SafeClean();
@@ -61,6 +65,7 @@ void Editor::DrawWindows()
     lightingWindow.Draw();
     logViewer.StartCapture();
     gameWindow->Draw();
+    configManager.DrawSettings();
     logViewer.EndCapture();
 }
 
@@ -82,16 +87,45 @@ Editor::FileMenu::FileMenu()
 
 void Editor::FileMenu::Draw()
 {
+    if (RegisterItem("Settings"))
+        GameEditor->GetConfigManager().OpenWindow();
+
     if (RegisterItem("Exit"))
         glfwSetWindowShouldClose(glfwGetCurrentContext(), true);
 }
 
 Editor::WindowsMenu::WindowsMenu()
     : IMenuEntry("Windows")
-{}
+{
+    data = GameEditor->GetConfigManager().GetConfig("Windows active");
+}
+
+Editor::WindowsMenu::~WindowsMenu()
+{
+    data = {};
+    for (auto &&[name, window] : Windows)
+        data[name] = window->Active;
+
+    GameEditor->GetConfigManager().SetConfig("Windows active", data);
+}
 
 void Editor::WindowsMenu::Draw()
 {
-    for (auto &&[name, window] : Windows)
-        RegisterItemSelectable(name, "", &window->Active);
+    if (isFirstSet)
+    {
+        for (auto &&[name, window]: Windows)
+            RegisterItemSelectable(name, "", &window->Active);
+    }
+    else
+    {
+        isFirstSet = true;
+        if (!data.empty())
+        {
+            for (auto &&[name, window]: Windows)
+            {
+                if (auto It = data.find(name); It != data.end())
+                    window->Active = It.value().get<bool>();
+            }
+        }
+    }
 }
