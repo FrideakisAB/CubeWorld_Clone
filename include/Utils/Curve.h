@@ -3,11 +3,28 @@
 
 #include "Platform.h"
 #include <glm/glm.hpp>
+#include "Assets/ISerialize.h"
 
-namespace Curve {
-    void Spline(const float *key, int num, int dim, float t, float *v);
-    f32 CurveValue(f32 position, u32 maxPoints, const glm::vec2 *points);
-    f32 CurveValueSmooth(f32 position, u32 maxPoints, const glm::vec2 *points);
+constexpr size_t MaxCurvePoints = 10;
+
+class Curve final : public ISerialize {
+private:
+    glm::vec2 points[MaxCurvePoints]{};
+
+public:
+    Curve();
+    Curve(const Curve &curve);
+
+    Curve &operator=(const Curve &curve);
+
+    f32 Value(f32 position) noexcept;
+    f32 ValueSmooth(f32 position) noexcept;
+
+    [[nodiscard]] glm::vec2 *GetPoints() noexcept { return points; }
+    [[nodiscard]] static size_t GetPointsCount() noexcept { return MaxCurvePoints; }
+
+    [[nodiscard]] json SerializeObj() const final;
+    void UnSerializeObj(const json &j) final;
 };
 
 #endif

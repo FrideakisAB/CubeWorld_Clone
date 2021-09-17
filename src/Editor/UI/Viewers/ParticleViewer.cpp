@@ -2,7 +2,7 @@
 
 #include "Editor/Editor.h"
 #include <glm/gtc/type_ptr.hpp>
-#include "Editor/ImGui/imgui_curve.h"
+#include "Editor/ImGui/ImCurve.h"
 #include "Components/ParticleSystem.h"
 #include "Editor/Commands/ViewersCommands.h"
 #include "Editor/ImGui/ImColorGradient.h"
@@ -227,14 +227,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.SizeOverLifetime.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Size", 16, 10, ps.SizeOverLifetime.Points))
+            if (ImGui::CurveButton("Size", 16, ps.SizeOverLifetime.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.SizeOverLifetime.Points, ps.SizeOverLifetime.Points + 10, copyPoints);
+            Curve cachedCurve(ps.SizeOverLifetime.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                if (ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints))
+                if (ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cachedCurve))
                     update = true;
 
                 ImGui::EndPopup();
@@ -246,7 +245,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                     lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
 
                 ps.SizeOverLifetime.Active = active;
-                std::copy(copyPoints, copyPoints + 10, ps.SizeOverLifetime.Points);
+                ps.SizeOverLifetime.Curve = cachedCurve;
             }
 
             ImGui::TreePop();
@@ -261,14 +260,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.SpeedOverLifetime.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Speed", 16, 10, ps.SpeedOverLifetime.Points))
+            if (ImGui::CurveButton("Speed", 16, ps.SpeedOverLifetime.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.SpeedOverLifetime.Points, ps.SpeedOverLifetime.Points + 10, copyPoints);
+            Curve cachedCurve(ps.SpeedOverLifetime.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cachedCurve);
 
                 ImGui::EndPopup();
             }
@@ -279,7 +277,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                     lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
 
                 ps.SpeedOverLifetime.Active = active;
-                std::copy(copyPoints, copyPoints + 10, ps.SpeedOverLifetime.Points);
+                ps.SpeedOverLifetime.Curve = cachedCurve;
             }
 
             ImGui::TreePop();
@@ -320,38 +318,35 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.ForceOverLifetime.Active)
                 update = true;
 
-            if (ImGui::CurveButton("X", 16, 10, ps.ForceOverLifetime.XPoints))
+            if (ImGui::CurveButton("X", 16, ps.ForceOverLifetime.XCurve))
                 ImGui::OpenPopup("CurveEditorX");
 
-            glm::vec2 copyXPoints[10]{};
-            std::copy(ps.ForceOverLifetime.XPoints, ps.ForceOverLifetime.XPoints + 10, copyXPoints);
+            Curve cashedXCurve(ps.ForceOverLifetime.XCurve);
             if (ImGui::BeginPopup("CurveEditorX"))
             {
-                update = ImGui::Curve("CurveX", ImVec2(600, 200), 10, copyXPoints);
+                update = ImGui::CurveEditor("CurveX", ImVec2(600, 200), cashedXCurve);
 
                 ImGui::EndPopup();
             }
 
-            if (ImGui::CurveButton("Y", 16, 10, ps.ForceOverLifetime.YPoints))
+            if (ImGui::CurveButton("Y", 16, ps.ForceOverLifetime.YCurve))
                 ImGui::OpenPopup("CurveEditorY");
 
-            glm::vec2 copyYPoints[10]{};
-            std::copy(ps.ForceOverLifetime.YPoints, ps.ForceOverLifetime.YPoints + 10, copyYPoints);
+            Curve cashedYCurve(ps.ForceOverLifetime.YCurve);
             if (ImGui::BeginPopup("CurveEditorY"))
             {
-                update = ImGui::Curve("CurveY", ImVec2(600, 200), 10, copyYPoints);
+                update = ImGui::CurveEditor("CurveY", ImVec2(600, 200), cashedYCurve);
 
                 ImGui::EndPopup();
             }
 
-            if (ImGui::CurveButton("Z", 16, 10, ps.ForceOverLifetime.ZPoints))
+            if (ImGui::CurveButton("Z", 16, ps.ForceOverLifetime.ZCurve))
                 ImGui::OpenPopup("CurveEditorZ");
 
-            glm::vec2 copyZPoints[10]{};
-            std::copy(ps.ForceOverLifetime.ZPoints, ps.ForceOverLifetime.ZPoints + 10, copyZPoints);
+            Curve cashedZCurve(ps.ForceOverLifetime.ZCurve);
             if (ImGui::BeginPopup("CurveEditorZ"))
             {
-                update = ImGui::Curve("CurveZ", ImVec2(600, 200), 10, copyZPoints);
+                update = ImGui::CurveEditor("CurveZ", ImVec2(600, 200), cashedZCurve);
 
                 ImGui::EndPopup();
             }
@@ -367,9 +362,9 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                     lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
 
                 ps.ForceOverLifetime.Active = active;
-                std::copy(copyXPoints, copyXPoints + 10, ps.ForceOverLifetime.XPoints);
-                std::copy(copyYPoints, copyYPoints + 10, ps.ForceOverLifetime.YPoints);
-                std::copy(copyZPoints, copyZPoints + 10, ps.ForceOverLifetime.ZPoints);
+                ps.ForceOverLifetime.XCurve = cashedXCurve;
+                ps.ForceOverLifetime.YCurve = cashedYCurve;
+                ps.ForceOverLifetime.ZCurve = cashedZCurve;
                 ps.ForceOverLifetime.BaseForce = baseForce;
             }
 
@@ -385,14 +380,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.BrightOverLifetime.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Bright", 16, 10, ps.BrightOverLifetime.Points))
+            if (ImGui::CurveButton("Bright", 16, ps.BrightOverLifetime.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.BrightOverLifetime.Points, ps.BrightOverLifetime.Points + 10, copyPoints);
+            Curve cashedCurve(ps.BrightOverLifetime.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cashedCurve);
 
                 ImGui::EndPopup();
             }
@@ -408,7 +402,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                     lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
 
                 ps.BrightOverLifetime.Active = active;
-                std::copy(copyPoints, copyPoints + 10, ps.BrightOverLifetime.Points);
+                ps.BrightOverLifetime.Curve = cashedCurve;
                 ps.BrightOverLifetime.BaseBright = bright;
             }
 
@@ -424,14 +418,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.TextureOverLifetime.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Texture", 16, 10, ps.TextureOverLifetime.Points))
+            if (ImGui::CurveButton("Texture", 16, ps.TextureOverLifetime.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.TextureOverLifetime.Points, ps.TextureOverLifetime.Points + 10, copyPoints);
+            Curve cashedCurve(ps.TextureOverLifetime.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cashedCurve);
 
                 ImGui::EndPopup();
             }
@@ -447,7 +440,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                     lastCommandIds[0] = GameEditor->CommandList.AddTimedCommand<ChangeState<ParticleSystem>>(&go);
 
                 ps.TextureOverLifetime.Active = active;
-                std::copy(copyPoints, copyPoints + 10, ps.TextureOverLifetime.Points);
+                ps.TextureOverLifetime.Curve = cashedCurve;
                 ps.TextureOverLifetime.BaseTexture = baseTexture;
             }
 
@@ -548,14 +541,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.SizeBySpeed.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Size", 16, 10, ps.SizeBySpeed.Points))
+            if (ImGui::CurveButton("Size", 16, ps.SizeBySpeed.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.SizeBySpeed.Points, ps.SizeBySpeed.Points + 10, copyPoints);
+            Curve cashedCurve(ps.SizeBySpeed.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cashedCurve);
 
                 ImGui::EndPopup();
             }
@@ -584,7 +576,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                 ps.SizeBySpeed.BaseSize = baseSize;
                 ps.SizeBySpeed.MinSpeed = minSpeed;
                 ps.SizeBySpeed.MaxSpeed = maxSpeed;
-                std::copy(copyPoints, copyPoints + 10, ps.SizeBySpeed.Points);
+                ps.SizeBySpeed.Curve = cashedCurve;
             }
 
             ImGui::TreePop();
@@ -599,14 +591,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.BrightBySpeed.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Bright", 16, 10, ps.BrightBySpeed.Points))
+            if (ImGui::CurveButton("Bright", 16, ps.BrightBySpeed.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.BrightBySpeed.Points, ps.BrightBySpeed.Points + 10, copyPoints);
+            Curve cashedCurve(ps.BrightBySpeed.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cashedCurve);
 
                 ImGui::EndPopup();
             }
@@ -635,7 +626,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                 ps.BrightBySpeed.BaseBright = baseBright;
                 ps.BrightBySpeed.MinSpeed = minSpeed;
                 ps.BrightBySpeed.MaxSpeed = maxSpeed;
-                std::copy(copyPoints, copyPoints + 10, ps.BrightBySpeed.Points);
+                ps.BrightBySpeed.Curve = cashedCurve;
             }
 
             ImGui::TreePop();
@@ -650,14 +641,13 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
             if (active != ps.TextureBySpeed.Active)
                 update = true;
 
-            if (ImGui::CurveButton("Texture", 16, 10, ps.TextureBySpeed.Points))
+            if (ImGui::CurveButton("Texture", 16, ps.TextureBySpeed.Curve))
                 ImGui::OpenPopup("CurveEditor");
 
-            glm::vec2 copyPoints[10]{};
-            std::copy(ps.TextureBySpeed.Points, ps.TextureBySpeed.Points + 10, copyPoints);
+            Curve cashedCurve(ps.TextureBySpeed.Curve);
             if (ImGui::BeginPopup("CurveEditor"))
             {
-                update = ImGui::Curve("Curve", ImVec2(600, 200), 10, copyPoints);
+                update = ImGui::CurveEditor("CurveEditor", ImVec2(600, 200), cashedCurve);
 
                 ImGui::EndPopup();
             }
@@ -686,7 +676,7 @@ void ParticleViewer::OnEditorUI(GameObject &go, ECS::IComponent &cmp)
                 ps.TextureBySpeed.BaseTexture = baseTexture;
                 ps.TextureBySpeed.MinSpeed = minSpeed;
                 ps.TextureBySpeed.MaxSpeed = maxSpeed;
-                std::copy(copyPoints, copyPoints + 10, ps.TextureBySpeed.Points);
+                ps.TextureBySpeed.Curve = cashedCurve;
             }
 
             ImGui::TreePop();

@@ -1,9 +1,10 @@
 #ifndef IMGUI_CURVE_H
 #define IMGUI_CURVE_H
 
+#include <string>
 #include "imgui.h"
 #include "Platform.h"
-#include <glm/glm.hpp>
+#include "Utils/Curve.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
@@ -12,8 +13,8 @@
 
 namespace ImGui
 {
-    bool Curve(const char *label, const ImVec2& size, u32 maxPoints, glm::vec2 *points);
-	bool CurveButton(const char *label, u32 size, u32 maxPoints, glm::vec2 *points);
+    bool CurveEditor(const std::string &label, const ImVec2& size, Curve &curve);
+	bool CurveButton(const std::string &label, u32 size, Curve &curve);
 };
 
 namespace Tween {

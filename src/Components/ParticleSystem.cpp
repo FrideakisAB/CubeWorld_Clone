@@ -12,25 +12,6 @@ ParticleSystem::ParticleSystem()
     particles = new Particle[maxParticlesCount];
     releasedParticles = new u32[maxParticlesCount];
 
-    for(u32 i = 0; i < 10; ++i)
-    {
-        auto iFloat = static_cast<f32>(i) * 0.1f;
-        if (i == 9)
-            iFloat = 1.0f;
-        SizeOverLifetime.Points[i] = glm::vec2(iFloat, 1.0f);
-        SpeedOverLifetime.Points[i] = glm::vec2(iFloat, 1.0f);
-
-        ForceOverLifetime.XPoints[i] = glm::vec2(iFloat, 0.0f);
-        ForceOverLifetime.YPoints[i] = glm::vec2(iFloat, 0.0f);
-        ForceOverLifetime.ZPoints[i] = glm::vec2(iFloat, 0.0f);
-        BrightOverLifetime.Points[i] = glm::vec2(iFloat, 0.0f);
-        TextureOverLifetime.Points[i] = glm::vec2(iFloat, 0.0f);
-
-        BrightBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
-        TextureBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
-        SizeBySpeed.Points[i] = glm::vec2(iFloat, 1.0f);
-    }
-
     if (PlayOnStart)
         state = ParticleState::Run;
 }
@@ -263,15 +244,15 @@ void ParticleSystem::Update()
             }
 
             if (SizeOverLifetime.Active)
-                particles[i].Size = (StartSize / 10) * Curve::CurveValue(particleLifetimeAspect, 10, SizeOverLifetime.Points);
+                particles[i].Size = (StartSize / 10) * SizeOverLifetime.Curve.Value(particleLifetimeAspect);
             else if (SizeBySpeed.Active && SizeBySpeed.MinSpeed != SizeBySpeed.MaxSpeed)
             {
                 f32 speedAspect = (particles[i].Speed - SizeBySpeed.MinSpeed) / (SizeBySpeed.MaxSpeed - SizeBySpeed.MinSpeed);
-                particles[i].Size = SizeBySpeed.BaseSize * Curve::CurveValue(speedAspect, 10, SizeBySpeed.Points);
+                particles[i].Size = SizeBySpeed.BaseSize * SizeBySpeed.Curve.Value(speedAspect);
             }
 
             if (SpeedOverLifetime.Active)
-                particles[i].Speed = StartSpeed * Curve::CurveValue(particleLifetimeAspect, 10, SpeedOverLifetime.Points);
+                particles[i].Speed = StartSpeed * SpeedOverLifetime.Curve.Value(particleLifetimeAspect);
 
             if (RotationOverLifetime.Active)
                 particles[i].Rotation += RotationOverLifetime.Speed * deltaTime;
@@ -280,24 +261,24 @@ void ParticleSystem::Update()
 
             if (ForceOverLifetime.Active)
                 particles[i].Position += ForceOverLifetime.BaseForce * glm::vec3(
-                        Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.XPoints),
-                        Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.YPoints),
-                        Curve::CurveValue(particleLifetimeAspect, 10, ForceOverLifetime.ZPoints));
+                        ForceOverLifetime.XCurve.Value(particleLifetimeAspect),
+                        ForceOverLifetime.YCurve.Value(particleLifetimeAspect),
+                        ForceOverLifetime.ZCurve.Value(particleLifetimeAspect));
 
             if (BrightOverLifetime.Active)
-                particles[i].BrightMultiplier = BrightOverLifetime.BaseBright * Curve::CurveValue(particleLifetimeAspect, 10, BrightOverLifetime.Points);
+                particles[i].BrightMultiplier = BrightOverLifetime.BaseBright * BrightOverLifetime.Curve.Value(particleLifetimeAspect);
             else if (BrightBySpeed.Active && BrightBySpeed.MinSpeed != BrightBySpeed.MaxSpeed)
             {
                 f32 speedAspect = (particles[i].Speed - BrightBySpeed.MinSpeed) / (BrightBySpeed.MaxSpeed - BrightBySpeed.MinSpeed);
-                particles[i].BrightMultiplier = BrightBySpeed.BaseBright * Curve::CurveValue(speedAspect, 10, BrightBySpeed.Points);
+                particles[i].BrightMultiplier = BrightBySpeed.BaseBright * BrightBySpeed.Curve.Value(speedAspect);
             }
 
             if (TextureOverLifetime.Active)
-                particles[i].Sprite = TextureOverLifetime.BaseTexture * Curve::CurveValue(particleLifetimeAspect, 10, TextureOverLifetime.Points);
+                particles[i].Sprite = TextureOverLifetime.BaseTexture * TextureOverLifetime.Curve.Value(particleLifetimeAspect);
             else if (TextureBySpeed.Active)
             {
                 f32 speedAspect = (particles[i].Speed - TextureBySpeed.MinSpeed) / (TextureBySpeed.MaxSpeed - TextureBySpeed.MinSpeed);
-                particles[i].Sprite = TextureBySpeed.BaseTexture * Curve::CurveValue(speedAspect, 10, TextureBySpeed.Points);
+                particles[i].Sprite = TextureBySpeed.BaseTexture * TextureBySpeed.Curve.Value(speedAspect);
             }
 
             if (RotationBySpeed.Active)
@@ -384,12 +365,6 @@ void ParticleSystem::SetMaxParticles(u32 maxParticles)
     Restart();
 }
 
-void SavePoint(json &j, const std::string &name, const glm::vec2 *base, u32 count)
-{
-    for (u32 i = 0; i < count; ++i)
-        j[name][i] = {base[i].x, base[i].y};
-}
-
 json ParticleSystem::SerializeObj() const
 {
     json data;
@@ -421,26 +396,26 @@ json ParticleSystem::SerializeObj() const
     data["ColorOverLifetime_Gradient"] = ColorOverLifetime.Gradient.SerializeObj();
 
     data["SizeOverLifetime_Active"] = SizeOverLifetime.Active;
-    SavePoint(data, "SizeOverLifetime_Points", SizeOverLifetime.Points, 10);
+    data["SizeOverLifetime_Curve"] = SizeOverLifetime.Curve.SerializeObj();
 
     data["SpeedOverLifetime_Active"] = SpeedOverLifetime.Active;
-    SavePoint(data, "SpeedOverLifetime_Points", SpeedOverLifetime.Points, 10);
+    data["SpeedOverLifetime_Curve"] = SpeedOverLifetime.Curve.SerializeObj();
 
     data["RotationOverLifetime_Active"] = RotationOverLifetime.Active;
     data["RotationOverLifetime_Speed"] = RotationOverLifetime.Speed;
 
     data["ForceOverLifetime_Active"] = ForceOverLifetime.Active;
-    SavePoint(data, "ForceOverLifetime_XPoints", ForceOverLifetime.XPoints, 10);
-    SavePoint(data, "ForceOverLifetime_YPoints", ForceOverLifetime.YPoints, 10);
-    SavePoint(data, "ForceOverLifetime_ZPoints", ForceOverLifetime.ZPoints, 10);
+    data["ForceOverLifetime_XCurve"] = ForceOverLifetime.XCurve.SerializeObj();
+    data["ForceOverLifetime_YCurve"] = ForceOverLifetime.YCurve.SerializeObj();
+    data["ForceOverLifetime_ZCurve"] = ForceOverLifetime.ZCurve.SerializeObj();
     data["ForceOverLifetime_BaseForce"] = {ForceOverLifetime.BaseForce.x, ForceOverLifetime.BaseForce.y, ForceOverLifetime.BaseForce.z};
 
     data["BrightOverLifetime_Active"] = BrightOverLifetime.Active;
-    SavePoint(data, "BrightOverLifetime_Points", BrightOverLifetime.Points, 10);
+    data["BrightOverLifetime_Curve"] = BrightOverLifetime.Curve.SerializeObj();
     data["BrightOverLifetime_BaseBright"] = BrightOverLifetime.BaseBright;
 
     data["TextureOverLifetime_Active"] = TextureOverLifetime.Active;
-    SavePoint(data, "TextureOverLifetime_Points", TextureOverLifetime.Points, 10);
+    data["TextureOverLifetime_Curve"] = TextureOverLifetime.Curve.SerializeObj();
     data["TextureOverLifetime_BaseTexture"] = TextureOverLifetime.BaseTexture;
 
     data["ColorBySpeed_Active"] = ColorBySpeed.Active;
@@ -476,15 +451,6 @@ json ParticleSystem::SerializeObj() const
     return data;
 }
 
-void LoadPoint(const json &j, const std::string &name, glm::vec2 *base, u32 count)
-{
-    for(u32 i = 0; i < count; ++i)
-    {
-        base[i].x = j[name][i][0];
-        base[i].y = j[name][i][1];
-    }
-}
-
 void ParticleSystem::UnSerializeObj(const json &j)
 {
     Duration = j["Duration"];
@@ -513,26 +479,26 @@ void ParticleSystem::UnSerializeObj(const json &j)
     ColorOverLifetime.Gradient.UnSerializeObj(j["ColorOverLifetime_Gradient"]);
 
     SizeOverLifetime.Active = j["SizeOverLifetime_Active"];
-    LoadPoint(j, "SizeOverLifetime_Points", SizeOverLifetime.Points, 10);
+    SizeOverLifetime.Curve.UnSerializeObj(j["SizeOverLifetime_Curve"]);
 
     SpeedOverLifetime.Active = j["SpeedOverLifetime_Active"];
-    LoadPoint(j, "SpeedOverLifetime_Points", SpeedOverLifetime.Points, 10);
+    SpeedOverLifetime.Curve.UnSerializeObj(j["SpeedOverLifetime_Curve"]);
 
     RotationOverLifetime.Active = j["RotationOverLifetime_Active"];
     RotationOverLifetime.Speed = j["RotationOverLifetime_Speed"];
 
     ForceOverLifetime.Active = j["ForceOverLifetime_Active"];
-    LoadPoint(j, "ForceOverLifetime_XPoints", ForceOverLifetime.XPoints, 10);
-    LoadPoint(j, "ForceOverLifetime_YPoints", ForceOverLifetime.YPoints, 10);
-    LoadPoint(j, "ForceOverLifetime_ZPoints", ForceOverLifetime.ZPoints, 10);
+    ForceOverLifetime.XCurve.UnSerializeObj(j["ForceOverLifetime_XCurve"]);
+    ForceOverLifetime.YCurve.UnSerializeObj(j["ForceOverLifetime_YCurve"]);
+    ForceOverLifetime.ZCurve.UnSerializeObj(j["ForceOverLifetime_ZCurve"]);
     ForceOverLifetime.BaseForce = glm::vec3(j["ForceOverLifetime_BaseForce"][0], j["ForceOverLifetime_BaseForce"][1], j["ForceOverLifetime_BaseForce"][2]);
 
     BrightOverLifetime.Active = j["BrightOverLifetime_Active"];
-    LoadPoint(j, "BrightOverLifetime_Points", BrightOverLifetime.Points, 10);
+    BrightOverLifetime.Curve.UnSerializeObj(j["BrightOverLifetime_Curve"]);
     BrightOverLifetime.BaseBright = j["BrightOverLifetime_BaseBright"];
 
     TextureOverLifetime.Active = j["TextureOverLifetime_Active"];
-    LoadPoint(j, "TextureOverLifetime_Points", TextureOverLifetime.Points, 10);
+    TextureOverLifetime.Curve.UnSerializeObj(j["TextureOverLifetime_Curve"]);
     TextureOverLifetime.BaseTexture = j["TextureOverLifetime_BaseTexture"];
 
     ColorBySpeed.Active = j["ColorBySpeed_Active"];

@@ -1,4 +1,4 @@
-#include "Editor/ImGui/imgui_curve.h"
+#include "Editor/ImGui/ImCurve.h"
 
 #include <algorithm>
 #include "Utils/Curve.h"
@@ -299,25 +299,23 @@ namespace Tween {
 
 namespace ImGui
 {
-    bool Curve(const char *label, const ImVec2& size, u32 maxPoints, glm::vec2 *points)
+    bool CurveEditor(const std::string &label, const ImVec2& size, Curve &curve)
     {
         bool modified = false;
-        if (maxPoints < 2 || points == nullptr)
-            return false;
 
-        if (points[0].x < 0)
+        if (curve.GetPoints()[0].x < 0)
         {
-            points[0].x = 0;
-            points[0].y = 0;
-            points[1].x = 1;
-            points[1].y = 1;
-            points[2].x = -1;
+            curve.GetPoints()[0].x = 0;
+            curve.GetPoints()[0].y = 0;
+            curve.GetPoints()[1].x = 1;
+            curve.GetPoints()[1].y = 1;
+            curve.GetPoints()[2].x = -1;
         }
 
         ImGuiWindow *window = GetCurrentWindow();
         ImGuiContext &g = *GImGui;
         const ImGuiStyle &style = g.Style;
-        const ImGuiID id = window->GetID(label);
+        const ImGuiID id = window->GetID(label.c_str());
         if (window->SkipItems)
             return false;
 
@@ -329,7 +327,7 @@ namespace ImGui
         const bool hovered = ItemHoverable(bb, id);
 
         int max = 0;
-        while (max < maxPoints && points[max].x >= 0)
+        while (max < Curve::GetPointsCount() && curve.GetPoints()[max].x >= 0)
             ++max;
 
         u32 kill = 0;
@@ -339,15 +337,15 @@ namespace ImGui
             {
                 modified = true;
                 for (u32 i = kill + 1; i < max; ++i)
-                    points[i - 1] = points[i];
+                    curve.GetPoints()[i - 1] = curve.GetPoints()[i];
                 --max;
-                points[max].x = -1;
+                curve.GetPoints()[max].x = -1;
                 kill = 0;
             }
 
             for (u32 i = 1; i < max - 1; ++i)
             {
-                if (abs(points[i].x - points[i - 1].x) < 1 / 128.0)
+                if (abs(curve.GetPoints()[i].x - curve.GetPoints()[i - 1].x) < 1 / 128.0)
                     kill = i;
             }
         }
@@ -368,15 +366,15 @@ namespace ImGui
                 glm::vec2 pos = glm::vec2(pos2.x, 1 - pos2.y);
 
                 int left = 0;
-                while (left < max && points[left].x < pos.x)
+                while (left < max && curve.GetPoints()[left].x < pos.x)
                     ++left;
 
                 if (left)
                     --left;
 
-                glm::vec2 p = points[left] - pos;
+                glm::vec2 p = curve.GetPoints()[left] - pos;
                 float p1d = sqrt(p.x*p.x + p.y*p.y);
-                p = points[left+1] - pos;
+                p = curve.GetPoints()[left+1] - pos;
                 float p2d = sqrt(p.x*p.x + p.y*p.y);
 
                 int sel = -1;
@@ -386,25 +384,25 @@ namespace ImGui
                     sel = left + 1;
 
                 if (sel != -1)
-                    points[sel] = pos;
+                    curve.GetPoints()[sel] = pos;
                 else
                 {
-                    if (max < maxPoints)
+                    if (max < Curve::GetPointsCount())
                     {
                         ++max;
                         for (u32 i = max - 1; i > left && i > 1; --i)
-                            points[i] = points[i - 1];
-                        points[left + 1] = pos;
-                        if (max < maxPoints)
-                            points[max].x = -1;
+                            curve.GetPoints()[i] = curve.GetPoints()[i - 1];
+                        curve.GetPoints()[left + 1] = pos;
+                        if (max < Curve::GetPointsCount())
+                            curve.GetPoints()[max].x = -1;
                     }
                     else
                     {
-                        auto nearPointsIt = std::adjacent_find(points, points + 10, [=](const glm::vec2 &left, const glm::vec2 &right){
+                        auto nearPointsIt = std::adjacent_find(curve.GetPoints(), curve.GetPoints() + 10, [=](const glm::vec2 &left, const glm::vec2 &right){
                             return left.x <= pos.x && right.x >= pos.x;
                         });
 
-                        if (nearPointsIt != points + 10)
+                        if (nearPointsIt != curve.GetPoints() + 10)
                         {
                             f32 leftDiff = pos.x - nearPointsIt[0].x;
                             f32 rightDiff = nearPointsIt[1].x - pos.x;
@@ -418,17 +416,17 @@ namespace ImGui
                 }
 
                 // snap first/last to min/max
-                if (max <= maxPoints)
+                if (max <= Curve::GetPointsCount())
                 {
-                    if (points[0].x < points[max - 1].x)
+                    if (curve.GetPoints()[0].x < curve.GetPoints()[max - 1].x)
                     {
-                        points[0].x = 0;
-                        points[max - 1].x = 1;
+                        curve.GetPoints()[0].x = 0;
+                        curve.GetPoints()[max - 1].x = 1;
                     }
                     else
                     {
-                        points[0].x = 1;
-                        points[max - 1].x = 0;
+                        curve.GetPoints()[0].x = 1;
+                        curve.GetPoints()[max - 1].x = 0;
                     }
                 }
             }
@@ -464,8 +462,8 @@ namespace ImGui
         {
             float px = (i+0) / float(smoothness);
             float qx = (i+1) / float(smoothness);
-            float py = 1 - Curve::CurveValueSmooth(px, maxPoints, points);
-            float qy = 1 - Curve::CurveValueSmooth(qx, maxPoints, points);
+            float py = 1 - curve.ValueSmooth(px);
+            float qy = 1 - curve.ValueSmooth(qx);
             ImVec2 p( px * (bb.Max.x - bb.Min.x) + bb.Min.x, py * (bb.Max.y - bb.Min.y) + bb.Min.y);
             ImVec2 q( qx * (bb.Max.x - bb.Min.x) + bb.Min.x, qy * (bb.Max.y - bb.Min.y) + bb.Min.y);
             window->DrawList->AddLine(p, q, GetColorU32(ImGuiCol_PlotLines));
@@ -474,8 +472,8 @@ namespace ImGui
         // lines
         for (u32 i = 1; i < max; ++i)
         {
-            ImVec2 a = ImVec2(points[i - 1].x, points[i - 1].y);
-            ImVec2 b = ImVec2(points[i].x, points[i].y);
+            ImVec2 a = ImVec2(curve.GetPoints()[i - 1].x, curve.GetPoints()[i - 1].y);
+            ImVec2 b = ImVec2(curve.GetPoints()[i].x, curve.GetPoints()[i].y);
             a.y = 1 - a.y;
             b.y = 1 - b.y;
             a = a * (bb.Max - bb.Min) + bb.Min;
@@ -485,10 +483,10 @@ namespace ImGui
 
         if (hovered)
         {
-            // control points
+            // control curve.GetPoints()
             for (u32 i = 0; i < max; ++i)
             {
-                ImVec2 p = ImVec2(points[i].x, points[i].y);
+                ImVec2 p = ImVec2(curve.GetPoints()[i].x, curve.GetPoints()[i].y);
                 p.y = 1 - p.y;
                 p = p * (bb.Max - bb.Min) + bb.Min;
                 ImVec2 a = p - ImVec2(2, 2);
@@ -501,7 +499,7 @@ namespace ImGui
         if (ImGui::Button("Flip"))
         {
             for (u32 i = 0; i < max; ++i)
-                points[i].y = 1 - points[i].y;
+                curve.GetPoints()[i].y = 1 - curve.GetPoints()[i].y;
             modified = true;
         }
         ImGui::SameLine();
@@ -557,28 +555,28 @@ namespace ImGui
             item = 0;
         if(ImGui::Combo("Ease type", &item, items, IM_ARRAYSIZE(items)))
         {
-            max = maxPoints;
+            max = curve.GetPointsCount();
             if (item > 0)
             {
                 for (u32 i = 0; i < max; ++i)
                 {
-                    points[i].x = i / float(max - 1);
-                    points[i].y = float(Tween::ease(item - 1, points[i].x));
+                    curve.GetPoints()[i].x = i / float(max - 1);
+                    curve.GetPoints()[i].y = float(Tween::ease(item - 1, curve.GetPoints()[i].x));
                 }
                 modified = true;
             }
         }
 
         char buf[128];
-        const char *str = label;
+        const char *str = label.c_str();
 
         if (hovered)
         {
             ImVec2 pos = (g.IO.MousePos - bb.Min) / (bb.Max - bb.Min);
             pos.y = 1 - pos.y;              
 
-            int freePoints = maxPoints - ImClamp(max, 0, 10);
-            sprintf(buf, "%s (%f,%f; free points: %i)", label, pos.x, pos.y, freePoints);
+            int freePoints = curve.GetPointsCount() - ImClamp(max, 0, 10);
+            sprintf(buf, "%s (%f,%f; free curve.GetPoints(): %i)", label.c_str(), pos.x, pos.y, freePoints);
             str = buf;
         }
 
@@ -587,30 +585,27 @@ namespace ImGui
         return modified;
     }
 	
-	bool CurveButton(const char *label, u32 height, u32 maxPoints, glm::vec2* points)
+	bool CurveButton(const std::string &label, u32 size, Curve &curve)
 	{
-        if (maxPoints < 2 || points == nullptr)
-            return false;
-
-        if (points[0].x < 0)
+        if (curve.GetPoints()[0].x < 0)
         {
-            points[0].x = 0;
-            points[0].y = 0;
-            points[1].x = 1;
-            points[1].y = 1;
-            points[2].x = -1;
+            curve.GetPoints()[0].x = 0;
+            curve.GetPoints()[0].y = 0;
+            curve.GetPoints()[1].x = 1;
+            curve.GetPoints()[1].y = 1;
+            curve.GetPoints()[2].x = -1;
         }
 
-        ImGuiWindow* window = GetCurrentWindow();
-        ImGuiContext& g = *GImGui;
-        const ImGuiStyle& style = g.Style;
-        const ImGuiID id = window->GetID(label);
+        ImGuiWindow *window = GetCurrentWindow();
+        ImGuiContext &g = *GImGui;
+        const ImGuiStyle &style = g.Style;
+        const ImGuiID id = window->GetID(label.c_str());
         if (window->SkipItems)
             return false;
 		
 		float maxWidth = ImMax(250.0f, ImGui::GetContentRegionAvailWidth() - 100.0f);
 
-        ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(maxWidth, height));
+        ImRect bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(maxWidth, size));
         ItemSize(bb);
 		bool clicked = false;
         if (!ItemAdd(bb, NULL))
@@ -621,7 +616,7 @@ namespace ImGui
 			clicked = true;
 
         u32 max = 0;
-        while (max < maxPoints && points[max].x >= 0)
+        while (max < curve.GetPointsCount() && curve.GetPoints()[max].x >= 0)
             ++max;
 
         RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, style.FrameRounding);
@@ -635,15 +630,15 @@ namespace ImGui
         {
             float px = (i+0) / float(smoothness);
             float qx = (i+1) / float(smoothness);
-            float py = 1 - Curve::CurveValueSmooth(px, maxPoints, points);
-            float qy = 1 - Curve::CurveValueSmooth(qx, maxPoints, points);
+            float py = 1 - curve.ValueSmooth(px);
+            float qy = 1 - curve.ValueSmooth(qx);
             ImVec2 p(px * (bb.Max.x - bb.Min.x) + bb.Min.x, py * (bb.Max.y - bb.Min.y) + bb.Min.y);
             ImVec2 q(qx * (bb.Max.x - bb.Min.x) + bb.Min.x, qy * (bb.Max.y - bb.Min.y) + bb.Min.y);
             window->DrawList->AddLine(p, q, GetColorU32(ImGuiCol_PlotLines));
         }
 		
 		ImGui::SameLine();
-		ImGui::Text(label);
+		ImGui::Text("%s", label.c_str());
 
         return clicked;
 	}

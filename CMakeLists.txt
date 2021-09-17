@@ -130,7 +130,7 @@ set(Editor_Source
 	src/Editor/ImGui/ImCustom.cpp
 	src/Editor/ImGui/ImGuizmo.cpp
 	src/Editor/ImGui/imgui_dock.cpp
-	src/Editor/ImGui/imgui_curve.cpp
+        src/Editor/ImGui/ImCurve.cpp
 	src/Editor/ImGui/ImFileDialog.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
 	src/Editor/ImGui/ImColorGradient.cpp

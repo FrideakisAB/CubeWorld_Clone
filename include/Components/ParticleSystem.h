@@ -2,6 +2,7 @@
 #define PARTICLESYSTEM_H
 
 #include "ECS/ECS.h"
+#include "Utils/Curve.h"
 #include "Utils/Gradient.h"
 #include "Assets/AssetsManager.h"
 #include "Render/ParticleRender.h"
@@ -95,12 +96,12 @@ public:
 
     struct SizeOverLifetime {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
     } SizeOverLifetime;
 
     struct SpeedOverLifetime {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
     } SpeedOverLifetime;
 
     struct RotationOverLifetime {
@@ -110,21 +111,21 @@ public:
 
     struct ForceOverLifetime {
         bool Active = false;
-        glm::vec2 XPoints[10]{};
-        glm::vec2 YPoints[10]{};
-        glm::vec2 ZPoints[10]{};
+        Curve XCurve;
+        Curve YCurve;
+        Curve ZCurve;
         glm::vec3 BaseForce = glm::vec3(0.0f, 0.0f, 0.0f);
     } ForceOverLifetime;
 
     struct BrightOverLifetime {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
         f32 BaseBright = 0.0f;
     } BrightOverLifetime;
 
     struct TextureOverLifetime {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
         f32 BaseTexture = 0.0f;
     } TextureOverLifetime;
 
@@ -144,7 +145,7 @@ public:
 
     struct SizeBySpeed {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
         f32 BaseSize = 1.0f;
         f32 MaxSpeed = 1.0f;
         f32 MinSpeed = 0.0f;
@@ -152,7 +153,7 @@ public:
 
     struct BrightBySpeed {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
         f32 BaseBright = 0.0f;
         f32 MaxSpeed = 1.0f;
         f32 MinSpeed = 0.0f;
@@ -160,7 +161,7 @@ public:
 
     struct TextureBySpeed {
         bool Active = false;
-        glm::vec2 Points[10]{};
+        Curve Curve;
         f32 BaseTexture = 0.0f;
         f32 MaxSpeed = 1.0f;
         f32 MinSpeed = 0.0f;
