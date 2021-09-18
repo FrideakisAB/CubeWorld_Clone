@@ -46,17 +46,15 @@ IAsset *Prefab::Clone() const
 GameObject *Prefab::Use()
 {
     GameObject *go;
+    go = GameEngine->GetGameScene().Create(GetName());
     if (prefabData.empty())
-    {
-        go = GameEngine->GetGameScene().Create(this->GetName());
         go->AddComponent<Transform>();
-    }
     else
     {
-        go = GameEngine->GetGameScene().Create(this->GetName());
         go->UnSerializeObj(prefabData);
-        go->Name = this->GetName();
+        go->Name = GetName();
     }
+    go->isPrefab = true;
 
     return go;
 }

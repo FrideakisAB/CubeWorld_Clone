@@ -3,6 +3,7 @@
 #include "Engine.h"
 #include "GameScene.h"
 #include "Editor/Editor.h"
+#include "Components/Transform.h"
 #include "Editor/Commands/SceneEditorCommands.h"
 
 void SceneEditor::Draw()
@@ -44,24 +45,38 @@ void SceneEditor::Draw()
             GameEditor->CommandList.Redo();
         }
 
-        auto* CM = ECS::ECS_Engine->GetComponentManager();
-        const size_t NUM_COMPONENTS = CM->entityComponentMap[0].size();
-        for (ECS::ComponentTypeId componentTypeId = 0; componentTypeId < NUM_COMPONENTS; ++componentTypeId)
+        if (!go->IsPrefab())
         {
-            const ECS::ComponentId componentId = CM->entityComponentMap[go->GetEntityID().index][componentTypeId];
-            if (componentId == ECS::INVALID_COMPONENT_ID)
-                continue;
-
-            if (ECS::IComponent* component = CM->componentLut[componentId]; component != nullptr)
+            auto *CM = ECS::ECS_Engine->GetComponentManager();
+            const size_t NUM_COMPONENTS = CM->entityComponentMap[0].size();
+            for (ECS::ComponentTypeId componentTypeId = 0; componentTypeId < NUM_COMPONENTS; ++componentTypeId)
             {
-                if (IViewer *viewer = ViewersRegistry.GetViewer(componentTypeId); viewer != nullptr)
-                    viewer->OnEditorUI(*go, *component);
-            }
-        }
+                const ECS::ComponentId componentId = CM->entityComponentMap[go->GetEntityID().index][componentTypeId];
+                if (componentId == ECS::INVALID_COMPONENT_ID)
+                    continue;
 
-        ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 100) / 2);
-        if (ImGui::Button("Add component"))
-            ImGui::OpenPopup("addComponent");
+                if (ECS::IComponent *component = CM->componentLut[componentId]; component != nullptr)
+                {
+                    if (IViewer *viewer = ViewersRegistry.GetViewer(componentTypeId); viewer != nullptr)
+                        viewer->OnEditorUI(*go, *component);
+                }
+            }
+
+            ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 100) / 2);
+            if (ImGui::Button("Add component"))
+                ImGui::OpenPopup("addComponent");
+        }
+        else
+        {
+            if (auto transform = go->GetComponent<Transform>(); transform != nullptr)
+            {
+                if (IViewer *viewer = ViewersRegistry.GetViewer(Transform::STATIC_COMPONENT_TYPE_ID); viewer != nullptr)
+                    viewer->OnEditorUI(*go, *transform);
+            }
+            ImGui::Text("This game object is created by the prefab and is protected from alteration");
+            if (ImGui::Button("Unpack"))
+                go->UnPrefab();
+        }
 
         if (ImGui::BeginPopup("addComponent"))
         {

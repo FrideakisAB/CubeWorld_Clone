@@ -18,6 +18,7 @@ json GameObject::SerializeObj() const
 
     data["name"] = Name;
     data["tag"] = Tag;
+    data["isPrefab"] = isPrefab;
 
     return data;
 }
@@ -31,6 +32,7 @@ void GameObject::UnSerializeObj(const json &j)
 
     Name = j["name"];
     Tag = j["tag"];
+    isPrefab = j["isPrefab"];
 
     gameScene->Validate(this->GetEntityID(), this);
 }

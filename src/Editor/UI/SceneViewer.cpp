@@ -119,12 +119,19 @@ void SceneViewer::recursiveTreeDraw(const std::string &name, GameObject *gameObj
 
     ECS::EntityId entityId = gameObject->GetEntityID();
 
-    if (gameObject->GetChildCount() == 0)
+    if (gameObject->GetChildCount() == 0 || gameObject->IsPrefab())
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     if (GameEditor->Selected == entityId)
         nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
+    if (gameObject->IsPrefab())
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.4f, 1.0f, 1.0f));
     bool isSubTreeOpen = ImGui::TreeNodeEx(std::string(name + "##" + std::to_string(entityId)).c_str(), nodeFlags);
+    if (gameObject->IsPrefab())
+    {
+        isSubTreeOpen = false;
+        ImGui::PopStyleColor();
+    }
 
     if (ImGui::BeginPopupContextItem(std::string(std::to_string(entityId) + name).c_str()))
     {
