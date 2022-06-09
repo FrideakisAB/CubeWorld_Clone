@@ -6,6 +6,17 @@
 
 Проект по созданию копии **печально** известной игры Cube World.
 
+На данный момент проект заморожен.
+
+## Графические возможности
+
+* OpenGL 4.4
+* Forward+
+* Bloom
+* Blinn–Phong
+* Direction, Point, Spot lights with shadows (up to 60 per points and spots lights)
+* Particle system (Sprite sheet animation, solid color, CPU, Bloom)
+
 ## Поддерживаемые платформы
 
 * Windows
@@ -13,7 +24,7 @@
 ## Структура проекта
 
 * Движок (C++17 migration to 20, CMake, Conan)
-* Реадактор
+* Редактор
 * Игра (later...)
 
 ## Используемые проекты

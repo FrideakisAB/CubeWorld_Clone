@@ -10,30 +10,24 @@ include_directories(include)
 find_package(OpenGL REQUIRED)
 
 # Исправление Conan при компиляции Clang под MSVC
-set(PROJECT_IS_MSVC_CLANG (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT} STREQUAL "MSVC"))
-
 if(PROJECT_IS_MSVC_CLANG AND NOT CMAKE_CXX_COMPILER_ID MATCHES GNU)
 	set(PREV_CMAKE_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID})
 	set(PREV_CMAKE_CXX_GENERATOR_TOOLSET ${CMAKE_CXX_GENERATOR_TOOLSET})
 	set(CMAKE_CXX_COMPILER_ID MSVC)
 	set(CMAKE_CXX_GENERATOR_TOOLSET ClangCL)
-	
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /EHs")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /EHs")
 endif()
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
 	message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-	file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
+	file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/0.17.0/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
-conan_cmake_run(CONANFILE conanfile.txt 
-				INSTALL_FOLDER ${CMAKE_BINARY_DIR}/pkgs
-				BASIC_SETUP
-				CMAKE_TARGETS
-				BUILD missing
+conan_cmake_run(CONANFILE conanfile.txt
+	INSTALL_FOLDER ${CMAKE_BINARY_DIR}/pkgs
+	BASIC_SETUP
+	BUILD missing
 )
 
 if(PROJECT_IS_MSVC_CLANG AND NOT CMAKE_CXX_COMPILER_ID MATCHES GNU)
@@ -130,7 +124,7 @@ set(Editor_Source
 	src/Editor/ImGui/ImCustom.cpp
 	src/Editor/ImGui/ImGuizmo.cpp
 	src/Editor/ImGui/imgui_dock.cpp
-        src/Editor/ImGui/ImCurve.cpp
+	src/Editor/ImGui/ImCurve.cpp
 	src/Editor/ImGui/ImFileDialog.cpp
 	src/Editor/ImGui/imgui_impl_glfw.cpp
 	src/Editor/ImGui/ImColorGradient.cpp
@@ -157,14 +151,7 @@ add_executable(tests
 
 target_link_libraries(tests
 	OpenGL::GL
-	CONAN_PKG::stb
-	CONAN_PKG::glm
-	CONAN_PKG::boost
-	CONAN_PKG::glew
-	CONAN_PKG::glfw
-	CONAN_PKG::assimp
-	CONAN_PKG::catch2
-	CONAN_PKG::nlohmann_json
+	${CONAN_LIBS}
 )
 
 if(WIN32)
@@ -175,13 +162,7 @@ if(WIN32)
 
 	target_link_libraries(CubeWorld_App
 		OpenGL::GL
-		CONAN_PKG::stb
-		CONAN_PKG::glm
-		CONAN_PKG::boost
-		CONAN_PKG::glew
-		CONAN_PKG::glfw
-		CONAN_PKG::assimp
-		CONAN_PKG::nlohmann_json
+		${CONAN_LIBS}
 	)
 
 	add_executable(CubeWorld_Editor WIN32
@@ -192,13 +173,6 @@ if(WIN32)
 
 	target_link_libraries(CubeWorld_Editor
 		OpenGL::GL
-		CONAN_PKG::stb
-		CONAN_PKG::glm
-		CONAN_PKG::glew
-		CONAN_PKG::glfw
-		CONAN_PKG::imgui
-		CONAN_PKG::boost
-		CONAN_PKG::assimp
-		CONAN_PKG::nlohmann_json
+		${CONAN_LIBS}
 	)
 endif()

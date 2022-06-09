@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hThisInst, HINSTANCE hPrevInst, LPSTR str, int nWin
 
     if (!glfwInit())
     {
-        logger->Error("Error, GLFW initialisation failed");
+        logger->Error("Error, GLFW initialization failed");
         delete logger;
 
         return -1;

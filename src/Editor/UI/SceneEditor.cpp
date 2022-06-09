@@ -14,11 +14,11 @@ void SceneEditor::Draw()
 
         {
             char buf[256] = {0};
-            if(go->Name.size() < 256)
+            if (go->Name.size() < 256)
                 std::copy(go->Name.begin(), go->Name.end(), buf);
             ImGui::InputText("Name", buf, IM_ARRAYSIZE(buf), ImGuiInputTextFlags_NoUndoRedo);
 
-            if(std::string(buf) != go->Name)
+            if (std::string(buf) != go->Name)
             {
                 GameEditor->CommandList.AddCommand<TextEdit>(go, std::string(buf), false);
                 GameEditor->CommandList.Redo();
@@ -26,11 +26,11 @@ void SceneEditor::Draw()
         }
         {
             char buf[256] = {0};
-            if(go->Tag.size() < 256)
+            if (go->Tag.size() < 256)
                 std::copy(go->Tag.begin(), go->Tag.end(), buf);
             ImGui::InputText("Tag", buf, IM_ARRAYSIZE(buf), ImGuiInputTextFlags_NoUndoRedo);
 
-            if(std::string(buf) != go->Tag)
+            if (std::string(buf) != go->Tag)
             {
                 GameEditor->CommandList.AddCommand<TextEdit>(go, std::string(buf), true);
                 GameEditor->CommandList.Redo();
